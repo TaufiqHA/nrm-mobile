@@ -500,28 +500,28 @@ class _UserMainLayoutState extends State<UserMainLayout> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.surfaceDark,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
-          side: const BorderSide(color: AppColors.userCardBorder),
+          side: const BorderSide(color: AppColors.cardGlassBorder),
         ),
         title: const Text(
           'Konfirmasi Keluar',
-          style: TextStyle(color: AppColors.methodistBlue, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         content: const Text(
           'Apakah Anda yakin ingin keluar dari Nyanyian Rohani Methodist?',
-          style: TextStyle(color: AppColors.userTextBody),
+          style: TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Batal', style: TextStyle(color: AppColors.methodistBlue)),
+            child: const Text('Batal', style: TextStyle(color: AppColors.accentSky)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.methodistRed,
+              backgroundColor: AppColors.error,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -575,12 +575,12 @@ class _UserMainLayoutState extends State<UserMainLayout> {
           builder: (context, setModalState) {
             return Container(
               height: MediaQuery.of(context).size.height * 0.90,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              decoration: const BoxDecoration(
+                color: Color(0xFF0F172A),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.15),
+                    color: Colors.black54,
                     blurRadius: 20,
                     spreadRadius: 2,
                   ),
@@ -598,12 +598,12 @@ class _UserMainLayoutState extends State<UserMainLayout> {
                           width: 40,
                           height: 4,
                           decoration: BoxDecoration(
-                            color: Colors.black26,
+                            color: Colors.white24,
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.close_rounded, color: AppColors.methodistBlue),
+                          icon: const Icon(Icons.close_rounded, color: AppColors.textMuted),
                           onPressed: () => Navigator.of(modalContext).pop(),
                         ),
                       ],
@@ -670,10 +670,7 @@ class _UserMainLayoutState extends State<UserMainLayout> {
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('asset/image/background.jpeg'),
-            fit: BoxFit.cover,
-          ),
+          gradient: AppColors.backgroundGradient,
         ),
         child: SafeArea(
           child: Column(
@@ -942,16 +939,9 @@ class _UserMainLayoutState extends State<UserMainLayout> {
                 Container(
                   width: 34,
                   height: 34,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 1),
-                      ),
-                    ],
                   ),
                   padding: const EdgeInsets.all(4),
                   child: Image.asset(
@@ -966,7 +956,7 @@ class _UserMainLayoutState extends State<UserMainLayout> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.methodistBlue,
+                      color: Colors.white,
                       letterSpacing: 0.3,
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -985,15 +975,15 @@ class _UserMainLayoutState extends State<UserMainLayout> {
             icon: Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: AppColors.methodistRed.withValues(alpha: 0.12),
+                color: AppColors.error.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: AppColors.methodistRed.withValues(alpha: 0.3),
+                  color: AppColors.error.withValues(alpha: 0.3),
                 ),
               ),
               child: const Icon(
                 Icons.logout_rounded,
-                color: AppColors.methodistRed,
+                color: AppColors.error,
                 size: 16,
               ),
             ),

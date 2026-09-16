@@ -63,19 +63,11 @@ class PlayerDisplay extends StatelessWidget {
                 Positioned.fill(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.90),
+                      color: const Color(0xFF0F172A).withValues(alpha: 0.6),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: AppColors.userCardBorder,
-                        width: 1.2,
+                        color: Colors.white.withValues(alpha: 0.06),
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.06),
-                          blurRadius: 10,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
                     ),
                     child: Center(
                       child: Column(
@@ -87,15 +79,15 @@ class PlayerDisplay extends StatelessWidget {
                             height: isCompact ? 40 : 54,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: AppColors.methodistBlue.withValues(alpha: 0.1),
+                              color: AppColors.primaryElectric.withValues(alpha: 0.2),
                               border: Border.all(
-                                color: AppColors.methodistBlue.withValues(alpha: 0.25),
+                                color: AppColors.accentCyan.withValues(alpha: 0.3),
                               ),
                             ),
                             child: Icon(
                               Icons.music_note_rounded,
                               size: isCompact ? 20 : 28,
-                              color: AppColors.methodistBlue,
+                              color: AppColors.accentLight,
                             ),
                           ),
                           SizedBox(height: isCompact ? 6 : 10),
@@ -104,7 +96,7 @@ class PlayerDisplay extends StatelessWidget {
                             style: TextStyle(
                               fontSize: isCompact ? 14 : 18,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.methodistBlue,
+                              color: Colors.white,
                               letterSpacing: 0.5,
                             ),
                           ),
@@ -122,15 +114,15 @@ class PlayerDisplay extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.95),
+                      color: const Color(0xFF0F172A).withValues(alpha: 0.85),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: AppColors.methodistRed.withValues(alpha: 0.4),
-                        width: 1.0,
+                        color: AppColors.accentCyan.withValues(alpha: 0.4),
+                        width: 0.8,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
+                          color: Colors.black.withValues(alpha: 0.3),
                           blurRadius: 4,
                         ),
                       ],
@@ -141,15 +133,15 @@ class PlayerDisplay extends StatelessWidget {
                         const Icon(
                           Icons.queue_music_rounded,
                           size: 13,
-                          color: AppColors.methodistRed,
+                          color: AppColors.accentSky,
                         ),
                         const SizedBox(width: 4),
                         Text(
                           '$queueCount antrean',
                           style: const TextStyle(
                             fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.methodistRed,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.accentSky,
                           ),
                         ),
                       ],

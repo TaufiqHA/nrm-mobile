@@ -40,19 +40,19 @@ class SongCatalogPlaylistSection extends StatefulWidget {
 class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection> {
   final TextEditingController _searchController = TextEditingController();
 
-  String? _selectedJudul;
-  String? _selectedPencipta;
+  int? _selectedCategory;
+  String? _selectedNomorLagu;
   String? _selectedNada;
   bool _isFilterExpanded = false;
   int _compactTabIndex = 0; // 0 = Cari Lagu, 1 = Playlist
 
   bool get _hasActiveFilters =>
-      _selectedJudul != null || _selectedPencipta != null || _selectedNada != null;
+      _selectedCategory != null || _selectedNomorLagu != null || _selectedNada != null;
 
   int get _activeFilterCount {
     int count = 0;
-    if (_selectedJudul != null) count++;
-    if (_selectedPencipta != null) count++;
+    if (_selectedCategory != null) count++;
+    if (_selectedNomorLagu != null) count++;
     if (_selectedNada != null) count++;
     return count;
   }
@@ -91,24 +91,21 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
     return cat.name;
   }
 
-  List<String> get _judulOptions {
-    final titles = widget.songs
-        .map((s) => s.songtitle.trim())
-        .where((t) => t.isNotEmpty)
-        .toSet()
-        .toList();
-    titles.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
-    return titles;
-  }
-
-  List<String> get _penciptaOptions {
-    final singers = widget.songs
+  List<String> get _nomorLaguOptions {
+    final numbers = widget.songs
         .map((s) => s.songsinger.trim())
         .where((s) => s.isNotEmpty)
         .toSet()
         .toList();
-    singers.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
-    return singers;
+    numbers.sort((a, b) {
+      final aNum = int.tryParse(a.replaceAll(RegExp(r'[^0-9]'), ''));
+      final bNum = int.tryParse(b.replaceAll(RegExp(r'[^0-9]'), ''));
+      if (aNum != null && bNum != null) {
+        return aNum.compareTo(bNum);
+      }
+      return a.toLowerCase().compareTo(b.toLowerCase());
+    });
+    return numbers;
   }
 
   List<String> get _nadaOptions {
@@ -128,25 +125,25 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
           song.songtitle.toLowerCase().contains(query) ||
           song.songsinger.toLowerCase().contains(query);
 
-      final matchesJudul = _selectedJudul == null ||
-          song.songtitle.trim().toLowerCase() == _selectedJudul!.trim().toLowerCase();
+      final matchesCategory = _selectedCategory == null ||
+          song.songcategory == _selectedCategory;
 
-      final matchesPencipta = _selectedPencipta == null ||
-          song.songsinger.trim().toLowerCase() == _selectedPencipta!.trim().toLowerCase();
+      final matchesNomorLagu = _selectedNomorLagu == null ||
+          song.songsinger.trim().toLowerCase() == _selectedNomorLagu!.trim().toLowerCase();
 
       final matchesNada = _selectedNada == null ||
           (song.songnada != null &&
               song.songnada!.trim().toLowerCase() == _selectedNada!.trim().toLowerCase());
 
-      return matchesQuery && matchesJudul && matchesPencipta && matchesNada;
+      return matchesQuery && matchesCategory && matchesNomorLagu && matchesNada;
     }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    const filterPanelBg = AppColors.methodistBlue; // Royal Blue from Methodist Login
-    final cardBg = Colors.white.withValues(alpha: 0.94); // Light card
-    const cardBorder = AppColors.userCardBorder;
+    const filterPanelBg = Color(0xFF537699); // Blue-grey slate from reference design
+    const cardBg = Color(0xFF162235); // Dark blue navy card
+    const cardBorder = Color(0xFF24364F); // Border card
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -257,27 +254,20 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
         Container(
           height: 38,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: const Color(0xFF1E293B),
             borderRadius: BorderRadius.circular(6),
-            border: Border.all(color: AppColors.userCardBorder),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
-                blurRadius: 4,
-                offset: const Offset(0, 1),
-              ),
-            ],
+            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
           ),
           child: TextField(
             controller: _searchController,
-            style: const TextStyle(color: AppColors.userTextBody, fontSize: 13),
+            style: const TextStyle(color: Colors.white, fontSize: 13),
             decoration: InputDecoration(
               hintText: 'Cari lagu...',
-              hintStyle: const TextStyle(color: AppColors.userTextMuted, fontSize: 12),
-              prefixIcon: const Icon(Icons.search_rounded, color: AppColors.methodistBlue, size: 18),
+              hintStyle: const TextStyle(color: Color(0xFF8E9BAE), fontSize: 12),
+              prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF6FA4CE), size: 18),
               suffixIcon: _searchController.text.isNotEmpty
                   ? IconButton(
-                      icon: const Icon(Icons.close_rounded, color: AppColors.userTextSecondary, size: 16),
+                      icon: const Icon(Icons.close_rounded, color: Colors.white70, size: 16),
                       padding: EdgeInsets.zero,
                       visualDensity: VisualDensity.compact,
                       onPressed: () => _searchController.clear(),
@@ -291,19 +281,12 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
         ),
         const SizedBox(height: 8),
 
-        // 2. Filter Box (Methodist Royal Blue Container, Expandable / Collapsible)
+        // 2. Filter Box (Blue-grey Container, Expandable / Collapsible)
         Container(
           decoration: BoxDecoration(
-            color: AppColors.methodistBlue,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: const Color(0xFF0A3A85), width: 1.2),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            color: const Color(0xFF3B5673),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: const Color(0xFF283B4F)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -315,7 +298,7 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
                     _isFilterExpanded = !_isFilterExpanded;
                   });
                 },
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(6),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                   child: Row(
@@ -341,7 +324,7 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                           decoration: BoxDecoration(
-                            color: AppColors.methodistRed,
+                            color: AppColors.accentCyan,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
@@ -349,7 +332,7 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
                             style: const TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: Color(0xFF0F172A),
                             ),
                           ),
                         ),
@@ -373,33 +356,24 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
                   padding: const EdgeInsets.fromLTRB(9, 2, 9, 9),
                   child: Column(
                     children: [
-                      // Dropdown: Judul Lagu
+                      // 1. Dropdown Kategori
+                      _buildCategoryFilterDropdown(),
+                      const SizedBox(height: 8),
+
+                      // 2. Dropdown Nomor Lagu (rename dari pencipta)
                       _buildFilterDropdown(
-                        label: 'judul lagu',
-                        selectedValue: _selectedJudul,
-                        options: _judulOptions,
+                        label: 'nomor lagu',
+                        selectedValue: _selectedNomorLagu,
+                        options: _nomorLaguOptions,
                         onChanged: (val) {
                           setState(() {
-                            _selectedJudul = val;
+                            _selectedNomorLagu = val;
                           });
                         },
                       ),
                       const SizedBox(height: 8),
 
-                      // Dropdown: Pencipta
-                      _buildFilterDropdown(
-                        label: 'pencipta',
-                        selectedValue: _selectedPencipta,
-                        options: _penciptaOptions,
-                        onChanged: (val) {
-                          setState(() {
-                            _selectedPencipta = val;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 8),
-
-                      // Dropdown: Nada
+                      // 3. Dropdown Nada
                       _buildFilterDropdown(
                         label: 'nada',
                         selectedValue: _selectedNada,
@@ -426,7 +400,7 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.bold,
-              color: AppColors.methodistBlue,
+              color: Color(0xFF98B8DA),
             ),
           ),
         ),
@@ -436,7 +410,7 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
           child: widget.isLoading
               ? const Center(
                   child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.methodistBlue),
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.accentCyan),
                     strokeWidth: 2,
                   ),
                 )
@@ -444,7 +418,7 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
                   ? Container(
                       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.8),
+                        color: cardBg.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: cardBorder),
                       ),
@@ -454,7 +428,7 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 11,
-                            color: AppColors.userTextSecondary,
+                            color: AppColors.textMuted,
                           ),
                         ),
                       ),
@@ -490,9 +464,9 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
       height: 34,
       margin: const EdgeInsets.only(bottom: 6),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF162235),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.userCardBorder),
+        border: Border.all(color: const Color(0xFF24364F)),
       ),
       child: Row(
         children: [
@@ -505,9 +479,12 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: _compactTabIndex == 0
-                      ? AppColors.methodistBlue
+                      ? AppColors.primaryElectric.withValues(alpha: 0.25)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(7),
+                  border: _compactTabIndex == 0
+                      ? Border.all(color: AppColors.accentCyan.withValues(alpha: 0.4))
+                      : null,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -516,8 +493,8 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
                       Icons.search_rounded,
                       size: 13,
                       color: _compactTabIndex == 0
-                          ? Colors.white
-                          : AppColors.userTextSecondary,
+                          ? AppColors.accentCyan
+                          : AppColors.textMuted,
                     ),
                     const SizedBox(width: 4),
                     Text(
@@ -528,8 +505,8 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
                             ? FontWeight.bold
                             : FontWeight.normal,
                         color: _compactTabIndex == 0
-                            ? Colors.white
-                            : AppColors.userTextSecondary,
+                            ? AppColors.accentCyan
+                            : AppColors.textMuted,
                       ),
                     ),
                   ],
@@ -547,9 +524,12 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: _compactTabIndex == 1
-                      ? AppColors.methodistBlue
+                      ? AppColors.primaryElectric.withValues(alpha: 0.25)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(7),
+                  border: _compactTabIndex == 1
+                      ? Border.all(color: AppColors.accentCyan.withValues(alpha: 0.4))
+                      : null,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -558,8 +538,8 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
                       Icons.queue_music_rounded,
                       size: 13,
                       color: _compactTabIndex == 1
-                          ? Colors.white
-                          : AppColors.userTextSecondary,
+                          ? AppColors.accentCyan
+                          : AppColors.textMuted,
                     ),
                     const SizedBox(width: 4),
                     Text(
@@ -570,8 +550,8 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
                             ? FontWeight.bold
                             : FontWeight.normal,
                         color: _compactTabIndex == 1
-                            ? Colors.white
-                            : AppColors.userTextSecondary,
+                            ? AppColors.accentCyan
+                            : AppColors.textMuted,
                       ),
                     ),
                     if (widget.queue.isNotEmpty) ...[
@@ -579,7 +559,7 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                         decoration: BoxDecoration(
-                          color: AppColors.methodistRed,
+                          color: AppColors.accentCyan,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
@@ -587,7 +567,7 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
                           style: const TextStyle(
                             fontSize: 9,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: Color(0xFF0F172A),
                           ),
                         ),
                       ),
@@ -621,7 +601,7 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
               decoration: BoxDecoration(
                 color: filterPanelBg,
                 borderRadius: BorderRadius.circular(4),
-                border: Border.all(color: const Color(0xFF0A3A85)),
+                border: Border.all(color: const Color(0xFF6B8FB5)),
               ),
               child: const Text(
                 'playlist',
@@ -643,7 +623,7 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
             decoration: BoxDecoration(
               color: filterPanelBg,
               borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: const Color(0xFF0A3A85)),
+              border: Border.all(color: const Color(0xFF6B8FB5)),
             ),
             child: widget.queue.isEmpty
                 ? Center(
@@ -717,7 +697,100 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
     );
   }
 
-  /// Dropdown filter box with label and arrow
+  /// Dropdown filter kategori
+  Widget _buildCategoryFilterDropdown() {
+    return Container(
+      height: 38,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFF5F81A5),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: const Color(0xFF38536F), width: 1.0),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<int?>(
+          value: _selectedCategory,
+          isExpanded: true,
+          isDense: true,
+          icon: const Icon(
+            Icons.arrow_drop_down,
+            color: Colors.white,
+            size: 22,
+          ),
+          hint: const Text(
+            'kategori',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+          selectedItemBuilder: (context) {
+            return [
+              const Text(
+                'kategori',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+              ...widget.categories.map((cat) {
+                return Text(
+                  cat.name,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                );
+              }),
+            ];
+          },
+          dropdownColor: const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(8),
+          items: [
+            const DropdownMenuItem<int?>(
+              value: null,
+              child: Text(
+                'Semua Kategori',
+                style: TextStyle(
+                  color: AppColors.accentCyan,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            ...widget.categories.map((cat) {
+              final catId = _parseCategoryId(cat.id);
+              return DropdownMenuItem<int?>(
+                value: catId,
+                child: Text(
+                  cat.name,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              );
+            }),
+          ],
+          onChanged: (val) {
+            setState(() {
+              _selectedCategory = val;
+            });
+          },
+        ),
+      ),
+    );
+  }
+
+  /// Dropdown filter box with string label and arrow
   Widget _buildFilterDropdown({
     required String label,
     required String? selectedValue,
@@ -728,9 +801,9 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
       height: 38,
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF1557B0),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: const Color(0xFF0D47A1), width: 1.0),
+        color: const Color(0xFF5F81A5),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: const Color(0xFF38536F), width: 1.0),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String?>(
@@ -775,15 +848,15 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
               }),
             ];
           },
-          dropdownColor: Colors.white,
+          dropdownColor: const Color(0xFF1E293B),
           borderRadius: BorderRadius.circular(8),
           items: [
             DropdownMenuItem<String?>(
               value: null,
               child: Text(
-                'Semua ${label[0].toUpperCase()}${label.substring(1)}',
+                label == 'nomor lagu' ? 'Semua Nomor Lagu' : 'Semua ${label[0].toUpperCase()}${label.substring(1)}',
                 style: const TextStyle(
-                  color: AppColors.methodistRed,
+                  color: AppColors.accentCyan,
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
@@ -795,7 +868,7 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
                 child: Text(
                   opt,
                   style: const TextStyle(
-                    color: AppColors.userTextBody,
+                    color: Colors.white,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
@@ -834,19 +907,12 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
-          color: isCurrent ? const Color(0xFFFFF0F0) : cardBg,
+          color: cardBg,
           borderRadius: BorderRadius.circular(6),
           border: Border.all(
-            color: isCurrent ? AppColors.methodistRed : cardBorder,
+            color: isCurrent ? AppColors.accentCyan : cardBorder,
             width: isCurrent ? 1.4 : 1.0,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 4,
-              offset: const Offset(0, 1),
-            ),
-          ],
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -864,7 +930,7 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
-                      color: isCurrent ? AppColors.methodistRed : AppColors.methodistBlue,
+                      color: isCurrent ? AppColors.accentCyan : Colors.white,
                     ),
                   ),
                   const SizedBox(height: 1),
@@ -874,7 +940,7 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 9,
-                      color: AppColors.userTextSecondary,
+                      color: Color(0xFF8EA9C7),
                     ),
                   ),
                   const SizedBox(height: 3),
@@ -883,12 +949,12 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
                     spacing: 3,
                     runSpacing: 2,
                     children: [
-                      _buildBadge(categoryName, AppColors.methodistBlue.withValues(alpha: 0.1), AppColors.methodistBlue),
+                      _buildBadge(categoryName, const Color(0xFF334155), const Color(0xFF94A3B8)),
                       if (song.songnada != null && song.songnada!.isNotEmpty)
                         _buildBadge(
                           song.songnada!,
-                          AppColors.methodistRed.withValues(alpha: 0.1),
-                          AppColors.methodistRed,
+                          const Color(0xFF0C4A6E),
+                          const Color(0xFF38BDF8),
                         ),
                     ],
                   ),
@@ -905,7 +971,7 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
                     content: Text('"${song.songtitle}" ditambahkan ke playlist'),
                     duration: const Duration(seconds: 1),
                     behavior: SnackBarBehavior.floating,
-                    backgroundColor: AppColors.methodistBlue,
+                    backgroundColor: AppColors.primaryElectric,
                   ),
                 );
               },
@@ -915,7 +981,7 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
               visualDensity: VisualDensity.compact,
               icon: const Icon(
                 Icons.playlist_add_rounded,
-                color: AppColors.methodistBlue,
+                color: Color(0xFF85B6DF),
                 size: 20,
               ),
             ),
@@ -955,7 +1021,7 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
                   padding: EdgeInsets.only(right: 6.0, top: 1.0),
                   child: Icon(
                     Icons.drag_indicator_rounded,
-                    color: AppColors.userTextSecondary,
+                    color: Colors.white70,
                     size: 16,
                   ),
                 ),
@@ -973,7 +1039,7 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
                       style: const TextStyle(
                         fontSize: 11.5,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.methodistBlue,
+                        color: Colors.white,
                         height: 1.2,
                       ),
                     ),
@@ -984,7 +1050,7 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 9.5,
-                        color: AppColors.userTextSecondary,
+                        color: Color(0xFF98B8DA),
                       ),
                     ),
                   ],
@@ -1002,7 +1068,7 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
                 visualDensity: VisualDensity.compact,
                 icon: const Icon(
                   Icons.delete_outline_rounded,
-                  color: AppColors.methodistRed,
+                  color: Colors.white70,
                   size: 16,
                 ),
               ),
@@ -1016,19 +1082,19 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
             spacing: 4,
             runSpacing: 3,
             children: [
-              _buildBadge(categoryName, AppColors.methodistBlue.withValues(alpha: 0.1), AppColors.methodistBlue),
+              _buildBadge(categoryName, const Color(0xFF334155), const Color(0xFF94A3B8)),
               if (song.songnada != null && song.songnada!.isNotEmpty)
                 _buildBadge(
                   song.songnada!,
-                  AppColors.methodistRed.withValues(alpha: 0.1),
-                  AppColors.methodistRed,
+                  const Color(0xFF0C4A6E),
+                  const Color(0xFF38BDF8),
                 ),
             ],
           ),
 
           const SizedBox(height: 7),
 
-          // 3. Baris Bawah: Tombol ▶ Putar (Methodist Red pill button)
+          // 3. Baris Bawah: Tombol ▶ Putar (Blue pill button)
           SizedBox(
             width: double.infinity,
             height: 26,
@@ -1038,7 +1104,7 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
                 widget.onRemoveFromQueue?.call(index);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.methodistRed,
+                backgroundColor: const Color(0xFF1D6FBE),
                 foregroundColor: Colors.white,
                 padding: EdgeInsets.zero,
                 shape: RoundedRectangleBorder(

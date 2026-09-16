@@ -92,9 +92,9 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF0F172A).withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.userCardBorder),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -103,7 +103,7 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: const BoxDecoration(
-              border: Border(bottom: BorderSide(color: AppColors.userCardBorder, width: 1)),
+              border: Border(bottom: BorderSide(color: AppColors.cardGlassBorder, width: 1)),
             ),
             child: Row(
               children: [
@@ -120,12 +120,12 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                       padding: const EdgeInsets.symmetric(vertical: 6),
                       decoration: BoxDecoration(
                         color: _activeTab == 0
-                            ? AppColors.methodistBlue
+                            ? AppColors.primaryElectric.withValues(alpha: 0.3)
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                           color: _activeTab == 0
-                              ? AppColors.methodistBlue
+                              ? AppColors.accentCyan
                               : Colors.transparent,
                         ),
                       ),
@@ -135,7 +135,7 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                           Icon(
                             Icons.library_music_rounded,
                             size: 16,
-                            color: _activeTab == 0 ? Colors.white : AppColors.userTextSecondary,
+                            color: _activeTab == 0 ? Colors.white : AppColors.textMuted,
                           ),
                           const SizedBox(width: 6),
                           Flexible(
@@ -146,7 +146,7 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: _activeTab == 0 ? FontWeight.bold : FontWeight.w500,
-                                color: _activeTab == 0 ? Colors.white : AppColors.userTextSecondary,
+                                color: _activeTab == 0 ? Colors.white : AppColors.textMuted,
                               ),
                             ),
                           ),
@@ -170,12 +170,12 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                       padding: const EdgeInsets.symmetric(vertical: 6),
                       decoration: BoxDecoration(
                         color: _activeTab == 1
-                            ? AppColors.methodistBlue
+                            ? AppColors.primaryElectric.withValues(alpha: 0.3)
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                           color: _activeTab == 1
-                              ? AppColors.methodistBlue
+                              ? AppColors.accentCyan
                               : Colors.transparent,
                         ),
                       ),
@@ -185,7 +185,7 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                           Icon(
                             Icons.queue_music_rounded,
                             size: 16,
-                            color: _activeTab == 1 ? Colors.white : AppColors.userTextSecondary,
+                            color: _activeTab == 1 ? Colors.white : AppColors.textMuted,
                           ),
                           const SizedBox(width: 6),
                           Flexible(
@@ -196,7 +196,7 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: _activeTab == 1 ? FontWeight.bold : FontWeight.w500,
-                                color: _activeTab == 1 ? Colors.white : AppColors.userTextSecondary,
+                                color: _activeTab == 1 ? Colors.white : AppColors.textMuted,
                               ),
                             ),
                           ),
@@ -234,31 +234,31 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                 height: 38,
                 child: TextField(
                   controller: _searchController,
-                  style: const TextStyle(color: AppColors.userTextBody, fontSize: 13),
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
                   decoration: InputDecoration(
                     hintText: 'Cari lagu...',
-                    hintStyle: const TextStyle(color: AppColors.userTextMuted, fontSize: 12),
-                    prefixIcon: const Icon(Icons.search_rounded, color: AppColors.methodistBlue, size: 18),
+                    hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                    prefixIcon: const Icon(Icons.search_rounded, color: AppColors.accentSky, size: 18),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
-                            icon: const Icon(Icons.close_rounded, color: AppColors.userTextSecondary, size: 16),
+                            icon: const Icon(Icons.close_rounded, color: AppColors.textMuted, size: 16),
                             onPressed: () => _searchController.clear(),
                           )
                         : null,
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: AppColors.inputBackground,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: AppColors.userCardBorder),
+                      borderSide: const BorderSide(color: AppColors.cardGlassBorder),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: AppColors.userCardBorder),
+                      borderSide: const BorderSide(color: AppColors.cardGlassBorder),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: AppColors.methodistBlue, width: 1.2),
+                      borderSide: const BorderSide(color: AppColors.accentCyan, width: 1.2),
                     ),
                   ),
                 ),
@@ -281,19 +281,19 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                           });
                         }
                       },
-                      selectedColor: AppColors.methodistBlue,
-                      backgroundColor: Colors.white,
+                      selectedColor: AppColors.primaryElectric,
+                      backgroundColor: AppColors.cardGlass,
                       labelStyle: TextStyle(
                         fontSize: 11,
                         fontWeight: _selectedCategoryFilter == null ? FontWeight.bold : FontWeight.normal,
-                        color: _selectedCategoryFilter == null ? Colors.white : AppColors.userTextSecondary,
+                        color: _selectedCategoryFilter == null ? Colors.white : AppColors.textMuted,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                         side: BorderSide(
                           color: _selectedCategoryFilter == null
-                              ? AppColors.methodistBlue
-                              : AppColors.userCardBorder,
+                              ? AppColors.accentCyan
+                              : AppColors.cardGlassBorder,
                         ),
                       ),
                     ),
@@ -311,19 +311,19 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                               _selectedCategoryFilter = selected ? catId : null;
                             });
                           },
-                          selectedColor: AppColors.methodistBlue,
-                          backgroundColor: Colors.white,
+                          selectedColor: AppColors.primaryElectric,
+                          backgroundColor: AppColors.cardGlass,
                           labelStyle: TextStyle(
                             fontSize: 11,
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                            color: isSelected ? Colors.white : AppColors.userTextSecondary,
+                            color: isSelected ? Colors.white : AppColors.textMuted,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                             side: BorderSide(
                               color: isSelected
-                                  ? AppColors.methodistBlue
-                                  : AppColors.userCardBorder,
+                                  ? AppColors.accentCyan
+                                  : AppColors.cardGlassBorder,
                             ),
                           ),
                         ),
@@ -336,14 +336,14 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
           ),
         ),
 
-        const Divider(color: AppColors.userCardBorder, height: 1),
+        const Divider(color: AppColors.cardGlassBorder, height: 1),
 
         // Song List
         Expanded(
           child: widget.isLoading
               ? const Center(
                   child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.methodistBlue),
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.accentCyan),
                   ),
                 )
               : filtered.isEmpty
@@ -354,7 +354,7 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                           Icon(
                             Icons.music_off_rounded,
                             size: 40,
-                            color: AppColors.methodistBlue.withValues(alpha: 0.3),
+                            color: AppColors.accentLight.withValues(alpha: 0.3),
                           ),
                           const SizedBox(height: 8),
                           const Text(
@@ -362,7 +362,7 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.methodistBlue,
+                              color: AppColors.accentLight,
                             ),
                           ),
                         ],
@@ -370,8 +370,8 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                     )
                   : RefreshIndicator(
                       onRefresh: widget.onRefresh ?? () async {},
-                      color: AppColors.methodistBlue,
-                      backgroundColor: Colors.white,
+                      color: AppColors.accentCyan,
+                      backgroundColor: AppColors.surfaceDark,
                       child: ListView.separated(
                         padding: const EdgeInsets.all(12),
                         itemCount: filtered.length,
@@ -388,22 +388,15 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: isCurrentlyPlaying
-                                  ? const Color(0xFFFFF0F0)
-                                  : Colors.white,
+                                  ? AppColors.primaryElectric.withValues(alpha: 0.25)
+                                  : AppColors.cardGlass,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                 color: isCurrentlyPlaying
-                                    ? AppColors.methodistRed
-                                    : AppColors.userCardBorder,
+                                    ? AppColors.accentCyan
+                                    : AppColors.cardGlassBorder,
                                 width: isCurrentlyPlaying ? 1.4 : 0.8,
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.04),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 1),
-                                ),
-                              ],
                             ),
                             child: Row(
                               children: [
@@ -419,7 +412,7 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                                         style: TextStyle(
                                           fontSize: 14,
                                           fontWeight: FontWeight.bold,
-                                          color: isCurrentlyPlaying ? AppColors.methodistRed : AppColors.methodistBlue,
+                                          color: isCurrentlyPlaying ? AppColors.accentCyan : Colors.white,
                                         ),
                                       ),
                                       const SizedBox(height: 2),
@@ -429,7 +422,7 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                                         overflow: TextOverflow.ellipsis,
                                         style: const TextStyle(
                                           fontSize: 12,
-                                          color: AppColors.userTextSecondary,
+                                          color: AppColors.textMuted,
                                         ),
                                       ),
                                       const SizedBox(height: 4),
@@ -442,14 +435,14 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                                             decoration: BoxDecoration(
-                                              color: AppColors.methodistBlue.withValues(alpha: 0.08),
+                                              color: AppColors.accentSky.withValues(alpha: 0.1),
                                               borderRadius: BorderRadius.circular(4),
                                             ),
                                             child: Text(
                                               categoryName,
                                               style: const TextStyle(
                                                 fontSize: 10,
-                                                color: AppColors.methodistBlue,
+                                                color: AppColors.accentSky,
                                               ),
                                             ),
                                           ),
@@ -457,7 +450,7 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                                               decoration: BoxDecoration(
-                                                color: AppColors.methodistRed.withValues(alpha: 0.08),
+                                                color: AppColors.accentCyan.withValues(alpha: 0.1),
                                                 borderRadius: BorderRadius.circular(4),
                                               ),
                                               child: Text(
@@ -465,7 +458,7 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                                                 style: const TextStyle(
                                                   fontSize: 10,
                                                   fontWeight: FontWeight.w600,
-                                                  color: AppColors.methodistRed,
+                                                  color: AppColors.accentCyan,
                                                 ),
                                               ),
                                             ),
@@ -476,7 +469,7 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                                                 song.songduration!,
                                                 style: const TextStyle(
                                                   fontSize: 10,
-                                                  color: AppColors.userTextMuted,
+                                                  color: AppColors.textMuted,
                                                 ),
                                               ),
                                             ),
@@ -497,7 +490,7 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                                         content: Text('"${song.songtitle}" ditambahkan ke antrean'),
                                         behavior: SnackBarBehavior.floating,
                                         duration: const Duration(seconds: 1),
-                                        backgroundColor: AppColors.methodistBlue,
+                                        backgroundColor: AppColors.primaryElectric,
                                       ),
                                     );
                                   },
@@ -505,7 +498,7 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                                   visualDensity: VisualDensity.compact,
                                   icon: const Icon(
                                     Icons.playlist_add_rounded,
-                                    color: AppColors.methodistBlue,
+                                    color: AppColors.accentSky,
                                     size: 22,
                                   ),
                                 ),
@@ -514,7 +507,9 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                                 ElevatedButton.icon(
                                   onPressed: () => widget.onPlaySong(song),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.methodistRed,
+                                    backgroundColor: isCurrentlyPlaying
+                                        ? AppColors.primaryElectric
+                                        : AppColors.primaryRoyal,
                                     foregroundColor: Colors.white,
                                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                                     visualDensity: VisualDensity.compact,
@@ -563,7 +558,7 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
               Icon(
                 Icons.queue_music_rounded,
                 size: 48,
-                color: AppColors.methodistBlue.withValues(alpha: 0.3),
+                color: AppColors.accentLight.withValues(alpha: 0.3),
               ),
               const SizedBox(height: 12),
               const Text(
@@ -571,7 +566,7 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.methodistBlue,
+                  color: Colors.white,
                 ),
               ),
               const SizedBox(height: 4),
@@ -580,7 +575,7 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 12,
-                  color: AppColors.userTextSecondary,
+                  color: AppColors.textMuted,
                 ),
               ),
             ],
@@ -604,7 +599,7 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.methodistBlue,
+                    color: AppColors.accentLight,
                   ),
                 ),
               ),
@@ -615,12 +610,12 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     visualDensity: VisualDensity.compact,
                   ),
-                  icon: const Icon(Icons.delete_sweep_rounded, size: 16, color: AppColors.methodistRed),
+                  icon: const Icon(Icons.delete_sweep_rounded, size: 16, color: AppColors.error),
                   label: const Text(
                     'Kosongkan',
                     style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.methodistRed,
+                      color: AppColors.error,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -629,7 +624,7 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
           ),
         ),
 
-        const Divider(color: AppColors.userCardBorder, height: 1),
+        const Divider(color: AppColors.cardGlassBorder, height: 1),
 
         // Queue List
         Expanded(
@@ -643,16 +638,9 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
               return Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.cardGlass,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.userCardBorder, width: 0.8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
+                  border: Border.all(color: AppColors.cardGlassBorder, width: 0.8),
                 ),
                 child: Row(
                   children: [
@@ -661,7 +649,7 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                       width: 28,
                       height: 28,
                       decoration: BoxDecoration(
-                        color: AppColors.methodistBlue.withValues(alpha: 0.1),
+                        color: AppColors.primaryElectric.withValues(alpha: 0.25),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Center(
@@ -670,7 +658,7 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.methodistBlue,
+                            color: AppColors.accentCyan,
                           ),
                         ),
                       ),
@@ -689,7 +677,7 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.methodistBlue,
+                              color: Colors.white,
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -699,7 +687,7 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontSize: 12,
-                              color: AppColors.userTextSecondary,
+                              color: AppColors.textMuted,
                             ),
                           ),
                         ],
@@ -708,7 +696,7 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
 
                     // Play Now button
                     IconButton(
-                      icon: const Icon(Icons.play_arrow_rounded, color: AppColors.methodistRed, size: 22),
+                      icon: const Icon(Icons.play_arrow_rounded, color: AppColors.accentCyan, size: 22),
                       tooltip: 'Putar Sekarang',
                       visualDensity: VisualDensity.compact,
                       onPressed: () {
@@ -719,7 +707,7 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
 
                     // Remove from queue button
                     IconButton(
-                      icon: const Icon(Icons.close_rounded, color: AppColors.methodistRed, size: 18),
+                      icon: const Icon(Icons.close_rounded, color: AppColors.error, size: 18),
                       tooltip: 'Hapus dari Antrean',
                       visualDensity: VisualDensity.compact,
                       onPressed: () => widget.onRemoveFromQueue?.call(index),

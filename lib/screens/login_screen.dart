@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/theme/app_colors.dart';
 import 'user/user_main_layout.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -27,10 +28,7 @@ class LoginScreen extends StatelessWidget {
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('asset/image/background.jpeg'),
-            fit: BoxFit.cover,
-          ),
+          gradient: AppColors.backgroundGradient,
         ),
         child: SafeArea(
           child: LayoutBuilder(
@@ -57,35 +55,35 @@ class LoginScreen extends StatelessWidget {
 
                           const SizedBox(height: 16),
 
-                          // App Title: NRM (Bold Red)
+                          // App Title: NRM (White Bold for high contrast)
                           const Text(
                             'NRM',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 44,
                               fontWeight: FontWeight.w900,
-                              color: Color(0xFFE52020),
+                              color: AppColors.textPrimary,
                               letterSpacing: 1.5,
                             ),
                           ),
 
                           const SizedBox(height: 2),
 
-                          // Subtitle: (Nyanyian Rohani Methodist) (Royal Blue)
+                          // Subtitle: (Nyanyian Rohani Methodist) (Sky Blue for contrast)
                           const Text(
                             '(Nyanyian Rohani Methodist)',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF0D47A1),
+                              color: AppColors.accentSky,
                               letterSpacing: 0.2,
                             ),
                           ),
 
                           const SizedBox(height: 38),
 
-                          // Welcome & Description Text (Bold Red)
+                          // Welcome & Description Text (Crisp White for high contrast)
                           const Text(
                             'Selamat datang....\n'
                             'Aplikasi ini berisi lagu-lagu dari buku\n'
@@ -94,7 +92,7 @@ class LoginScreen extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFFE52020),
+                              color: AppColors.textPrimary,
                               height: 1.35,
                             ),
                           ),
@@ -134,7 +132,7 @@ class LoginScreen extends StatelessWidget {
                             'klik OK untuk melanjutkan',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: Colors.black87,
+                              color: AppColors.textSecondary,
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.2,
@@ -159,7 +157,7 @@ class LoginScreen extends StatelessWidget {
                                   Text(
                                     'provided by :',
                                     style: TextStyle(
-                                      color: Color(0xFF0D47A1),
+                                      color: AppColors.textMuted,
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
                                       height: 1.3,
@@ -168,7 +166,7 @@ class LoginScreen extends StatelessWidget {
                                   Text(
                                     'Estomihi FP Simatupang',
                                     style: TextStyle(
-                                      color: Color(0xFF0D47A1),
+                                      color: AppColors.accentSky,
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
                                       height: 1.3,
@@ -177,7 +175,7 @@ class LoginScreen extends StatelessWidget {
                                   Text(
                                     'Jemaat GMI Jakarta Pusat',
                                     style: TextStyle(
-                                      color: Color(0xFF0D47A1),
+                                      color: AppColors.textSecondary,
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
                                       height: 1.3,

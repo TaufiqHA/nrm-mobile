@@ -306,7 +306,7 @@ class _CastDeviceModalState extends State<CastDeviceModal> {
     final connectedDevice = widget.castService.connectedDevice;
 
     return Material(
-      color: Colors.white,
+      color: const Color(0xFF0F172A),
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       child: Container(
         padding: EdgeInsets.only(
@@ -318,7 +318,7 @@ class _CastDeviceModalState extends State<CastDeviceModal> {
         decoration: const BoxDecoration(
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           border: Border(
-            top: BorderSide(color: AppColors.userCardBorder),
+            top: BorderSide(color: Colors.white12),
           ),
         ),
         child: Column(
@@ -331,7 +331,7 @@ class _CastDeviceModalState extends State<CastDeviceModal> {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.black26,
+                color: Colors.white24,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -346,7 +346,7 @@ class _CastDeviceModalState extends State<CastDeviceModal> {
                 children: [
                   Icon(
                     Icons.cast_rounded,
-                    color: AppColors.methodistBlue,
+                    color: AppColors.accentCyan,
                     size: 20,
                   ),
                   SizedBox(width: 8),
@@ -355,13 +355,13 @@ class _CastDeviceModalState extends State<CastDeviceModal> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.methodistBlue,
+                      color: Colors.white,
                     ),
                   ),
                 ],
               ),
               IconButton(
-                icon: const Icon(Icons.close_rounded, color: AppColors.userTextSecondary, size: 20),
+                icon: const Icon(Icons.close_rounded, color: AppColors.textMuted, size: 20),
                 visualDensity: VisualDensity.compact,
                 padding: EdgeInsets.zero,
                 onPressed: () => Navigator.of(context).pop(),
@@ -375,17 +375,17 @@ class _CastDeviceModalState extends State<CastDeviceModal> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: AppColors.methodistBlue.withValues(alpha: 0.08),
+                color: AppColors.accentCyan.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: AppColors.userCardBorder,
+                  color: AppColors.accentCyan.withValues(alpha: 0.3),
                 ),
               ),
               child: Row(
                 children: [
                   const Icon(
                     Icons.tv_rounded,
-                    color: AppColors.methodistBlue,
+                    color: AppColors.accentLight,
                     size: 20,
                   ),
                   const SizedBox(width: 10),
@@ -395,7 +395,7 @@ class _CastDeviceModalState extends State<CastDeviceModal> {
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.methodistBlue,
+                        color: Colors.white,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -404,7 +404,7 @@ class _CastDeviceModalState extends State<CastDeviceModal> {
                   TextButton(
                     onPressed: _disconnect,
                     style: TextButton.styleFrom(
-                      foregroundColor: AppColors.methodistRed,
+                      foregroundColor: AppColors.error,
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       minimumSize: Size.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -429,8 +429,8 @@ class _CastDeviceModalState extends State<CastDeviceModal> {
                 borderRadius: const BorderRadius.all(Radius.circular(2)),
                 child: LinearProgressIndicator(
                   value: widget.castService.isTestMode ? 0.5 : null,
-                  backgroundColor: AppColors.methodistBlue.withValues(alpha: 0.1),
-                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.methodistBlue),
+                  backgroundColor: Colors.white10,
+                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.accentCyan),
                   minHeight: 2.5,
                 ),
               ),
@@ -448,14 +448,14 @@ class _CastDeviceModalState extends State<CastDeviceModal> {
                         children: [
                           Icon(
                             Icons.tv_rounded,
-                            color: AppColors.userTextMuted,
+                            color: AppColors.textMuted,
                             size: 28,
                           ),
                           SizedBox(height: 10),
                           Text(
                             'Mencari Smart TV di jaringan Wi-Fi...',
                             style: TextStyle(
-                              color: AppColors.userTextSecondary,
+                              color: AppColors.textMuted,
                               fontSize: 13,
                             ),
                           ),
@@ -468,7 +468,7 @@ class _CastDeviceModalState extends State<CastDeviceModal> {
                     itemCount: _devices.length,
                     separatorBuilder: (_, _) => const Divider(
                       height: 1,
-                      color: Color(0x1A0D47A1),
+                      color: Colors.white10,
                     ),
                     itemBuilder: (context, index) {
                       final device = _devices[index];
@@ -482,7 +482,7 @@ class _CastDeviceModalState extends State<CastDeviceModal> {
                           device.type == CastDeviceType.chromecast
                               ? Icons.cast_rounded
                               : Icons.tv_rounded,
-                          color: isCurrent ? AppColors.methodistRed : AppColors.methodistBlue,
+                          color: isCurrent ? AppColors.accentCyan : AppColors.accentSky,
                           size: 22,
                         ),
                         title: Text(
@@ -490,7 +490,7 @@ class _CastDeviceModalState extends State<CastDeviceModal> {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: isCurrent ? FontWeight.bold : FontWeight.w500,
-                            color: isCurrent ? AppColors.methodistRed : AppColors.userTextBody,
+                            color: Colors.white,
                           ),
                         ),
                         trailing: isConnectingThis
@@ -499,18 +499,18 @@ class _CastDeviceModalState extends State<CastDeviceModal> {
                                 height: 16,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.methodistBlue),
+                                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.accentCyan),
                                 ),
                               )
                             : isCurrent
                                 ? const Icon(
                                     Icons.check_circle_rounded,
-                                    color: AppColors.methodistRed,
+                                    color: AppColors.accentCyan,
                                     size: 18,
                                   )
                                 : const Icon(
                                     Icons.chevron_right_rounded,
-                                    color: AppColors.userTextSecondary,
+                                    color: AppColors.textMuted,
                                     size: 18,
                                   ),
                         onTap: isConnectingThis ? null : () => _connect(device),
@@ -529,25 +529,25 @@ class _CastDeviceModalState extends State<CastDeviceModal> {
                   height: 40,
                   child: TextField(
                     controller: _codeController,
-                    style: const TextStyle(fontSize: 13, color: AppColors.userTextBody),
+                    style: const TextStyle(fontSize: 13, color: Colors.white),
                     decoration: InputDecoration(
                       hintText: 'Kode TV',
-                      hintStyle: const TextStyle(fontSize: 13, color: AppColors.userTextMuted),
-                      prefixIcon: const Icon(Icons.dialpad_rounded, size: 16, color: AppColors.methodistBlue),
+                      hintStyle: const TextStyle(fontSize: 13, color: AppColors.textMuted),
+                      prefixIcon: const Icon(Icons.dialpad_rounded, size: 16, color: AppColors.accentSky),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 10),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: Colors.white.withValues(alpha: 0.05),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: AppColors.userCardBorder),
+                        borderSide: const BorderSide(color: Colors.white12),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: AppColors.userCardBorder),
+                        borderSide: const BorderSide(color: Colors.white12),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: AppColors.methodistBlue),
+                        borderSide: const BorderSide(color: AppColors.accentCyan),
                       ),
                     ),
                   ),
@@ -559,7 +559,7 @@ class _CastDeviceModalState extends State<CastDeviceModal> {
                 child: ElevatedButton(
                   onPressed: _isConnectingWithCode ? null : _connectWithCode,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.methodistRed,
+                    backgroundColor: AppColors.primaryElectric,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(horizontal: 14),
                     shape: RoundedRectangleBorder(
@@ -583,11 +583,11 @@ class _CastDeviceModalState extends State<CastDeviceModal> {
           ),
 
           const SizedBox(height: 10),
-          Text(
+          const Text(
             'Jika muncul konfirmasi di layar TV, tekan Izinkan pada remote.',
             style: TextStyle(
               fontSize: 11,
-              color: AppColors.userTextSecondary,
+              color: AppColors.textMuted,
             ),
             textAlign: TextAlign.center,
           ),

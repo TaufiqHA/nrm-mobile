@@ -422,19 +422,23 @@ void main() {
 
     // 1. Kondisi awal: Filter Lagu tertutup secara default (collapsed)
     expect(find.text('Filter Lagu'), findsOneWidget);
+    expect(find.text('kategori'), findsNothing);
+    expect(find.text('nomor lagu'), findsNothing);
+    expect(find.text('nada'), findsNothing);
     expect(find.text('judul lagu'), findsNothing);
     expect(find.text('pencipta'), findsNothing);
-    expect(find.text('nada'), findsNothing);
 
     // 2. Ketuk header 'Filter Lagu' untuk expand
     await tester.tap(find.text('Filter Lagu'));
     await tester.pumpAndSettle();
 
-    // Dropdown tampil setelah dibuka
+    // Dropdown kategori, nomor lagu, dan nada tampil setelah dibuka
     expect(find.text('Filter Lagu'), findsOneWidget);
-    expect(find.text('judul lagu'), findsOneWidget);
-    expect(find.text('pencipta'), findsOneWidget);
+    expect(find.text('kategori'), findsOneWidget);
+    expect(find.text('nomor lagu'), findsOneWidget);
     expect(find.text('nada'), findsOneWidget);
+    expect(find.text('judul lagu'), findsNothing);
+    expect(find.text('pencipta'), findsNothing);
 
     // 3. Ketuk header 'Filter Lagu' lagi untuk collapse kembali
     await tester.tap(find.text('Filter Lagu'));
@@ -442,9 +446,121 @@ void main() {
 
     // Dropdown kembali tertutup
     expect(find.text('Filter Lagu'), findsOneWidget);
+    expect(find.text('kategori'), findsNothing);
+    expect(find.text('nomor lagu'), findsNothing);
+    expect(find.text('nada'), findsNothing);
     expect(find.text('judul lagu'), findsNothing);
     expect(find.text('pencipta'), findsNothing);
-    expect(find.text('nada'), findsNothing);
+  });
+
+  testWidgets('UserMainLayout category filter filters song catalog results correctly', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1200, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: UserMainLayout(
+          songService: DummySongService(),
+          categoryService: DummyCategoryService(),
+          isTestMode: true,
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    // Pastikan lagu dari berbagai kategori tampil
+    expect(find.text('Rungkad'), findsOneWidget); // Category 2
+    expect(find.text('Separuh Nafas'), findsOneWidget); // Category 3
+
+    // Buka filter
+    await tester.tap(find.text('Filter Lagu'));
+    await tester.pumpAndSettle();
+
+    // Buka dropdown kategori
+    await tester.tap(find.text('kategori'));
+    await tester.pumpAndSettle();
+
+    // Pilih kategori 'Dangdut & Koplo'
+    final dangdutItem = find.text('Dangdut & Koplo').last;
+    await tester.tap(dangdutItem);
+    await tester.pumpAndSettle();
+
+    // Rungkad (Category 2) harus ada, Separuh Nafas (Category 3) harus hilang
+    expect(find.text('Rungkad'), findsOneWidget);
+    expect(find.text('Separuh Nafas'), findsNothing);
+
+    // Filter badge '1 aktif' muncul
+    expect(find.text('1 aktif'), findsOneWidget);
+
+    // Reset ke Semua Kategori
+    await tester.tap(find.text('Dangdut & Koplo').first);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Semua Kategori').last);
+    await tester.pumpAndSettle();
+
+    // Semua lagu muncul kembali
+    expect(find.text('Rungkad'), findsOneWidget);
+    expect(find.text('Separuh Nafas'), findsOneWidget);
+    expect(find.text('1 aktif'), findsNothing);
+  });
+
+  testWidgets('UserMainLayout nomor lagu and nada filters work correctly', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1200, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: UserMainLayout(
+          songService: DummySongService(),
+          categoryService: DummyCategoryService(),
+          isTestMode: true,
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    // Buka filter
+    await tester.tap(find.text('Filter Lagu'));
+    await tester.pumpAndSettle();
+
+    // Buka dropdown nomor lagu (isi: penyanyi / nomor seperti 'Happy Asmara')
+    await tester.tap(find.text('nomor lagu'));
+    await tester.pumpAndSettle();
+
+    final singerItem = find.text('Happy Asmara').last;
+    await tester.tap(singerItem);
+    await tester.pumpAndSettle();
+
+    // Rungkad (Happy Asmara) ada, yang lain hilang
+    expect(find.text('Rungkad'), findsOneWidget);
+    expect(find.text('Separuh Nafas'), findsNothing);
+    expect(find.text('1 aktif'), findsOneWidget);
+
+    // Reset nomor lagu
+    await tester.tap(find.text('Happy Asmara').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Semua Nomor Lagu').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Separuh Nafas'), findsOneWidget);
+
+    // Buka dropdown nada
+    await tester.tap(find.text('nada'));
+    await tester.pumpAndSettle();
+
+    final nadaItem = find.text('Pria').last;
+    await tester.tap(nadaItem);
+    await tester.pumpAndSettle();
+
+    // Lagu nada Pria (Separuh Nafas) ada, nada Wanita (Rungkad) hilang
+    expect(find.text('Separuh Nafas'), findsOneWidget);
+    expect(find.text('Rungkad'), findsNothing);
+    expect(find.text('1 aktif'), findsOneWidget);
   });
 
   testWidgets('UserMainLayout tablet mode: player on left, search top-right, playlist bottom-right', (WidgetTester tester) async {

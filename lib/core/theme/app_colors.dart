@@ -73,24 +73,4 @@ class AppColors {
       primaryElectric,
     ],
   );
-
-  // Methodist Brand & Login Screen Theme Colors
-  static const Color methodistRed = Color(0xFFE52020);
-  static const Color methodistBlue = Color(0xFF0D47A1);
-  static const Color userCardBackground = Color(0xF2FFFFFF); // ~0.95 white
-  static const Color userCardBorder = Color(0x240D47A1);
-  static const Color userTextPrimary = Color(0xFF0D47A1);
-  static const Color userTextBody = Color(0xFF1E293B);
-  static const Color userTextSecondary = Color(0xFF64748B);
-  static const Color userTextMuted = Color(0xFF94A3B8);
-
-  static const LinearGradient buttonRedGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [
-      Color(0xFFFF3333),
-      Color(0xFFE52020),
-      Color(0xFFB71C1C),
-    ],
-  );
 }

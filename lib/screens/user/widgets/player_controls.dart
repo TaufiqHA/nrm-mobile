@@ -82,14 +82,14 @@ class _PlayerControlsState extends State<PlayerControls> {
             vertical: isNarrow ? 6 : 8,
           ),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.94),
+            color: const Color(0xFF0F172A).withValues(alpha: 0.95),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: AppColors.userCardBorder,
+              color: Colors.white.withValues(alpha: 0.08),
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
+                color: Colors.black.withValues(alpha: 0.3),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -125,17 +125,17 @@ class _PlayerControlsState extends State<PlayerControls> {
                 height: 38,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
-                  color: AppColors.methodistBlue.withValues(alpha: 0.08),
+                  color: AppColors.primaryElectric.withValues(alpha: 0.2),
                   border: Border.all(
                     color: isPlaying
-                        ? AppColors.methodistRed.withValues(alpha: 0.4)
-                        : AppColors.userCardBorder,
+                        ? AppColors.accentCyan.withValues(alpha: 0.5)
+                        : Colors.white.withValues(alpha: 0.1),
                   ),
                 ),
                 child: Center(
                   child: Icon(
                     isPlaying ? Icons.graphic_eq_rounded : Icons.music_note_rounded,
-                    color: isPlaying ? AppColors.methodistRed : AppColors.methodistBlue,
+                    color: isPlaying ? AppColors.accentCyan : AppColors.textMuted,
                     size: 20,
                   ),
                 ),
@@ -153,7 +153,7 @@ class _PlayerControlsState extends State<PlayerControls> {
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.methodistBlue,
+                        color: Colors.white,
                       ),
                     ),
                     if (song != null) ...[
@@ -165,7 +165,7 @@ class _PlayerControlsState extends State<PlayerControls> {
                         style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w500,
-                          color: AppColors.userTextSecondary,
+                          color: AppColors.accentSky,
                         ),
                       ),
                     ],
@@ -192,7 +192,7 @@ class _PlayerControlsState extends State<PlayerControls> {
                     onPressed: hasSong ? widget.onStop : null,
                     tooltip: 'Berhenti',
                     icon: const Icon(Icons.stop_rounded),
-                    color: hasSong && isPlaying ? AppColors.methodistRed : AppColors.userTextMuted,
+                    color: hasSong && isPlaying ? AppColors.error : AppColors.textMuted,
                     iconSize: 24,
                     visualDensity: VisualDensity.compact,
                   ),
@@ -208,12 +208,12 @@ class _PlayerControlsState extends State<PlayerControls> {
                       height: 42,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        gradient: hasSong ? AppColors.buttonRedGradient : null,
-                        color: hasSong ? null : Colors.black12,
+                        gradient: hasSong ? AppColors.buttonGradient : null,
+                        color: hasSong ? null : Colors.white.withValues(alpha: 0.08),
                         boxShadow: hasSong && isPlaying
                             ? [
                                 BoxShadow(
-                                  color: AppColors.methodistRed.withValues(alpha: 0.35),
+                                  color: AppColors.accentCyan.withValues(alpha: 0.4),
                                   blurRadius: 12,
                                   spreadRadius: 1,
                                 ),
@@ -223,7 +223,7 @@ class _PlayerControlsState extends State<PlayerControls> {
                       child: Center(
                         child: Icon(
                           isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                          color: hasSong ? Colors.white : AppColors.userTextMuted,
+                          color: hasSong ? Colors.white : AppColors.textMuted,
                           size: 26,
                         ),
                       ),
@@ -236,7 +236,7 @@ class _PlayerControlsState extends State<PlayerControls> {
                       onPressed: hasSong ? widget.onNext : null,
                       tooltip: 'Lagu Berikutnya',
                       icon: const Icon(Icons.skip_next_rounded),
-                      color: hasSong ? AppColors.methodistBlue : AppColors.userTextMuted,
+                      color: hasSong ? Colors.white : AppColors.textMuted,
                       iconSize: 24,
                       visualDensity: VisualDensity.compact,
                     ),
@@ -274,7 +274,7 @@ class _PlayerControlsState extends State<PlayerControls> {
                       widget.isMuted || widget.volume == 0.0
                           ? Icons.volume_off_rounded
                           : (widget.volume < 0.5 ? Icons.volume_down_rounded : Icons.volume_up_rounded),
-                      color: widget.isMuted ? AppColors.methodistRed : AppColors.methodistBlue,
+                      color: widget.isMuted ? AppColors.error : AppColors.accentSky,
                     ),
                   ),
                   const SizedBox(width: 2),
@@ -285,9 +285,9 @@ class _PlayerControlsState extends State<PlayerControls> {
                         trackHeight: 3,
                         thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 4.5),
                         overlayShape: const RoundSliderOverlayShape(overlayRadius: 7),
-                        activeTrackColor: widget.isMuted ? AppColors.userTextMuted : AppColors.methodistBlue,
-                        inactiveTrackColor: AppColors.methodistBlue.withValues(alpha: 0.15),
-                        thumbColor: AppColors.methodistBlue,
+                        activeTrackColor: widget.isMuted ? AppColors.textMuted : AppColors.accentCyan,
+                        inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
+                        thumbColor: Colors.white,
                       ),
                       child: Slider(
                         value: widget.isMuted ? 0.0 : widget.volume,
@@ -305,7 +305,7 @@ class _PlayerControlsState extends State<PlayerControls> {
                     style: const TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.userTextSecondary,
+                      color: AppColors.textMuted,
                     ),
                   ),
 
@@ -319,7 +319,7 @@ class _PlayerControlsState extends State<PlayerControls> {
                       tooltip: widget.isCasting ? 'Putus Cast' : 'Cast ke TV',
                       icon: Icon(
                         widget.isCasting ? Icons.cast_connected_rounded : Icons.cast_rounded,
-                        color: widget.isCasting ? AppColors.methodistRed : AppColors.methodistBlue,
+                        color: widget.isCasting ? AppColors.accentCyan : AppColors.accentSky,
                         size: 18,
                       ),
                     ),
@@ -334,7 +334,7 @@ class _PlayerControlsState extends State<PlayerControls> {
                       tooltip: widget.isFullscreen ? 'Perkecil Layar' : 'Layar Penuh',
                       icon: Icon(
                         widget.isFullscreen ? Icons.fullscreen_exit_rounded : Icons.fullscreen_rounded,
-                        color: AppColors.methodistBlue,
+                        color: AppColors.accentSky,
                         size: 18,
                       ),
                     ),
@@ -373,7 +373,7 @@ class _PlayerControlsState extends State<PlayerControls> {
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.methodistBlue,
+                  color: Colors.white,
                 ),
               ),
             ),
@@ -384,7 +384,7 @@ class _PlayerControlsState extends State<PlayerControls> {
               padding: EdgeInsets.zero,
               icon: Icon(
                 widget.isMuted || widget.volume == 0.0 ? Icons.volume_off_rounded : Icons.volume_up_rounded,
-                color: widget.isMuted ? AppColors.methodistRed : AppColors.methodistBlue,
+                color: widget.isMuted ? AppColors.error : AppColors.accentSky,
               ),
             ),
             SizedBox(
@@ -394,9 +394,9 @@ class _PlayerControlsState extends State<PlayerControls> {
                   trackHeight: 2,
                   thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 4),
                   overlayShape: const RoundSliderOverlayShape(overlayRadius: 6),
-                  activeTrackColor: AppColors.methodistBlue,
-                  inactiveTrackColor: AppColors.methodistBlue.withValues(alpha: 0.15),
-                  thumbColor: AppColors.methodistBlue,
+                  activeTrackColor: AppColors.accentCyan,
+                  inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
+                  thumbColor: Colors.white,
                 ),
                 child: Slider(
                   value: widget.isMuted ? 0.0 : widget.volume,
@@ -420,7 +420,7 @@ class _PlayerControlsState extends State<PlayerControls> {
               onPressed: hasSong ? widget.onStop : null,
               visualDensity: VisualDensity.compact,
               icon: const Icon(Icons.stop_rounded),
-              color: hasSong && isPlaying ? AppColors.methodistRed : AppColors.userTextMuted,
+              color: hasSong && isPlaying ? AppColors.error : AppColors.textMuted,
             ),
             InkWell(
               borderRadius: BorderRadius.circular(20),
@@ -430,8 +430,8 @@ class _PlayerControlsState extends State<PlayerControls> {
                 height: 40,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: hasSong ? AppColors.buttonRedGradient : null,
-                  color: hasSong ? null : Colors.black12,
+                  gradient: hasSong ? AppColors.buttonGradient : null,
+                  color: hasSong ? null : Colors.white.withValues(alpha: 0.08),
                 ),
                 child: Center(
                   child: Icon(
@@ -449,7 +449,7 @@ class _PlayerControlsState extends State<PlayerControls> {
                 tooltip: 'Lagu Berikutnya',
                 icon: Icon(
                   Icons.skip_next_rounded,
-                  color: hasSong ? AppColors.methodistBlue : AppColors.userTextMuted,
+                  color: hasSong ? Colors.white : AppColors.textMuted,
                   size: 22,
                 ),
               ),
@@ -459,7 +459,7 @@ class _PlayerControlsState extends State<PlayerControls> {
                 visualDensity: VisualDensity.compact,
                 icon: Icon(
                   widget.isCasting ? Icons.cast_connected_rounded : Icons.cast_rounded,
-                  color: widget.isCasting ? AppColors.methodistRed : AppColors.methodistBlue,
+                  color: widget.isCasting ? AppColors.accentCyan : AppColors.accentSky,
                   size: 20,
                 ),
               ),
@@ -469,7 +469,7 @@ class _PlayerControlsState extends State<PlayerControls> {
                 visualDensity: VisualDensity.compact,
                 icon: const Icon(
                   Icons.fullscreen_rounded,
-                  color: AppColors.methodistBlue,
+                  color: AppColors.accentSky,
                   size: 20,
                 ),
               ),
@@ -500,7 +500,7 @@ class _PlayerControlsState extends State<PlayerControls> {
               style: const TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
-                color: AppColors.methodistBlue,
+                color: AppColors.accentLight,
               ),
             ),
           ),
@@ -510,10 +510,10 @@ class _PlayerControlsState extends State<PlayerControls> {
                 trackHeight: 3,
                 thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 4.5),
                 overlayShape: const RoundSliderOverlayShape(overlayRadius: 8),
-                activeTrackColor: hasSong ? AppColors.methodistRed : AppColors.userTextMuted,
-                inactiveTrackColor: AppColors.methodistBlue.withValues(alpha: 0.15),
-                thumbColor: hasSong ? AppColors.methodistRed : AppColors.userTextMuted,
-                overlayColor: AppColors.methodistRed.withValues(alpha: 0.2),
+                activeTrackColor: hasSong ? AppColors.accentCyan : AppColors.textMuted,
+                inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
+                thumbColor: hasSong ? Colors.white : AppColors.textMuted,
+                overlayColor: AppColors.accentCyan.withValues(alpha: 0.2),
               ),
               child: Slider(
                 value: sliderValue,
@@ -553,7 +553,7 @@ class _PlayerControlsState extends State<PlayerControls> {
               style: const TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w500,
-                color: AppColors.userTextSecondary,
+                color: AppColors.textMuted,
               ),
             ),
           ),
@@ -585,7 +585,7 @@ class _PlayerControlsState extends State<PlayerControls> {
                   ? Duration(seconds: _dragPosition.toInt())
                   : currentPos,
             ),
-            style: const TextStyle(fontSize: 10, color: AppColors.methodistBlue, fontWeight: FontWeight.w600),
+            style: const TextStyle(fontSize: 10, color: AppColors.accentLight, fontWeight: FontWeight.w600),
           ),
           Expanded(
             child: SliderTheme(
@@ -593,9 +593,9 @@ class _PlayerControlsState extends State<PlayerControls> {
                 trackHeight: 2,
                 thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 4),
                 overlayShape: const RoundSliderOverlayShape(overlayRadius: 6),
-                activeTrackColor: AppColors.methodistRed,
-                inactiveTrackColor: AppColors.methodistBlue.withValues(alpha: 0.15),
-                thumbColor: AppColors.methodistRed,
+                activeTrackColor: AppColors.accentCyan,
+                inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
+                thumbColor: Colors.white,
               ),
               child: Slider(
                 value: sliderValue,
@@ -629,7 +629,7 @@ class _PlayerControlsState extends State<PlayerControls> {
           ),
           Text(
             _formatDuration(widget.totalDuration),
-            style: const TextStyle(fontSize: 10, color: AppColors.userTextSecondary),
+            style: const TextStyle(fontSize: 10, color: AppColors.textMuted),
           ),
         ],
       );
