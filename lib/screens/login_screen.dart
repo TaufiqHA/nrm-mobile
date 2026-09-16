@@ -44,141 +44,119 @@ class LoginScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const SizedBox(height: 28),
+                          const SizedBox(height: 100),
 
                           // Methodist Cross & Flame Logo (Transparent PNG)
                           Image.asset(
                             'asset/image/logo_nrm_transparent.png',
-                            height: 125,
+                            height: 210,
                             fit: BoxFit.contain,
                           ),
 
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 18),
 
-                          // App Title: NRM (White Bold for high contrast)
+                          // App Title: NRM (Merah Tebal)
                           const Text(
                             'NRM',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 44,
+                              fontSize: 60,
                               fontWeight: FontWeight.w900,
-                              color: AppColors.textPrimary,
-                              letterSpacing: 1.5,
+                              color: Color(0xFFE52020),
+                              letterSpacing: 2.0,
                             ),
                           ),
 
-                          const SizedBox(height: 2),
+                          const SizedBox(height: 6),
 
-                          // Subtitle: (Nyanyian Rohani Methodist) (Sky Blue for contrast)
+                          // Subtitle: (Nyanyian Rohani Methodist)
                           const Text(
                             '(Nyanyian Rohani Methodist)',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 20,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: AppColors.accentSky,
                               letterSpacing: 0.2,
                             ),
                           ),
 
-                          const SizedBox(height: 38),
+                          const Spacer(),
 
-                          // Welcome & Description Text (Crisp White for high contrast)
-                          const Text(
-                            'Selamat datang....\n'
-                            'Aplikasi ini berisi lagu-lagu dari buku\n'
-                            'Nyanyian Rohani Methodist (NRM)',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                              height: 1.35,
-                            ),
-                          ),
-
-                          const SizedBox(height: 48),
-
-                          // Red Pill Button with "ok" text
-                          SizedBox(
-                            width: 155,
-                            height: 52,
-                            child: ElevatedButton(
-                              onPressed: () => _navigateToMain(context),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFE52020),
-                                foregroundColor: Colors.white,
-                                elevation: 3,
-                                shadowColor: Colors.black.withValues(alpha: 0.3),
-                                shape: const StadiumBorder(),
-                                padding: EdgeInsets.zero,
-                              ),
-                              child: const Text(
-                                'ok',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 0.5,
+                          // Red Circular Play Button with "Klik to play"
+                          GestureDetector(
+                            onTap: () => _navigateToMain(context),
+                            behavior: HitTestBehavior.opaque,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 72,
+                                  height: 72,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE52020),
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.35),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.play_arrow_rounded,
+                                      size: 48,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(height: 12),
-
-                          // Guide Text Below Button
-                          const Text(
-                            'klik OK untuk melanjutkan',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.2,
+                                const SizedBox(height: 12),
+                                const Text(
+                                  'Klik to play',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.2,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
 
                           const Spacer(),
 
-                          const SizedBox(height: 32),
-
-                          // Footer: provided by
+                          // Footer: by : Estomihi FP Simatupang
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Padding(
                               padding: const EdgeInsets.only(
                                 left: 16.0,
-                                bottom: 20.0,
+                                bottom: 24.0,
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: const [
                                   Text(
-                                    'provided by :',
+                                    'by : Estomihi FP Simatupang',
                                     style: TextStyle(
-                                      color: AppColors.textMuted,
-                                      fontSize: 15,
+                                      color: AppColors.textSecondary,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.bold,
-                                      height: 1.3,
+                                      height: 1.35,
                                     ),
                                   ),
-                                  Text(
-                                    'Estomihi FP Simatupang',
-                                    style: TextStyle(
-                                      color: AppColors.accentSky,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      height: 1.3,
-                                    ),
-                                  ),
+                                  SizedBox(height: 2),
                                   Text(
                                     'Jemaat GMI Jakarta Pusat',
                                     style: TextStyle(
                                       color: AppColors.textSecondary,
-                                      fontSize: 15,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.bold,
-                                      height: 1.3,
+                                      height: 1.35,
                                     ),
                                   ),
                                 ],

@@ -321,7 +321,7 @@ void main() {
     expect(find.byType(ProfileScreen), findsNothing);
   });
 
-  testWidgets('LoginScreen ok button navigates to UserMainLayout', (WidgetTester tester) async {
+  testWidgets('LoginScreen play button navigates to UserMainLayout', (WidgetTester tester) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: LoginScreen(),
@@ -329,7 +329,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('ok'));
+    await tester.tap(find.text('Klik to play'));
     await tester.pumpAndSettle();
 
     // Verifikasi diarahkan ke UserMainLayout
@@ -434,9 +434,9 @@ void main() {
 
     // Dropdown kategori, nomor lagu, dan nada tampil setelah dibuka
     expect(find.text('Filter Lagu'), findsOneWidget);
-    expect(find.text('kategori'), findsOneWidget);
-    expect(find.text('nomor lagu'), findsOneWidget);
-    expect(find.text('nada'), findsOneWidget);
+    expect(find.text('Nomor Lagu'), findsOneWidget);
+    expect(find.text('Kategori'), findsOneWidget);
+    expect(find.text('Nada'), findsOneWidget);
     expect(find.text('judul lagu'), findsNothing);
     expect(find.text('pencipta'), findsNothing);
 
@@ -446,9 +446,9 @@ void main() {
 
     // Dropdown kembali tertutup
     expect(find.text('Filter Lagu'), findsOneWidget);
-    expect(find.text('kategori'), findsNothing);
-    expect(find.text('nomor lagu'), findsNothing);
-    expect(find.text('nada'), findsNothing);
+    expect(find.text('Nomor Lagu'), findsNothing);
+    expect(find.text('Kategori'), findsNothing);
+    expect(find.text('Nada'), findsNothing);
     expect(find.text('judul lagu'), findsNothing);
     expect(find.text('pencipta'), findsNothing);
   });
@@ -479,7 +479,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Buka dropdown kategori
-    await tester.tap(find.text('kategori'));
+    await tester.tap(find.text('Kategori'));
     await tester.pumpAndSettle();
 
     // Pilih kategori 'Dangdut & Koplo'
@@ -529,7 +529,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Buka dropdown nomor lagu (isi: penyanyi / nomor seperti 'Happy Asmara')
-    await tester.tap(find.text('nomor lagu'));
+    await tester.tap(find.text('Nomor Lagu'));
     await tester.pumpAndSettle();
 
     final singerItem = find.text('Happy Asmara').last;
@@ -550,7 +550,7 @@ void main() {
     expect(find.text('Separuh Nafas'), findsOneWidget);
 
     // Buka dropdown nada
-    await tester.tap(find.text('nada'));
+    await tester.tap(find.text('Nada'));
     await tester.pumpAndSettle();
 
     final nadaItem = find.text('Pria').last;

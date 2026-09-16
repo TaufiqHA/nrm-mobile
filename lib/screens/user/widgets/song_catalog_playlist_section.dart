@@ -356,13 +356,9 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
                   padding: const EdgeInsets.fromLTRB(9, 2, 9, 9),
                   child: Column(
                     children: [
-                      // 1. Dropdown Kategori
-                      _buildCategoryFilterDropdown(),
-                      const SizedBox(height: 8),
-
-                      // 2. Dropdown Nomor Lagu (rename dari pencipta)
+                      // 1. Dropdown Nomor Lagu
                       _buildFilterDropdown(
-                        label: 'nomor lagu',
+                        label: 'Nomor Lagu',
                         selectedValue: _selectedNomorLagu,
                         options: _nomorLaguOptions,
                         onChanged: (val) {
@@ -373,9 +369,13 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
                       ),
                       const SizedBox(height: 8),
 
+                      // 2. Dropdown Kategori
+                      _buildCategoryFilterDropdown(),
+                      const SizedBox(height: 8),
+
                       // 3. Dropdown Nada
                       _buildFilterDropdown(
-                        label: 'nada',
+                        label: 'Nada',
                         selectedValue: _selectedNada,
                         options: _nadaOptions,
                         onChanged: (val) {
@@ -718,7 +718,7 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
             size: 22,
           ),
           hint: const Text(
-            'kategori',
+            'Kategori',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
@@ -729,7 +729,7 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
           selectedItemBuilder: (context) {
             return [
               const Text(
-                'kategori',
+                'Kategori',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
@@ -854,7 +854,7 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
             DropdownMenuItem<String?>(
               value: null,
               child: Text(
-                label == 'nomor lagu' ? 'Semua Nomor Lagu' : 'Semua ${label[0].toUpperCase()}${label.substring(1)}',
+                label.toLowerCase() == 'nomor lagu' ? 'Semua Nomor Lagu' : 'Semua ${label[0].toUpperCase()}${label.substring(1)}',
                 style: const TextStyle(
                   color: AppColors.accentCyan,
                   fontSize: 12,

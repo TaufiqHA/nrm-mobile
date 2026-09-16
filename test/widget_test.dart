@@ -32,10 +32,10 @@ void main() {
     expect(find.byType(LoginScreen), findsOneWidget);
     expect(find.text('NRM'), findsOneWidget);
     expect(find.text('(Nyanyian Rohani Methodist)'), findsOneWidget);
-    expect(find.text('ok'), findsOneWidget);
+    expect(find.text('Klik to play'), findsOneWidget);
   });
 
-  testWidgets('NRM Welcome screen renders UI elements and OK button navigates', (WidgetTester tester) async {
+  testWidgets('NRM Welcome screen renders UI elements and Play button navigates', (WidgetTester tester) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: LoginScreen(),
@@ -45,18 +45,9 @@ void main() {
     // Memverifikasi elemen-elemen tampilan NRM
     expect(find.text('NRM'), findsOneWidget);
     expect(find.text('(Nyanyian Rohani Methodist)'), findsOneWidget);
-    expect(
-      find.text(
-        'Selamat datang....\n'
-        'Aplikasi ini berisi lagu-lagu dari buku\n'
-        'Nyanyian Rohani Methodist (NRM)',
-      ),
-      findsOneWidget,
-    );
-    expect(find.text('ok'), findsOneWidget);
-    expect(find.text('klik OK untuk melanjutkan'), findsOneWidget);
-    expect(find.text('provided by :'), findsOneWidget);
-    expect(find.text('Estomihi FP Simatupang'), findsOneWidget);
+    expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget);
+    expect(find.text('Klik to play'), findsOneWidget);
+    expect(find.text('by : Estomihi FP Simatupang'), findsOneWidget);
     expect(find.text('Jemaat GMI Jakarta Pusat'), findsOneWidget);
 
     // Memverifikasi TIDAK ADA form login atau kredensial
@@ -64,8 +55,8 @@ void main() {
     expect(find.text('Username'), findsNothing);
     expect(find.text('Password'), findsNothing);
 
-    // Menekan tombol ok untuk masuk ke aplikasi
-    await tester.tap(find.text('ok'));
+    // Menekan tombol play / 'Klik to play' untuk masuk ke aplikasi
+    await tester.tap(find.text('Klik to play'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
     await tester.pumpAndSettle();
