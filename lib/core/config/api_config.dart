@@ -2,7 +2,7 @@
 /// Cukup ubah konfigurasi di file ini untuk mengubah endpoint seluruh aplikasi.
 class ApiConfig {
   /// Protokol default untuk backend ('http' atau 'https')
-  static const String defaultProtocol = 'http';
+  static const String defaultProtocol = 'https';
 
   /// Host/Domain default untuk backend
   static const String defaultHost = 'nyanyianrohanimethodist.xyz';

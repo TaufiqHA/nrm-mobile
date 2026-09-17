@@ -1,0 +1,8 @@
+# Contoh konfigurasi key.properties untuk rilis Android
+# Salin file ini menjadi 'key.properties' di folder android/ dan sesuaikan nilainya.
+# PERINGATAN: Jangan pernah meng-commit file 'key.properties' atau file keystore (*.jks / *.keystore) ke git!
+
+storePassword=password_keystore_anda
+keyPassword=password_kunci_anda
+keyAlias=upload
+storeFile=upload-keystore.jks
