@@ -7,6 +7,11 @@ import '../../core/services/api_song_service.dart';
 import '../../core/services/category_service.dart';
 import '../../core/services/song_service.dart';
 import '../../core/services/storage_service.dart';
+import '../../core/services/application_service.dart';
+import '../../core/services/api_application_service.dart';
+import '../../models/application_model.dart';
+import '../../services/ad_manager.dart';
+import '../../widgets/ad_slot_view.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/youtube_helper.dart';
 import '../../models/category_model.dart';
@@ -24,6 +29,7 @@ class UserMainLayout extends StatefulWidget {
   final SongService? songService;
   final CategoryService? categoryService;
   final SmartTvCastService? castService;
+  final ApplicationService? applicationService;
   final bool isTestMode;
 
   const UserMainLayout({
@@ -31,6 +37,7 @@ class UserMainLayout extends StatefulWidget {
     this.songService,
     this.categoryService,
     this.castService,
+    this.applicationService,
     this.isTestMode = false,
   });
 
@@ -42,7 +49,11 @@ class _UserMainLayoutState extends State<UserMainLayout> {
   late final SongService _songService;
   late final CategoryService _categoryService;
   late final SmartTvCastService _castService;
+  late final ApplicationService _applicationService;
   StreamSubscription? _castSubscription;
+
+  ApplicationModel? _appConfig;
+  bool _middleAdShown = false;
 
   UserModel? _currentUser;
   List<SongModel> _allSongs = [];
@@ -81,6 +92,7 @@ class _UserMainLayoutState extends State<UserMainLayout> {
     _songService = widget.songService ?? ApiSongService();
     _categoryService = widget.categoryService ?? ApiCategoryService();
     _castService = widget.castService ?? SmartTvCastService(isTestMode: widget.isTestMode);
+    _applicationService = widget.applicationService ?? ApiApplicationService();
     _castSubscription = _castService.connectedDeviceStream.listen((_) {
       if (mounted) setState(() {});
     });
@@ -265,6 +277,8 @@ class _UserMainLayoutState extends State<UserMainLayout> {
           _isLoading = false;
         });
       }
+
+      await _loadAppConfig();
     } catch (_) {
       if (mounted) {
         setState(() {
@@ -272,6 +286,60 @@ class _UserMainLayoutState extends State<UserMainLayout> {
         });
       }
     }
+  }
+
+  Future<void> _loadAppConfig() async {
+    try {
+      final config = await _applicationService.getApplicationConfig();
+      if (!mounted) return;
+      setState(() => _appConfig = config);
+      AdManager.instance.configure(config);
+      WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowMiddleAd());
+    } catch (e) {
+      debugPrint('User layout app config load error: $e');
+    }
+  }
+
+  /// Menampilkan iklan slot 2 (Konten / Pop-up) satu kali per sesi bila jenisnya
+  /// iklan inline (gambar/native/banner). Format full-screen ditangani AdManager.
+  void _maybeShowMiddleAd() {
+    if (_middleAdShown || !mounted) return;
+    final config = _appConfig;
+    if (config == null || !config.isAdsActive) return;
+
+    final ad = config.ads2Config;
+    final hasContent = (ad.isImage && (ad.image ?? '').trim().isNotEmpty) ||
+        ((ad.isNative || ad.isBanner) && ad.hasUnit);
+    if (!ad.isInline || !hasContent) return;
+
+    _middleAdShown = true;
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: AppColors.surfaceDark,
+        insetPadding: const EdgeInsets.all(20),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppColors.cardGlassBorder),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Align(
+              alignment: Alignment.centerRight,
+              child: IconButton(
+                icon: const Icon(Icons.close_rounded, color: AppColors.textMuted),
+                onPressed: () => Navigator.of(ctx).pop(),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              child: AdSlotView(ad: ad, padding: EdgeInsets.zero),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _playSong(SongModel song) {
@@ -311,6 +379,7 @@ class _UserMainLayoutState extends State<UserMainLayout> {
       );
     }
     _startPlaybackTimer();
+    AdManager.instance.maybeShowInterstitial();
   }
 
   void _togglePlayPause() {
@@ -678,6 +747,15 @@ class _UserMainLayoutState extends State<UserMainLayout> {
               // 1. Header Bar (Minimalis & Tanpa Subteks)
               _buildHeader(displayName, username, isCompact: isCompactLandscape),
 
+              // Iklan slot 1 (Header / Atas)
+              if (_appConfig != null)
+                AdSlotView(
+                  ad: _appConfig!.ads1Config,
+                  active: _appConfig!.isAdsActive,
+                  padding: const EdgeInsets.fromLTRB(14, 2, 14, 2),
+                  maxHeight: 120,
+                ),
+
               // 2. Main Karaoke Screen Content
               Expanded(
                 child: LayoutBuilder(
@@ -920,6 +998,15 @@ class _UserMainLayoutState extends State<UserMainLayout> {
                   },
                 ),
               ),
+
+              // Iklan slot bawah (Footer)
+              if (_appConfig != null)
+                AdSlotView(
+                  ad: _appConfig!.adsBottomConfig,
+                  active: _appConfig!.isAdsBottomActive,
+                  padding: const EdgeInsets.fromLTRB(14, 2, 14, 4),
+                  maxHeight: 120,
+                ),
             ],
           ),
         ),
