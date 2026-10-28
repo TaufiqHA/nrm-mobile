@@ -37,8 +37,8 @@ void main() {
 
   testWidgets('NRM Welcome screen renders UI elements and Play button navigates', (WidgetTester tester) async {
     await tester.pumpWidget(
-      const MaterialApp(
-        home: LoginScreen(),
+      MaterialApp(
+        home: LoginScreen(categoryService: DummyCategoryService()),
       ),
     );
 

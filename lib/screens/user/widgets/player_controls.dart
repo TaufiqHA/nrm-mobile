@@ -366,7 +366,7 @@ class _PlayerControlsState extends State<PlayerControls> {
             Expanded(
               child: Text(
                 song != null
-                    ? '${song.songtitle} • ${song.songsinger}'
+                    ? '${song.songsinger} • ${song.songtitle}'
                     : 'Player',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

@@ -23,6 +23,7 @@ import 'widgets/cast_device_modal.dart';
 import 'widgets/player_controls.dart';
 import 'widgets/player_display.dart';
 import 'widgets/song_catalog_playlist_section.dart';
+import 'widgets/song_search_modal.dart';
 import 'widgets/song_search_panel.dart';
 
 class UserMainLayout extends StatefulWidget {
@@ -31,6 +32,7 @@ class UserMainLayout extends StatefulWidget {
   final SmartTvCastService? castService;
   final ApplicationService? applicationService;
   final bool isTestMode;
+  final int? initialCategoryFilter;
 
   const UserMainLayout({
     super.key,
@@ -39,6 +41,7 @@ class UserMainLayout extends StatefulWidget {
     this.castService,
     this.applicationService,
     this.isTestMode = false,
+    this.initialCategoryFilter,
   });
 
   @override
@@ -686,6 +689,7 @@ class _UserMainLayoutState extends State<UserMainLayout> {
                       child: SongSearchPanel(
                         songs: _allSongs,
                         categories: _categories,
+                        initialCategory: widget.initialCategoryFilter,
                         queue: _queue,
                         currentPlayingSong: _currentSong,
                         isLoading: _isLoading,
@@ -838,6 +842,7 @@ class _UserMainLayoutState extends State<UserMainLayout> {
                                 axis: Axis.vertical,
                                 songs: _allSongs,
                                 categories: _categories,
+                                initialCategory: widget.initialCategoryFilter,
                                 queue: _queue,
                                 currentPlayingSong: _currentSong,
                                 isLoading: _isLoading,
@@ -847,6 +852,7 @@ class _UserMainLayoutState extends State<UserMainLayout> {
                                 onReorderQueue: _reorderQueue,
                                 onClearQueue: _clearQueue,
                                 onRefresh: _loadData,
+                                onOpenSearchModal: () => _openQuickSearchModal(context),
                               ),
                             ),
                           ],
@@ -912,6 +918,7 @@ class _UserMainLayoutState extends State<UserMainLayout> {
                               child: SongCatalogPlaylistSection(
                                 songs: _allSongs,
                                 categories: _categories,
+                                initialCategory: widget.initialCategoryFilter,
                                 queue: _queue,
                                 currentPlayingSong: _currentSong,
                                 isLoading: _isLoading,
@@ -921,6 +928,7 @@ class _UserMainLayoutState extends State<UserMainLayout> {
                                 onReorderQueue: _reorderQueue,
                                 onClearQueue: _clearQueue,
                                 onRefresh: _loadData,
+                                onOpenSearchModal: () => _openQuickSearchModal(context),
                               ),
                             ),
                           ],
@@ -981,6 +989,7 @@ class _UserMainLayoutState extends State<UserMainLayout> {
                             child: SongCatalogPlaylistSection(
                               songs: _allSongs,
                               categories: _categories,
+                              initialCategory: widget.initialCategoryFilter,
                               queue: _queue,
                               currentPlayingSong: _currentSong,
                               isLoading: _isLoading,
@@ -990,6 +999,7 @@ class _UserMainLayoutState extends State<UserMainLayout> {
                               onReorderQueue: _reorderQueue,
                               onClearQueue: _clearQueue,
                               onRefresh: _loadData,
+                              onOpenSearchModal: () => _openQuickSearchModal(context),
                             ),
                           ),
                         ],
@@ -1011,6 +1021,17 @@ class _UserMainLayoutState extends State<UserMainLayout> {
           ),
         ),
       ),
+    );
+  }
+
+  void _openQuickSearchModal(BuildContext context) {
+    SongSearchModal.show(
+      context,
+      songs: _allSongs,
+      queue: _queue,
+      initialCategory: widget.initialCategoryFilter,
+      isLoading: _isLoading,
+      onAddToQueue: _addToQueue,
     );
   }
 

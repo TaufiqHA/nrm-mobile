@@ -18,7 +18,7 @@ void main() {
   group('ApiConfig Tests', () {
     test('ApiConfig.baseUrl returns valid default URL', () {
       final url = ApiConfig.baseUrl;
-      expect(url, contains('http://'));
+      expect(url, matches(RegExp(r'^https?://')));
       expect(url, contains('/api'));
     });
 

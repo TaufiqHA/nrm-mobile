@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/song_sort_helper.dart';
 import '../../../models/category_model.dart';
 import '../../../models/song_model.dart';
 
@@ -14,6 +15,7 @@ class SongSearchPanel extends StatefulWidget {
   final ValueChanged<int>? onRemoveFromQueue;
   final VoidCallback? onClearQueue;
   final Future<void> Function()? onRefresh;
+  final int? initialCategory;
 
   const SongSearchPanel({
     super.key,
@@ -27,6 +29,7 @@ class SongSearchPanel extends StatefulWidget {
     this.onRemoveFromQueue,
     this.onClearQueue,
     this.onRefresh,
+    this.initialCategory,
   });
 
   @override
@@ -41,6 +44,7 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
   @override
   void initState() {
     super.initState();
+    _selectedCategoryFilter = widget.initialCategory;
     _searchController.addListener(() {
       setState(() {});
     });
@@ -57,24 +61,9 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
     return int.tryParse(numeric) ?? 1;
   }
 
-  String _getCategoryName(int categoryId, {CategoryModel? embeddedCategory}) {
-    if (embeddedCategory != null && embeddedCategory.name.isNotEmpty) {
-      return embeddedCategory.name;
-    }
-    final cat = widget.categories.firstWhere(
-      (c) => _parseCategoryId(c.id) == categoryId,
-      orElse: () => CategoryModel(
-        id: 'cat_$categoryId',
-        name: 'Kategori #$categoryId',
-        createdAt: DateTime.now(),
-      ),
-    );
-    return cat.name;
-  }
-
   List<SongModel> get _filteredSongs {
     final query = _searchController.text.trim().toLowerCase();
-    return widget.songs.where((song) {
+    final matches = widget.songs.where((song) {
       final matchesQuery = query.isEmpty ||
           song.songtitle.toLowerCase().contains(query) ||
           song.songsinger.toLowerCase().contains(query);
@@ -84,6 +73,8 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
 
       return matchesQuery && matchesCategory;
     }).toList();
+    sortSongsByNumber(matches);
+    return matches;
   }
 
   @override
@@ -379,10 +370,7 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                         itemBuilder: (context, index) {
                           final song = filtered[index];
                           final isCurrentlyPlaying = widget.currentPlayingSong?.songid == song.songid;
-                          final categoryName = _getCategoryName(
-                            song.songcategory,
-                            embeddedCategory: song.category,
-                          );
+                          final isQueued = widget.queue.any((queued) => queued.songid == song.songid);
 
                           return Container(
                             padding: const EdgeInsets.all(12),
@@ -427,41 +415,11 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
                                       ),
                                       const SizedBox(height: 4),
 
-                                      // Badges (Category & Nada)
+                                      // Badge Nada
                                       Wrap(
                                         spacing: 4,
                                         runSpacing: 2,
                                         children: [
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                                            decoration: BoxDecoration(
-                                              color: AppColors.accentSky.withValues(alpha: 0.1),
-                                              borderRadius: BorderRadius.circular(4),
-                                            ),
-                                            child: Text(
-                                              categoryName,
-                                              style: const TextStyle(
-                                                fontSize: 10,
-                                                color: AppColors.accentSky,
-                                              ),
-                                            ),
-                                          ),
-                                          if (song.songnada != null && song.songnada!.isNotEmpty)
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                                              decoration: BoxDecoration(
-                                                color: AppColors.accentCyan.withValues(alpha: 0.1),
-                                                borderRadius: BorderRadius.circular(4),
-                                              ),
-                                              child: Text(
-                                                song.songnada!,
-                                                style: const TextStyle(
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: AppColors.accentCyan,
-                                                ),
-                                              ),
-                                            ),
                                           if (song.songduration != null && song.songduration!.isNotEmpty)
                                             Padding(
                                               padding: const EdgeInsets.only(left: 2.0),
@@ -483,22 +441,28 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
 
                                 // Action 1: Add to Queue button
                                 IconButton(
-                                  onPressed: () {
-                                    widget.onAddToQueue(song);
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('"${song.songtitle}" ditambahkan ke antrean'),
-                                        behavior: SnackBarBehavior.floating,
-                                        duration: const Duration(seconds: 1),
-                                        backgroundColor: AppColors.primaryElectric,
-                                      ),
-                                    );
-                                  },
-                                  tooltip: 'Tambah ke Antrean',
+                                  onPressed: isQueued
+                                      ? null
+                                      : () {
+                                          widget.onAddToQueue(song);
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('"${song.songtitle}" ditambahkan ke antrean'),
+                                              behavior: SnackBarBehavior.floating,
+                                              duration: const Duration(seconds: 1),
+                                              backgroundColor: AppColors.primaryElectric,
+                                            ),
+                                          );
+                                        },
+                                  tooltip: isQueued ? 'Sudah di Antrean' : 'Tambah ke Antrean',
                                   visualDensity: VisualDensity.compact,
-                                  icon: const Icon(
-                                    Icons.playlist_add_rounded,
-                                    color: AppColors.accentSky,
+                                  icon: Icon(
+                                    isQueued
+                                        ? Icons.check_circle_rounded
+                                        : Icons.playlist_add_rounded,
+                                    color: isQueued
+                                        ? const Color(0xFF34D399)
+                                        : AppColors.accentSky,
                                     size: 22,
                                   ),
                                 ),

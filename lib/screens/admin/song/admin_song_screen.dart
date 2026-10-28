@@ -6,6 +6,7 @@ import '../../../core/services/category_service.dart';
 import '../../../core/services/nada_service.dart';
 import '../../../core/services/song_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/song_sort_helper.dart';
 import '../../../models/category_model.dart';
 import '../../../models/nada_model.dart';
 import '../../../models/song_model.dart';
@@ -137,7 +138,7 @@ class _AdminSongScreenState extends State<AdminSongScreen> {
     final query = _searchController.text.trim().toLowerCase();
 
     setState(() {
-      _filteredSongs = _allSongs.where((song) {
+      final matches = _allSongs.where((song) {
         final matchQuery = query.isEmpty ||
             song.songtitle.toLowerCase().contains(query) ||
             song.songsinger.toLowerCase().contains(query);
@@ -147,6 +148,8 @@ class _AdminSongScreenState extends State<AdminSongScreen> {
 
         return matchQuery && matchCategory;
       }).toList();
+      sortSongsByNumber(matches);
+      _filteredSongs = matches;
     });
   }
 

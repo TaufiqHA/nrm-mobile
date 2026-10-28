@@ -25,6 +25,10 @@ class SongModel {
     this.category,
   });
 
+  /// Nomor lagu disimpan pada kolom `songsinger` sebagai angka murni.
+  /// Mengembalikan null untuk nilai non-numerik (mis. nama penyanyi).
+  int? get songNumber => int.tryParse(songsinger.trim());
+
   SongModel copyWith({
     int? songid,
     String? songtitle,
