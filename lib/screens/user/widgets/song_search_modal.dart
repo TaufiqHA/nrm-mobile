@@ -165,13 +165,27 @@ class _SongSearchModalState extends State<SongSearchModal> {
           // Title
           const Padding(
             padding: EdgeInsets.fromLTRB(20, 0, 20, 10),
-            child: Text(
-              'Cari Lagu',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Cari Lagu',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Ketik judul atau hanya angka saja untuk nomor lagu',
+                  style: TextStyle(
+                    fontSize: 12,
+                    height: 1.4,
+                    color: Color(0xFF8E9BAE),
+                  ),
+                ),
+              ],
             ),
           ),
 
