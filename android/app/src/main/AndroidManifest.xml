@@ -4,8 +4,9 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <!-- Tidak ada izin READ_MEDIA_IMAGES/READ_MEDIA_VIDEO/READ_EXTERNAL_STORAGE:
+         pemilihan foto memakai image_picker (Android Photo Picker), yang tidak
+         memerlukan izin penyimpanan. Menambahkannya melanggar kebijakan Play. -->
 
     <application
         android:label="Nyanyian Rohani Methodist"

@@ -18,3 +18,8 @@
 -keepattributes *Annotation*
 -keepattributes Signature
 -keepattributes SourceFile,LineNumberTable
+
+# Room membuat implementasi database lewat reflection (Class.newInstance()).
+# Consumer rule Room 2.2.5 hanya keep class-nya, sehingga R8 menghapus
+# constructor <init>() dan WorkDatabase gagal dibuat saat app start.
+-keep class * extends androidx.room.RoomDatabase { <init>(); }
