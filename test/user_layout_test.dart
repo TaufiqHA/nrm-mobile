@@ -1428,4 +1428,81 @@ void main() {
       expect(find.byType(YoutubeVideoPlayerWidget), findsOneWidget);
     },
   );
+
+  testWidgets('LoginScreen menyembunyikan kategori nonaktif', (
+    WidgetTester tester,
+  ) async {
+    final categories = [
+      CategoryModel(songcategoryid: 1, songcategoryname: 'Kategori Aktif'),
+      CategoryModel(
+        songcategoryid: 2,
+        songcategoryname: 'Kategori Nonaktif',
+        isActive: false,
+      ),
+    ];
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LoginScreen(categoryService: DummyCategoryService(categories)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('landing_category_1')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('landing_category_2')),
+      findsNothing,
+    );
+    expect(find.text('Kategori Nonaktif'), findsNothing);
+  });
+
+  testWidgets('UserMainLayout menyembunyikan lagu dari kategori nonaktif', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+
+    final categories = [
+      CategoryModel(songcategoryid: 1, songcategoryname: 'Kategori Aktif'),
+      CategoryModel(
+        songcategoryid: 2,
+        songcategoryname: 'Kategori Nonaktif',
+        isActive: false,
+      ),
+    ];
+    final songs = [
+      const SongModel(
+        songid: 1,
+        songtitle: 'Lagu Kategori Aktif',
+        songsinger: 'Penyanyi A',
+        songurl: 'https://youtu.be/a',
+        songcategory: 1,
+      ),
+      const SongModel(
+        songid: 2,
+        songtitle: 'Lagu Kategori Nonaktif',
+        songsinger: 'Penyanyi B',
+        songurl: 'https://youtu.be/b',
+        songcategory: 2,
+      ),
+    ];
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: UserMainLayout(
+          songService: DummySongService(songs),
+          categoryService: DummyCategoryService(categories),
+          isTestMode: true,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Lagu Kategori Aktif'), findsOneWidget);
+    expect(find.text('Lagu Kategori Nonaktif'), findsNothing);
+  });
 }

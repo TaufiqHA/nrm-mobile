@@ -69,6 +69,9 @@ class _UserMainLayoutState extends State<UserMainLayout> {
   List<CategoryModel> _categories = [];
   bool _isLoading = true;
 
+  /// Filter awal yang sudah divalidasi terhadap kategori aktif.
+  int? _initialCategoryFilter;
+
   bool get _isTextOnly => widget.initialDisplayMode == DisplayMode.textOnly;
 
   List<LyricVerse> get _currentVerses =>
@@ -108,6 +111,7 @@ class _UserMainLayoutState extends State<UserMainLayout> {
     _categoryService = widget.categoryService ?? ApiCategoryService();
     _castService = widget.castService ?? SmartTvCastService(isTestMode: widget.isTestMode);
     _applicationService = widget.applicationService ?? ApiApplicationService();
+    _initialCategoryFilter = widget.initialCategoryFilter;
     _castSubscription = _castService.connectedDeviceStream.listen((_) {
       if (mounted) setState(() {});
     });
@@ -267,25 +271,62 @@ class _UserMainLayoutState extends State<UserMainLayout> {
       final storage = await StorageService.getInstance();
       final user = await storage.getUser();
 
+      var categoryLoadFailed = false;
+      var songLoadFailed = false;
+
       final results = await Future.wait([
         _categoryService.getCategories().catchError((e) {
           debugPrint('User layout category load error: $e');
+          categoryLoadFailed = true;
           return <CategoryModel>[];
         }),
         _songService.getSongs().catchError((e) {
           debugPrint('User layout song load error: $e');
+          songLoadFailed = true;
           return <SongModel>[];
         }),
       ]);
 
-      final cats = results[0] as List<CategoryModel>;
+      final allCategories = results[0] as List<CategoryModel>;
       final songs = results[1] as List<SongModel>;
+      final activeCategories = allCategories
+          .where((category) => category.isActive)
+          .toList();
+      final activeCategoryIds = activeCategories
+          .map((category) => category.songcategoryid)
+          .toSet();
 
       if (mounted) {
         setState(() {
           _currentUser = user;
-          _categories = cats.isNotEmpty ? cats : _categories;
-          _allSongs = songs.isNotEmpty ? songs : _allSongs;
+
+          if (!categoryLoadFailed) {
+            _categories = activeCategories;
+
+            // Lagu dari kategori nonaktif ikut disembunyikan dari katalog,
+            // pencarian, dan navigasi next/previous.
+            final visibleSongs = songLoadFailed
+                ? _allSongs
+                      .where(
+                        (song) => activeCategoryIds.contains(song.songcategory),
+                      )
+                      .toList()
+                : songs
+                      .where(
+                        (song) => activeCategoryIds.contains(song.songcategory),
+                      )
+                      .toList();
+            _allSongs = visibleSongs;
+
+            final requestedCategory = _initialCategoryFilter;
+            if (requestedCategory != null &&
+                !activeCategoryIds.contains(requestedCategory)) {
+              _initialCategoryFilter = null;
+            }
+          } else if (!songLoadFailed) {
+            _allSongs = songs;
+          }
+
           // Saat pertama kali dibuka, player dalam kondisi kosong (standby).
           // Lagu baru muncul ketika pengguna memilih lagu dari katalog.
           _currentSong = null;
@@ -729,7 +770,7 @@ class _UserMainLayoutState extends State<UserMainLayout> {
                       child: SongSearchPanel(
                         songs: _allSongs,
                         categories: _categories,
-                        initialCategory: widget.initialCategoryFilter,
+                        initialCategory: _initialCategoryFilter,
                         queue: _queue,
                         currentPlayingSong: _currentSong,
                         isLoading: _isLoading,
@@ -917,7 +958,7 @@ class _UserMainLayoutState extends State<UserMainLayout> {
                                 axis: Axis.vertical,
                                 songs: _allSongs,
                                 categories: _categories,
-                                initialCategory: widget.initialCategoryFilter,
+                                initialCategory: _initialCategoryFilter,
                                 queue: _queue,
                                 currentPlayingSong: _currentSong,
                                 isLoading: _isLoading,
@@ -971,7 +1012,7 @@ class _UserMainLayoutState extends State<UserMainLayout> {
                               child: SongCatalogPlaylistSection(
                                 songs: _allSongs,
                                 categories: _categories,
-                                initialCategory: widget.initialCategoryFilter,
+                                initialCategory: _initialCategoryFilter,
                                 queue: _queue,
                                 currentPlayingSong: _currentSong,
                                 isLoading: _isLoading,
@@ -992,7 +1033,7 @@ class _UserMainLayoutState extends State<UserMainLayout> {
                     final catalogSection = SongCatalogPlaylistSection(
                       songs: _allSongs,
                       categories: _categories,
-                      initialCategory: widget.initialCategoryFilter,
+                      initialCategory: _initialCategoryFilter,
                       queue: _queue,
                       currentPlayingSong: _currentSong,
                       isLoading: _isLoading,
@@ -1078,7 +1119,7 @@ class _UserMainLayoutState extends State<UserMainLayout> {
       context,
       songs: _allSongs,
       queue: _queue,
-      initialCategory: widget.initialCategoryFilter,
+      initialCategory: _initialCategoryFilter,
       isLoading: _isLoading,
       onAddToQueue: _addToQueue,
     );

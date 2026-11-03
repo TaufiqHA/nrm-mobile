@@ -52,6 +52,22 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
     _selectedCategory = widget.initialCategory;
   }
 
+  @override
+  void didUpdateWidget(covariant SongCatalogPlaylistSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialCategory != widget.initialCategory) {
+      _selectedCategory = widget.initialCategory;
+    }
+    if (_selectedCategory != null && widget.categories.isNotEmpty) {
+      final availableIds = widget.categories
+          .map((category) => category.songcategoryid)
+          .toSet();
+      if (!availableIds.contains(_selectedCategory)) {
+        _selectedCategory = null;
+      }
+    }
+  }
+
   List<SongModel> get _filteredSongs {
     final matches = widget.songs.where((song) {
       return _selectedCategory == null ||

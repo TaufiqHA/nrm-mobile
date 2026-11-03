@@ -42,7 +42,8 @@ class _LoginScreenState extends State<LoginScreen> {
       final categories = await _categoryService.getCategories();
       if (!mounted) return;
       setState(() {
-        _categories = categories;
+        // Kategori yang dinonaktifkan lewat admin tidak boleh tampil ke user.
+        _categories = categories.where((category) => category.isActive).toList();
         _isLoadingCategories = false;
       });
     } catch (e) {

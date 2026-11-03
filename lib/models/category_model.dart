@@ -11,6 +11,9 @@ class CategoryModel {
   /// URL absolut gambar ikon yang disediakan API (cadangan bila `iconImage` kosong).
   final String? iconUrl;
 
+  /// Status kategori di backend. Kategori nonaktif tidak ditampilkan ke user.
+  final bool isActive;
+
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -26,6 +29,7 @@ class CategoryModel {
     String? icon,
     String? iconImage,
     String? iconUrl,
+    this.isActive = true,
     this.createdAt,
     this.updatedAt,
   }) : songcategoryid =
@@ -41,6 +45,21 @@ class CategoryModel {
     return (trimmed == null || trimmed.isEmpty) ? null : trimmed;
   }
 
+  /// Backend mengirim `is_active` sebagai boolean, tetapi tetap dukung
+  /// representasi lain (`1`/`0`, `"Y"`/`"N"`) untuk kompatibilitas.
+  static bool _parseIsActive(dynamic value) {
+    if (value == null) return true;
+    if (value is bool) return value;
+    if (value is num) return value != 0;
+
+    final normalized = value.toString().trim().toLowerCase();
+    if (normalized.isEmpty) return true;
+    return !(normalized == '0' ||
+        normalized == 'false' ||
+        normalized == 'n' ||
+        normalized == 'no');
+  }
+
   CategoryModel copyWith({
     int? songcategoryid,
     String? songcategoryname,
@@ -49,6 +68,7 @@ class CategoryModel {
     String? icon,
     String? iconImage,
     String? iconUrl,
+    bool? isActive,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -65,6 +85,7 @@ class CategoryModel {
       icon: icon ?? this.icon,
       iconImage: iconImage ?? this.iconImage,
       iconUrl: iconUrl ?? this.iconUrl,
+      isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -105,6 +126,7 @@ class CategoryModel {
       icon: (json['icon'] ?? json['iconKey'])?.toString(),
       iconImage: (json['icon_image'] ?? json['iconImage'])?.toString(),
       iconUrl: (json['icon_url'] ?? json['iconUrl'])?.toString(),
+      isActive: _parseIsActive(json['is_active'] ?? json['isActive']),
       createdAt: parsedCreatedAt ?? DateTime.now(),
       updatedAt: parsedUpdatedAt,
     );
@@ -117,6 +139,7 @@ class CategoryModel {
       'icon': icon,
       'icon_image': iconImage,
       'icon_url': iconUrl,
+      'is_active': isActive,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
       // Backward-compatible properties

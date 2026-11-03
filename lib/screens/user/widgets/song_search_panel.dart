@@ -51,6 +51,22 @@ class _SongSearchPanelState extends State<SongSearchPanel> {
   }
 
   @override
+  void didUpdateWidget(covariant SongSearchPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialCategory != widget.initialCategory) {
+      _selectedCategoryFilter = widget.initialCategory;
+    }
+    if (_selectedCategoryFilter != null && widget.categories.isNotEmpty) {
+      final availableIds = widget.categories
+          .map((category) => category.songcategoryid)
+          .toSet();
+      if (!availableIds.contains(_selectedCategoryFilter)) {
+        _selectedCategoryFilter = null;
+      }
+    }
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
