@@ -433,7 +433,7 @@ void main() {
     expect(find.byType(ProfileScreen), findsNothing);
   });
 
-  testWidgets('LoginScreen play button navigates to UserMainLayout', (WidgetTester tester) async {
+  testWidgets('LoginScreen kategori langsung membuka UserMainLayout', (WidgetTester tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: LoginScreen(categoryService: DummyCategoryService()),
@@ -441,19 +441,21 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Klik to play'));
+    await tester.ensureVisible(find.byKey(const ValueKey('landing_category_1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('landing_category_1')));
     await tester.pumpAndSettle();
 
     // Verifikasi diarahkan ke UserMainLayout
     expect(find.byType(UserMainLayout), findsOneWidget);
   });
 
-  testWidgets('Kotak kategori landing pas dengan nama kategori terpanjang', (WidgetTester tester) async {
-    const longName = 'Indonesia Lirik + Musik (buku merah)';
-    // Data kategori hanya berisi nama pendek; kotak tetap harus muat nama terpanjang.
+  testWidgets('Kategori landing tampil sejajar dalam satu baris ikon', (WidgetTester tester) async {
     final categories = [
-      CategoryModel(songcategoryid: 1, songcategoryname: 'Pop'),
+      CategoryModel(songcategoryid: 1, songcategoryname: 'Pop Indonesia'),
       CategoryModel(songcategoryid: 2, songcategoryname: 'Piano + Lirik'),
+      CategoryModel(songcategoryid: 3, songcategoryname: 'Natal'),
+      CategoryModel(songcategoryid: 4, songcategoryname: 'Anak Sekolah Minggu'),
     ];
 
     await tester.pumpWidget(
@@ -463,20 +465,72 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final boxSize = tester.getSize(find.byKey(const ValueKey('landing_category_selector')));
-    final painter = TextPainter(
-      text: const TextSpan(
-        text: longName,
-        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-      ),
-      maxLines: 1,
-      textDirection: TextDirection.ltr,
-    )..layout();
+    // Setiap kategori punya tile ikon sendiri dan label nama kategori.
+    for (final category in categories) {
+      expect(
+        find.byKey(ValueKey('landing_category_${category.songcategoryid}')),
+        findsOneWidget,
+      );
+      expect(find.text(category.name), findsOneWidget);
+    }
 
-    // Lebar mengikuti teks terpanjang + ikon, jarak, panah, padding, dan buffer.
-    expect(boxSize.width, greaterThanOrEqualTo(painter.width + 20 + 10 + 26 + 28 + 8));
-    // Tidak melebihi lebar layar setelah padding halaman (24 kiri + 24 kanan).
-    expect(boxSize.width, lessThanOrEqualTo(800 - 48));
+    // Semua ikon, termasuk Teks Only, berada pada posisi vertikal yang sama.
+    final topPositions = [
+      for (final category in categories)
+        tester
+            .getTopLeft(
+              find.byKey(
+                ValueKey('landing_category_${category.songcategoryid}'),
+              ),
+            )
+            .dy,
+      tester
+          .getTopLeft(find.byKey(const ValueKey('landing_mode_text_only')))
+          .dy,
+    ];
+    expect(topPositions.toSet().length, 1);
+  });
+
+  testWidgets('Baris ikon kategori aman di layar ponsel kecil', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(360, 640);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final categories = [
+      CategoryModel(
+        songcategoryid: 1,
+        songcategoryname: 'Indonesia Lirik + Musik (buku merah)',
+      ),
+      CategoryModel(
+        songcategoryid: 2,
+        songcategoryname: 'Indonesia Lirik + Musik (buku biru)',
+      ),
+      CategoryModel(songcategoryid: 3, songcategoryname: 'Anak Sekolah Minggu'),
+      CategoryModel(songcategoryid: 4, songcategoryname: 'Karaoke'),
+    ];
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LoginScreen(categoryService: DummyCategoryService(categories)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    for (final category in categories) {
+      expect(
+        find.byKey(ValueKey('landing_category_${category.songcategoryid}')),
+        findsOneWidget,
+      );
+    }
+
+    // Footer tetap terlihat menempel di bagian bawah layar.
+    final footerBottom = tester
+        .getBottomLeft(find.text('Jemaat GMI Jakarta Pusat'))
+        .dy;
+    expect(footerBottom, greaterThan(600));
+    expect(footerBottom, lessThanOrEqualTo(640));
   });
 
   testWidgets('UserMainLayout logout confirmation displays Nyanyian Rohani Methodist', (WidgetTester tester) async {
@@ -662,25 +716,24 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    // Label dan dropdown kategori tampil di halaman landing
+    // Label dan grid ikon kategori tampil di halaman landing
     expect(find.text('Pilih Jenis Musik'), findsOneWidget);
     expect(find.text('Semua Kategori'), findsNothing);
-    // Default otomatis memilih kategori pertama (Pop Indonesia, id 1)
     expect(find.text('Pop Indonesia'), findsOneWidget);
+    expect(find.byKey(const ValueKey('landing_category_1')), findsOneWidget);
+    expect(find.byKey(const ValueKey('landing_category_2')), findsOneWidget);
 
-    await tester.tap(find.text('Pop Indonesia'));
+    await tester.ensureVisible(find.byKey(const ValueKey('landing_category_2')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Dangdut & Koplo').last);
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('Klik to play'));
+    await tester.tap(find.byKey(const ValueKey('landing_category_2')));
     await tester.pumpAndSettle();
 
     final layout = tester.widget<UserMainLayout>(find.byType(UserMainLayout));
     expect(layout.initialCategoryFilter, 2);
+    expect(layout.initialDisplayMode, DisplayMode.normal);
   });
 
-  testWidgets('LoginScreen mode selector passes Teks Only to UserMainLayout', (
+  testWidgets('LoginScreen Teks Only langsung membuka mode teks', (
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(
@@ -688,21 +741,20 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Mode Tampilan'), findsOneWidget);
-    expect(find.text('Mode Biasa (Musik + Video)'), findsOneWidget);
+    // Opsi Teks Only digabung dalam grid yang sama dengan kategori.
+    expect(find.text('Pilih Jenis Musik'), findsOneWidget);
+    expect(find.text('Teks Only'), findsOneWidget);
 
-    await tester.tap(find.text('Mode Biasa (Musik + Video)'));
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('landing_mode_text_only')),
+    );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Teks Only (Lirik Saja)').last);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Teks Only (Lirik Saja)'), findsOneWidget);
-
-    await tester.tap(find.text('Klik to play'));
+    await tester.tap(find.byKey(const ValueKey('landing_mode_text_only')));
     await tester.pumpAndSettle();
 
     final layout = tester.widget<UserMainLayout>(find.byType(UserMainLayout));
     expect(layout.initialDisplayMode, DisplayMode.textOnly);
+    expect(layout.initialCategoryFilter, isNull);
   });
 
   testWidgets(
@@ -761,6 +813,20 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Ayat 1'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(LyricsDisplay),
+          matching: find.text('Marilah Orang Berdosa'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: find.byType(LyricsDisplay),
+          matching: find.text('No. 1'),
+        ),
+        findsOneWidget,
+      );
       expect(find.textContaining('Marilah orang berdosa'), findsOneWidget);
       expect(find.textContaining('Yesus memberi ampunan'), findsNothing);
       expect(find.byType(YoutubeVideoPlayerWidget), findsNothing);
@@ -829,6 +895,42 @@ void main() {
       expect(find.text('Ayat 2'), findsOneWidget);
       expect(find.textContaining('Yesus memberi ampunan'), findsOneWidget);
       expect(find.textContaining('Beribu lidah patutlah'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'Portrait Teks Only: lirik memanjang dan kontrol serta katalog turun',
+    (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(360, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: UserMainLayout(
+            songService: DummySongService(),
+            categoryService: DummyCategoryService(),
+            isTestMode: true,
+            initialDisplayMode: DisplayMode.textOnly,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+
+      final lyricsRect = tester.getRect(find.byType(LyricsDisplay));
+      final controlsRect = tester.getRect(find.byType(TextOnlyControls));
+      final catalogRect = tester.getRect(
+        find.byType(SongCatalogPlaylistSection),
+      );
+
+      // Kartu lirik lebih tinggi dari rasio 4:3 sebelumnya.
+      expect(lyricsRect.height, greaterThan(lyricsRect.width * 3 / 4));
+      // Kontrol ayat berada tepat di bawah lirik, lalu panel katalog di bawahnya.
+      expect(controlsRect.top, greaterThan(lyricsRect.bottom));
+      expect(catalogRect.top, greaterThan(controlsRect.bottom));
     },
   );
 

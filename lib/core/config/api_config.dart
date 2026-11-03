@@ -6,7 +6,7 @@ class ApiConfig {
 
   /// Host/Domain default untuk backend
   static const String defaultHost = 'nyanyianrohanimethodist.xyz';
-  //static const String defaultHost = '10.107.29.40:8001';
+  //static const String defaultHost = '10.99.32.207:8000';
 
   /// Path prefix API
   static const String apiPrefix = '/api';

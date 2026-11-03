@@ -769,14 +769,20 @@ class _UserMainLayoutState extends State<UserMainLayout> {
     );
   }
 
-  Widget _buildPlayerStage() {
+  Widget _buildPlayerStage({bool fillHeight = false}) {
     if (_isTextOnly) {
+      final lyrics = LyricsDisplay(
+        song: _currentSong,
+        verseIndex: _currentVerseIndex,
+      );
+
+      // Di portrait Teks Only, kartu lirik memenuhi ruang yang tersedia agar
+      // kontrol ayat dan panel bawah terdorong ke bawah.
+      if (fillHeight) return lyrics;
+
       return AspectRatio(
         aspectRatio: 4 / 3,
-        child: LyricsDisplay(
-          song: _currentSong,
-          verseIndex: _currentVerseIndex,
-        ),
+        child: lyrics,
       );
     }
 
@@ -933,6 +939,10 @@ class _UserMainLayoutState extends State<UserMainLayout> {
                     final isHeightConstrained = MediaQuery.of(context).size.height < 620;
 
                     if (isHeightConstrained) {
+                      final compactLyricsHeight =
+                          (constraints.maxWidth - 28) * 3 / 4 +
+                              TextOnlyControls.preferredHeight;
+
                       return SingleChildScrollView(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 14,
@@ -942,7 +952,13 @@ class _UserMainLayoutState extends State<UserMainLayout> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             // Player Cinema Stage (Full Width)
-                            _buildPlayerStage(),
+                            if (_isTextOnly)
+                              SizedBox(
+                                height: compactLyricsHeight,
+                                child: _buildPlayerStage(fillHeight: true),
+                              )
+                            else
+                              _buildPlayerStage(),
                             const SizedBox(height: 8),
 
                             // Studio Playback Controls
@@ -973,6 +989,41 @@ class _UserMainLayoutState extends State<UserMainLayout> {
                       );
                     }
 
+                    final catalogSection = SongCatalogPlaylistSection(
+                      songs: _allSongs,
+                      categories: _categories,
+                      initialCategory: widget.initialCategoryFilter,
+                      queue: _queue,
+                      currentPlayingSong: _currentSong,
+                      isLoading: _isLoading,
+                      onPlaySong: _playSong,
+                      onAddToQueue: _addToQueue,
+                      onRemoveFromQueue: _removeFromQueue,
+                      onReorderQueue: _reorderQueue,
+                      onClearQueue: _clearQueue,
+                      onRefresh: _loadData,
+                      onOpenSearchModal: () => _openQuickSearchModal(context),
+                    );
+
+                    // Di mode Teks Only, tambah tinggi kartu lirik sebesar
+                    // tinggi kartu kontrol. Hasilnya seluruh blok kontrol +
+                    // katalog turun tepat satu kartu kontrol (garis hijau).
+                    const horizontalPadding = 28.0;
+                    const fixedVerticalSpace = 12.0 + 8.0 + 10.0;
+                    const minCatalogHeight = 170.0;
+                    final baseLyricsHeight =
+                        (constraints.maxWidth - horizontalPadding) * 3 / 4;
+                    final desiredLyricsHeight = baseLyricsHeight +
+                        TextOnlyControls.preferredHeight;
+                    final availableLyricsHeight = constraints.maxHeight -
+                        fixedVerticalSpace -
+                        TextOnlyControls.preferredHeight -
+                        minCatalogHeight;
+                    final textOnlyLyricsHeight =
+                        desiredLyricsHeight > availableLyricsHeight
+                            ? availableLyricsHeight
+                            : desiredLyricsHeight;
+
                     return Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 14,
@@ -981,8 +1032,17 @@ class _UserMainLayoutState extends State<UserMainLayout> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          // Player Cinema Stage (Full Width, Fixed)
-                          _buildPlayerStage(),
+                          if (_isTextOnly) ...[
+                            // Mode Teks Only: lirik lebih tinggi, kontrol ayat
+                            // dan panel bawah turun sampai garis pemisah.
+                            SizedBox(
+                              height: textOnlyLyricsHeight,
+                              child: _buildPlayerStage(fillHeight: true),
+                            ),
+                          ] else ...[
+                            // Mode Biasa: player video tetap dengan tinggi tetap.
+                            _buildPlayerStage(),
+                          ],
                           const SizedBox(height: 8),
 
                           // Studio Playback Controls (Fixed)
@@ -990,23 +1050,7 @@ class _UserMainLayoutState extends State<UserMainLayout> {
                           const SizedBox(height: 10),
 
                           // Cari Lagu & Playlist Section
-                          Expanded(
-                            child: SongCatalogPlaylistSection(
-                              songs: _allSongs,
-                              categories: _categories,
-                              initialCategory: widget.initialCategoryFilter,
-                              queue: _queue,
-                              currentPlayingSong: _currentSong,
-                              isLoading: _isLoading,
-                              onPlaySong: _playSong,
-                              onAddToQueue: _addToQueue,
-                              onRemoveFromQueue: _removeFromQueue,
-                              onReorderQueue: _reorderQueue,
-                              onClearQueue: _clearQueue,
-                              onRefresh: _loadData,
-                              onOpenSearchModal: () => _openQuickSearchModal(context),
-                            ),
-                          ),
+                          Expanded(child: catalogSection),
                         ],
                       ),
                     );

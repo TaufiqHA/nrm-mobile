@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/services/api_category_service.dart';
 import '../core/services/category_service.dart';
 import '../core/theme/app_colors.dart';
+import '../core/utils/category_icon_helper.dart';
 import '../models/category_model.dart';
 import '../models/display_mode.dart';
 import 'user/user_main_layout.dart';
@@ -21,8 +22,6 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   late final CategoryService _categoryService;
   List<CategoryModel> _categories = [];
-  int? _selectedCategory;
-  DisplayMode _displayMode = DisplayMode.normal;
   bool _isLoadingCategories = true;
   bool _categoryLoadFailed = false;
 
@@ -45,9 +44,6 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() {
         _categories = categories;
         _isLoadingCategories = false;
-        if (categories.isNotEmpty) {
-          _selectedCategory ??= categories.first.songcategoryid;
-        }
       });
     } catch (e) {
       debugPrint('Gagal memuat kategori di halaman landing: $e');
@@ -59,187 +55,21 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _navigateToMain(BuildContext context) {
+  void _navigateToMain(
+    BuildContext context, {
+    int? categoryId,
+    DisplayMode displayMode = DisplayMode.normal,
+  }) {
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) => UserMainLayout(
-          initialCategoryFilter: _selectedCategory,
-          initialDisplayMode: _displayMode,
+          initialCategoryFilter: categoryId,
+          initialDisplayMode: displayMode,
         ),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },
         transitionDuration: const Duration(milliseconds: 500),
-      ),
-    );
-  }
-
-  /// Lebar kotak kategori mengikuti teks kategori terpanjang.
-  double _categorySelectorWidth(double availableWidth) {
-    const textStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.w600);
-    const chromeWidth =
-        20.0 + 10.0 + 26.0 + 28.0 + 8.0; // ikon, jarak, panah, padding, buffer
-
-    // Nama kategori terpanjang yang harus selalu muat di kotak, meskipun
-    // kategori tersebut belum ada di data API saat ini.
-    const referenceLongestName = 'Indonesia Lirik + Musik (buku merah)';
-
-    final texts = <String>[
-      referenceLongestName,
-      ..._categories
-          .map((cat) => cat.name)
-          .where((name) => name.trim().isNotEmpty),
-      ...DisplayMode.values.map((mode) => mode.label),
-    ];
-    if (texts.length == 1) {
-      texts.add('Kategori tidak tersedia');
-    }
-
-    double longestText = 0;
-    for (final text in texts) {
-      final painter = TextPainter(
-        text: TextSpan(text: text, style: textStyle),
-        maxLines: 1,
-        textDirection: TextDirection.ltr,
-      )..layout();
-      if (painter.width > longestText) {
-        longestText = painter.width;
-      }
-    }
-
-    final safeMaxWidth = availableWidth > 0 ? availableWidth : 260.0;
-    final minWidth = safeMaxWidth < 260.0 ? safeMaxWidth : 260.0;
-    final desiredWidth = longestText + chromeWidth;
-
-    if (desiredWidth < minWidth) return minWidth;
-    if (desiredWidth > safeMaxWidth) return safeMaxWidth;
-    return desiredWidth;
-  }
-
-  Widget _buildCategorySelector() {
-    return Container(
-      width: double.infinity,
-      height: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.35),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: const Color(0xFFE52020).withValues(alpha: 0.55),
-        ),
-      ),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.category_rounded,
-            size: 20,
-            color: AppColors.accentSky,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<int?>(
-                value: _selectedCategory,
-                isExpanded: true,
-                isDense: true,
-                dropdownColor: AppColors.surfaceDark,
-                borderRadius: BorderRadius.circular(10),
-                icon: const Icon(
-                  Icons.arrow_drop_down_rounded,
-                  color: Colors.white,
-                  size: 26,
-                ),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-                hint: Text(
-                  _isLoadingCategories
-                      ? 'Memuat kategori...'
-                      : 'Kategori tidak tersedia',
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textMuted,
-                  ),
-                ),
-                items: _categories.map((cat) {
-                  return DropdownMenuItem<int?>(
-                    value: cat.songcategoryid,
-                    child: Text(cat.name, overflow: TextOverflow.ellipsis),
-                  );
-                }).toList(),
-                onChanged: _categories.isEmpty
-                    ? null
-                    : (val) {
-                        setState(() {
-                          _selectedCategory = val;
-                        });
-                      },
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildModeSelector() {
-    return Container(
-      width: double.infinity,
-      height: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.35),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.accentSky.withValues(alpha: 0.45)),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            _displayMode == DisplayMode.textOnly
-                ? Icons.text_snippet_rounded
-                : Icons.smart_display_rounded,
-            size: 20,
-            color: AppColors.accentSky,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<DisplayMode>(
-                value: _displayMode,
-                isExpanded: true,
-                isDense: true,
-                dropdownColor: AppColors.surfaceDark,
-                borderRadius: BorderRadius.circular(10),
-                icon: const Icon(
-                  Icons.arrow_drop_down_rounded,
-                  color: Colors.white,
-                  size: 26,
-                ),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-                items: DisplayMode.values.map((mode) {
-                  return DropdownMenuItem<DisplayMode>(
-                    value: mode,
-                    child: Text(mode.label, overflow: TextOverflow.ellipsis),
-                  );
-                }).toList(),
-                onChanged: (mode) {
-                  if (mode == null) return;
-                  setState(() {
-                    _displayMode = mode;
-                  });
-                },
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -254,214 +84,414 @@ class _LoginScreenState extends State<LoginScreen> {
         child: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final isCompactHeight = constraints.maxHeight < 750;
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    SizedBox(height: isCompactHeight ? 8 : 12),
+              final isCompactHeight = constraints.maxHeight < 760;
+              final logoHeight = isCompactHeight ? 126.0 : 186.0;
 
-                    // Methodist Cross & Flame Logo (Transparent PNG)
-                    // Mengisi sisa ruang vertikal agar tidak ada ruang kosong besar.
-                    Expanded(
-                      child: Image.asset(
-                        'asset/image/logo_nrm_transparent.png',
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-
-                    SizedBox(height: isCompactHeight ? 12 : 20),
-
-                    // App Title: NRM (Merah Tebal)
-                    Text(
-                      'NRM',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: isCompactHeight ? 52 : 60,
-                        fontWeight: FontWeight.w900,
-                        color: const Color(0xFFE52020),
-                        letterSpacing: 2.0,
-                      ),
-                    ),
-
-                    SizedBox(height: isCompactHeight ? 8 : 12),
-
-                    // Subtitle: (Nyanyian Rohani Methodist)
-                    Text(
-                      '(Nyanyian Rohani Methodist)',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: isCompactHeight ? 16 : 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.accentSky,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-
-                    SizedBox(height: isCompactHeight ? 20 : 28),
-
-                    // Filter Kategori
-                    SizedBox(
-                      key: const ValueKey('landing_category_selector'),
-                      width: _categorySelectorWidth(constraints.maxWidth - 48),
+              return Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const Text(
-                            'Pilih Jenis Musik',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textSecondary,
+                          SizedBox(height: isCompactHeight ? 8 : 14),
+
+                          // Methodist Cross & Flame Logo (Transparent PNG)
+                          SizedBox(
+                            height: logoHeight,
+                            child: Image.asset(
+                              'asset/image/logo_nrm_transparent.png',
+                              fit: BoxFit.contain,
                             ),
                           ),
-                          SizedBox(height: isCompactHeight ? 8 : 10),
-                          _buildCategorySelector(),
-                          if (_categoryLoadFailed &&
-                              !_isLoadingCategories &&
-                              _categories.isEmpty)
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: TextButton.icon(
-                                onPressed: _loadCategories,
-                                style: TextButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 4,
-                                    vertical: 2,
-                                  ),
-                                  minimumSize: Size.zero,
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                ),
-                                icon: const Icon(
-                                  Icons.refresh_rounded,
-                                  size: 16,
-                                  color: AppColors.accentSky,
-                                ),
-                                label: const Text(
-                                  'Muat ulang kategori',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: AppColors.accentSky,
-                                  ),
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
 
-                    SizedBox(height: isCompactHeight ? 10 : 14),
+                          SizedBox(height: isCompactHeight ? 10 : 16),
 
-                    // Pilihan mode tampilan (biasa / teks only)
-                    SizedBox(
-                      key: const ValueKey('landing_mode_selector'),
-                      width: _categorySelectorWidth(constraints.maxWidth - 48),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          const Text(
-                            'Mode Tampilan',
+                          // App Title: NRM (Merah Tebal)
+                          Text(
+                            'NRM',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          SizedBox(height: isCompactHeight ? 8 : 10),
-                          _buildModeSelector(),
-                        ],
-                      ),
-                    ),
-
-                    SizedBox(height: isCompactHeight ? 14 : 22),
-
-                    // Red Circular Play Button with "Klik to play"
-                    GestureDetector(
-                      onTap: () => _navigateToMain(context),
-                      behavior: HitTestBehavior.opaque,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 72,
-                            height: 72,
-                            decoration: BoxDecoration(
+                              fontSize: isCompactHeight ? 46 : 58,
+                              fontWeight: FontWeight.w900,
                               color: const Color(0xFFE52020),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.35),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: const Center(
-                              child: Icon(
-                                Icons.play_arrow_rounded,
-                                size: 48,
-                                color: Colors.white,
-                              ),
+                              letterSpacing: 2.0,
                             ),
                           ),
-                          SizedBox(height: isCompactHeight ? 10 : 14),
-                          const Text(
-                            'Klik to play',
+
+                          SizedBox(height: isCompactHeight ? 4 : 8),
+
+                          // Subtitle: (Nyanyian Rohani Methodist)
+                          Text(
+                            '(Nyanyian Rohani Methodist)',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: AppColors.textPrimary,
-                              fontSize: 16,
+                              fontSize: isCompactHeight ? 15 : 18,
                               fontWeight: FontWeight.bold,
+                              color: AppColors.accentSky,
                               letterSpacing: 0.2,
                             ),
                           ),
+
+                          SizedBox(height: isCompactHeight ? 18 : 24),
+
+                          // Pilihan kategori & mode tampilan dalam satu baris ikon.
+                          // Ketuk salah satu untuk langsung masuk.
+                          SizedBox(
+                            key: const ValueKey('landing_category_selector'),
+                            width: double.infinity,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                const Text(
+                                  'Pilih Jenis Musik',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  'Ketuk kategori untuk langsung masuk, atau pilih Teks Only',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    height: 1.3,
+                                    color: AppColors.textMuted,
+                                  ),
+                                ),
+                                SizedBox(height: isCompactHeight ? 8 : 10),
+                                _buildSelectionRow(context),
+                                if (_categoryLoadFailed &&
+                                    !_isLoadingCategories &&
+                                    _categories.isEmpty)
+                                  Align(
+                                    alignment: Alignment.center,
+                                    child: TextButton.icon(
+                                      onPressed: _loadCategories,
+                                      style: TextButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 6,
+                                        ),
+                                        minimumSize: Size.zero,
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      icon: const Icon(
+                                        Icons.refresh_rounded,
+                                        size: 16,
+                                        color: AppColors.accentSky,
+                                      ),
+                                      label: const Text(
+                                        'Muat ulang kategori',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: AppColors.accentSky,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+
+                          SizedBox(height: isCompactHeight ? 18 : 24),
                         ],
                       ),
                     ),
+                  ),
 
-                    SizedBox(height: isCompactHeight ? 16 : 24),
-
-                    // Footer: by : Estomihi FP Simatupang
-                    Align(
+                  // Footer selalu menempel di bawah layar.
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      24,
+                      4,
+                      24,
+                      isCompactHeight ? 16 : 22,
+                    ),
+                    child: Align(
                       alignment: Alignment.centerLeft,
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                          bottom: isCompactHeight ? 18 : 24,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text(
-                              'by : Estomihi FP Simatupang',
-                              style: TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                height: 1.35,
-                              ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text(
+                            'by : Estomihi FP Simatupang',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              height: 1.35,
                             ),
-                            SizedBox(height: 4),
-                            Text(
-                              'Jemaat GMI Jakarta Pusat',
-                              style: TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                height: 1.35,
-                              ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Jemaat GMI Jakarta Pusat',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              height: 1.35,
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               );
             },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSelectionRow(BuildContext context) {
+    if (_isLoadingCategories) {
+      return const SizedBox(
+        height: 110,
+        child: Center(
+          child: SizedBox(
+            width: 26,
+            height: 26,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.accentSky),
+            ),
+          ),
+        ),
+      );
+    }
+
+    final tiles = <Widget>[
+      for (var index = 0; index < _categories.length; index++)
+        Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: SizedBox(
+            width: 86,
+            child: _buildCategoryTile(context, index),
+          ),
+        ),
+      SizedBox(
+        width: 86,
+        child: _IconOptionTile(
+          key: const ValueKey('landing_mode_text_only'),
+          icon: Icons.text_snippet_rounded,
+          color: const Color(0xFFFB8C00),
+          label: 'Teks Only',
+          description: 'Lirik Saja',
+          selected: false,
+          labelMaxLines: 2,
+          onTap: () {
+            _navigateToMain(
+              context,
+              displayMode: DisplayMode.textOnly,
+            );
+          },
+        ),
+      ),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minWidth: constraints.maxWidth),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: tiles,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCategoryTile(BuildContext context, int index) {
+    final category = _categories[index];
+    final spec = categoryIconSpec(category, index);
+
+    return _IconOptionTile(
+      key: ValueKey('landing_category_${category.songcategoryid}'),
+      icon: spec.icon,
+      color: spec.color,
+      label: category.name,
+      selected: false,
+      labelMaxLines: 4,
+      onTap: () {
+        _navigateToMain(
+          context,
+          categoryId: category.songcategoryid,
+        );
+      },
+    );
+  }
+}
+
+class _IconOptionTile extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String label;
+  final String? description;
+  final bool selected;
+  final int labelMaxLines;
+  final VoidCallback? onTap;
+
+  const _IconOptionTile({
+    super.key,
+    required this.icon,
+    required this.color,
+    required this.label,
+    this.description,
+    required this.selected,
+    this.labelMaxLines = 2,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: label,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 6),
+            decoration: BoxDecoration(
+              color: selected
+                  ? AppColors.accentCyan.withValues(alpha: 0.10)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: selected
+                    ? AppColors.accentCyan.withValues(alpha: 0.75)
+                    : Colors.transparent,
+                width: 1.4,
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            color,
+                            Color.lerp(color, Colors.black, 0.28)!,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.28),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: color.withValues(
+                              alpha: selected ? 0.55 : 0.28,
+                            ),
+                            blurRadius: selected ? 14 : 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Stack(
+                        children: [
+                          // Kilau lembut agar ikon terasa seperti app icon.
+                          Positioned(
+                            top: 3,
+                            left: 5,
+                            right: 5,
+                            child: Container(
+                              height: 14,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.18),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                          Center(
+                            child: Icon(
+                              icon,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (selected)
+                      Positioned(
+                        right: -4,
+                        bottom: -4,
+                        child: Container(
+                          width: 17,
+                          height: 17,
+                          decoration: BoxDecoration(
+                            color: AppColors.accentCyan,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: const Color(0xFF061121),
+                              width: 1.6,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.check_rounded,
+                            size: 11,
+                            color: Color(0xFF061121),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  maxLines: labelMaxLines,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    height: 1.15,
+                    fontWeight: selected ? FontWeight.bold : FontWeight.w500,
+                    color: selected ? Colors.white : AppColors.textSecondary,
+                  ),
+                ),
+                if (description != null) ...[
+                  const SizedBox(height: 1),
+                  Text(
+                    description!,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 9.5,
+                      height: 1.1,
+                      color: selected
+                          ? AppColors.accentSky
+                          : AppColors.textMuted,
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
         ),
       ),

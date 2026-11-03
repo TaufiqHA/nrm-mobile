@@ -4,6 +4,9 @@ import '../../../core/theme/app_colors.dart';
 
 /// Kontrol minimal untuk mode Teks Only: navigasi ayat sebelumnya/berikutnya.
 class TextOnlyControls extends StatelessWidget {
+  /// Tinggi kartu: padding vertikal 10+10 + tombol 56.
+  static const double preferredHeight = 76;
+
   final VoidCallback? onPrevious;
   final VoidCallback? onNext;
   final bool canPrevious;

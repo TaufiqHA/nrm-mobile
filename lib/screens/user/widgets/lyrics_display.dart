@@ -94,6 +94,8 @@ class _LyricsDisplayState extends State<LyricsDisplay> {
   Widget _buildVerse(List<LyricVerse> verses) {
     final index = widget.verseIndex.clamp(0, verses.length - 1);
     final verse = verses[index];
+    final song = widget.song!;
+    final songNumber = song.songNumber;
 
     return Scrollbar(
       child: SingleChildScrollView(
@@ -101,16 +103,58 @@ class _LyricsDisplayState extends State<LyricsDisplay> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Judul dan nomor lagu di atas teks ayat.
             Padding(
               padding: const EdgeInsets.only(right: 104),
-              child: Text(
-                verse.headingLabel(index),
-                style: TextStyle(
-                  fontSize: _baseHeadingSize * _textScale,
-                  height: 1.35,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    song.songtitle,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      height: 1.25,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
+                  if (songNumber != null) ...[
+                    const SizedBox(height: 5),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.accentCyan.withValues(alpha: 0.14),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: AppColors.accentCyan.withValues(alpha: 0.4),
+                        ),
+                      ),
+                      child: Text(
+                        'No. $songNumber',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.accentSky,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              verse.headingLabel(index),
+              style: TextStyle(
+                fontSize: _baseHeadingSize * _textScale,
+                height: 1.35,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
               ),
             ),
             if (verse.body.isNotEmpty) ...[

@@ -32,21 +32,27 @@ void main() {
     expect(find.byType(LoginScreen), findsOneWidget);
     expect(find.text('NRM'), findsOneWidget);
     expect(find.text('(Nyanyian Rohani Methodist)'), findsOneWidget);
-    expect(find.text('Klik to play'), findsOneWidget);
+    expect(find.text('Pilih Jenis Musik'), findsOneWidget);
   });
 
   testWidgets('NRM Welcome screen renders UI elements and Play button navigates', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(800, 1000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     await tester.pumpWidget(
       MaterialApp(
         home: LoginScreen(categoryService: DummyCategoryService()),
       ),
     );
+    await tester.pumpAndSettle();
 
     // Memverifikasi elemen-elemen tampilan NRM
     expect(find.text('NRM'), findsOneWidget);
     expect(find.text('(Nyanyian Rohani Methodist)'), findsOneWidget);
-    expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget);
-    expect(find.text('Klik to play'), findsOneWidget);
+    expect(find.text('Pilih Jenis Musik'), findsOneWidget);
+    expect(find.text('Pop Indonesia'), findsOneWidget);
     expect(find.text('by : Estomihi FP Simatupang'), findsOneWidget);
     expect(find.text('Jemaat GMI Jakarta Pusat'), findsOneWidget);
 
@@ -55,8 +61,8 @@ void main() {
     expect(find.text('Username'), findsNothing);
     expect(find.text('Password'), findsNothing);
 
-    // Menekan tombol play / 'Klik to play' untuk masuk ke aplikasi
-    await tester.tap(find.text('Klik to play'));
+    // Memilih kategori langsung masuk ke aplikasi
+    await tester.tap(find.byKey(const ValueKey('landing_category_1')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
     await tester.pumpAndSettle();
