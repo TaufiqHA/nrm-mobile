@@ -4,6 +4,7 @@ import '../core/services/api_category_service.dart';
 import '../core/services/category_service.dart';
 import '../core/theme/app_colors.dart';
 import '../models/category_model.dart';
+import '../models/display_mode.dart';
 import 'user/user_main_layout.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -21,6 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
   late final CategoryService _categoryService;
   List<CategoryModel> _categories = [];
   int? _selectedCategory;
+  DisplayMode _displayMode = DisplayMode.normal;
   bool _isLoadingCategories = true;
   bool _categoryLoadFailed = false;
 
@@ -60,8 +62,10 @@ class _LoginScreenState extends State<LoginScreen> {
   void _navigateToMain(BuildContext context) {
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            UserMainLayout(initialCategoryFilter: _selectedCategory),
+        pageBuilder: (context, animation, secondaryAnimation) => UserMainLayout(
+          initialCategoryFilter: _selectedCategory,
+          initialDisplayMode: _displayMode,
+        ),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },
@@ -85,6 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ..._categories
           .map((cat) => cat.name)
           .where((name) => name.trim().isNotEmpty),
+      ...DisplayMode.values.map((mode) => mode.label),
     ];
     if (texts.length == 1) {
       texts.add('Kategori tidak tersedia');
@@ -173,6 +178,64 @@ class _LoginScreenState extends State<LoginScreen> {
                           _selectedCategory = val;
                         });
                       },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModeSelector() {
+    return Container(
+      width: double.infinity,
+      height: 52,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.accentSky.withValues(alpha: 0.45)),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            _displayMode == DisplayMode.textOnly
+                ? Icons.text_snippet_rounded
+                : Icons.smart_display_rounded,
+            size: 20,
+            color: AppColors.accentSky,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<DisplayMode>(
+                value: _displayMode,
+                isExpanded: true,
+                isDense: true,
+                dropdownColor: AppColors.surfaceDark,
+                borderRadius: BorderRadius.circular(10),
+                icon: const Icon(
+                  Icons.arrow_drop_down_rounded,
+                  color: Colors.white,
+                  size: 26,
+                ),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+                items: DisplayMode.values.map((mode) {
+                  return DropdownMenuItem<DisplayMode>(
+                    value: mode,
+                    child: Text(mode.label, overflow: TextOverflow.ellipsis),
+                  );
+                }).toList(),
+                onChanged: (mode) {
+                  if (mode == null) return;
+                  setState(() {
+                    _displayMode = mode;
+                  });
+                },
               ),
             ),
           ),
@@ -290,7 +353,31 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
 
-                    SizedBox(height: isCompactHeight ? 20 : 28),
+                    SizedBox(height: isCompactHeight ? 10 : 14),
+
+                    // Pilihan mode tampilan (biasa / teks only)
+                    SizedBox(
+                      key: const ValueKey('landing_mode_selector'),
+                      width: _categorySelectorWidth(constraints.maxWidth - 48),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Text(
+                            'Mode Tampilan',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          SizedBox(height: isCompactHeight ? 8 : 10),
+                          _buildModeSelector(),
+                        ],
+                      ),
+                    ),
+
+                    SizedBox(height: isCompactHeight ? 14 : 22),
 
                     // Red Circular Play Button with "Klik to play"
                     GestureDetector(

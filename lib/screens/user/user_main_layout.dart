@@ -13,18 +13,22 @@ import '../../models/application_model.dart';
 import '../../services/ad_manager.dart';
 import '../../widgets/ad_slot_view.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/utils/lyric_parser.dart';
 import '../../core/utils/youtube_helper.dart';
 import '../../models/category_model.dart';
+import '../../models/display_mode.dart';
 import '../../models/song_model.dart';
 import '../../models/user_model.dart';
 import '../login_screen.dart';
 import '../../services/cast/smart_tv_cast_service.dart';
 import 'widgets/cast_device_modal.dart';
+import 'widgets/lyrics_display.dart';
 import 'widgets/player_controls.dart';
 import 'widgets/player_display.dart';
 import 'widgets/song_catalog_playlist_section.dart';
 import 'widgets/song_search_modal.dart';
 import 'widgets/song_search_panel.dart';
+import 'widgets/text_only_controls.dart';
 
 class UserMainLayout extends StatefulWidget {
   final SongService? songService;
@@ -33,6 +37,7 @@ class UserMainLayout extends StatefulWidget {
   final ApplicationService? applicationService;
   final bool isTestMode;
   final int? initialCategoryFilter;
+  final DisplayMode initialDisplayMode;
 
   const UserMainLayout({
     super.key,
@@ -42,6 +47,7 @@ class UserMainLayout extends StatefulWidget {
     this.applicationService,
     this.isTestMode = false,
     this.initialCategoryFilter,
+    this.initialDisplayMode = DisplayMode.normal,
   });
 
   @override
@@ -63,9 +69,15 @@ class _UserMainLayoutState extends State<UserMainLayout> {
   List<CategoryModel> _categories = [];
   bool _isLoading = true;
 
+  bool get _isTextOnly => widget.initialDisplayMode == DisplayMode.textOnly;
+
+  List<LyricVerse> get _currentVerses =>
+      LyricParser.parse(_currentSong?.songlyric);
+
   // Playback state
   SongModel? _currentSong;
   bool _isPlaying = false;
+  int _currentVerseIndex = 0;
   Duration _currentPosition = Duration.zero;
   final ValueNotifier<Duration> _currentPositionNotifier = ValueNotifier<Duration>(Duration.zero);
   Duration _totalDuration = const Duration(minutes: 3, seconds: 30);
@@ -350,7 +362,7 @@ class _UserMainLayoutState extends State<UserMainLayout> {
     _stopPlaybackTimer();
 
     final videoId = YoutubeHelper.extractVideoId(song.songurl);
-    if (videoId != null && !widget.isTestMode) {
+    if (!_isTextOnly && videoId != null && !widget.isTestMode) {
       if (_youtubeController != null) {
         try {
           _youtubeController!.loadVideoById(
@@ -369,11 +381,16 @@ class _UserMainLayoutState extends State<UserMainLayout> {
 
     setState(() {
       _currentSong = song;
+      _currentVerseIndex = 0;
       _updateCurrentPosition(Duration.zero);
-      _totalDuration = _parseSongDuration(song.songduration);
-      _isPlaying = true;
+      _totalDuration = _isTextOnly
+          ? Duration.zero
+          : _parseSongDuration(song.songduration);
+      _isPlaying = !_isTextOnly;
     });
-    if (_castService.connectedDevice != null && videoId != null) {
+    if (!_isTextOnly &&
+        _castService.connectedDevice != null &&
+        videoId != null) {
       _castService.castVideo(
         videoId,
         title: song.songtitle,
@@ -381,7 +398,9 @@ class _UserMainLayoutState extends State<UserMainLayout> {
         thumbnailUrl: YoutubeHelper.getThumbnailUrl(videoId),
       );
     }
-    _startPlaybackTimer();
+    if (!_isTextOnly) {
+      _startPlaybackTimer();
+    }
     AdManager.instance.maybeShowInterstitial();
   }
 
@@ -474,6 +493,27 @@ class _UserMainLayoutState extends State<UserMainLayout> {
           _updateCurrentPosition(Duration.zero);
         });
       }
+    }
+  }
+
+  /// Pindah ke ayat berikutnya. Berhenti di ayat terakhir; tidak otomatis
+  /// berpindah ke lagu berikutnya.
+  void _nextVerse() {
+    final verses = _currentVerses;
+    if (_currentVerseIndex + 1 < verses.length) {
+      setState(() {
+        _currentVerseIndex++;
+      });
+    }
+  }
+
+  /// Pindah ke ayat sebelumnya. Berhenti di ayat pertama; tidak otomatis
+  /// mundur ke lagu sebelumnya.
+  void _previousVerse() {
+    if (_currentVerseIndex > 0) {
+      setState(() {
+        _currentVerseIndex--;
+      });
     }
   }
 
@@ -729,6 +769,67 @@ class _UserMainLayoutState extends State<UserMainLayout> {
     );
   }
 
+  Widget _buildPlayerStage() {
+    if (_isTextOnly) {
+      return AspectRatio(
+        aspectRatio: 4 / 3,
+        child: LyricsDisplay(
+          song: _currentSong,
+          verseIndex: _currentVerseIndex,
+        ),
+      );
+    }
+
+    return PlayerDisplay(
+      key: _playerDisplayKey,
+      song: _currentSong,
+      isPlaying: _isPlaying,
+      currentPosition: _currentPosition,
+      totalDuration: _totalDuration,
+      queueCount: _queue.length,
+      isFullscreen: _isFullscreen,
+      youtubeController: _youtubeController,
+      isTestMode: widget.isTestMode,
+      onPlayPauseTapped: _togglePlayPause,
+      onOpenSearchModal: () => _openSongSearchModal(context),
+    );
+  }
+
+  Widget _buildPlaybackControls() {
+    if (_isTextOnly) {
+      final verses = _currentVerses;
+      return TextOnlyControls(
+        canPrevious: _currentSong != null && _currentVerseIndex > 0,
+        canNext:
+            _currentSong != null && _currentVerseIndex < verses.length - 1,
+        onPrevious: _previousVerse,
+        onNext: _nextVerse,
+      );
+    }
+
+    return PlayerControls(
+      song: _currentSong,
+      isPlaying: _isPlaying,
+      hasSong: _currentSong != null,
+      currentPosition: _currentPosition,
+      currentPositionListenable: _currentPositionNotifier,
+      totalDuration: _totalDuration,
+      onSeek: _seek,
+      onTogglePlayPause: _togglePlayPause,
+      onStop: _stopSong,
+      onNext: _nextSong,
+      onPrevious: _previousSong,
+      volume: _volume,
+      isMuted: _isMuted,
+      isFullscreen: _isFullscreen,
+      onToggleFullscreen: _toggleFullscreen,
+      onVolumeChanged: _onVolumeChanged,
+      onToggleMute: _toggleMute,
+      onCastTapped: () => _openCastModal(context),
+      isCasting: _castService.connectedDevice != null,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final displayName = _currentUser?.displayName ?? 'Penyanyi';
@@ -790,45 +891,13 @@ class _UserMainLayoutState extends State<UserMainLayout> {
                                   // Player Cinema Stage (Otomatis menyesuaikan sisa tinggi 16:9)
                                   Expanded(
                                     child: Center(
-                                      child: PlayerDisplay(
-                                        key: _playerDisplayKey,
-                                        song: _currentSong,
-                                        isPlaying: _isPlaying,
-                                        currentPosition: _currentPosition,
-                                        totalDuration: _totalDuration,
-                                        queueCount: _queue.length,
-                                        isFullscreen: _isFullscreen,
-                                        youtubeController: _youtubeController,
-                                        isTestMode: widget.isTestMode,
-                                        onPlayPauseTapped: _togglePlayPause,
-                                        onOpenSearchModal: () => _openSongSearchModal(context),
-                                      ),
+                                      child: _buildPlayerStage(),
                                     ),
                                   ),
                                   SizedBox(height: isCompact ? 6 : 10),
 
                                   // Studio Playback Controls
-                                  PlayerControls(
-                                    song: _currentSong,
-                                    isPlaying: _isPlaying,
-                                    hasSong: _currentSong != null,
-                                    currentPosition: _currentPosition,
-                                    currentPositionListenable: _currentPositionNotifier,
-                                    totalDuration: _totalDuration,
-                                    onSeek: _seek,
-                                    onTogglePlayPause: _togglePlayPause,
-                                    onStop: _stopSong,
-                                    onNext: _nextSong,
-                                    onPrevious: _previousSong,
-                                    volume: _volume,
-                                    isMuted: _isMuted,
-                                    isFullscreen: _isFullscreen,
-                                    onToggleFullscreen: _toggleFullscreen,
-                                    onVolumeChanged: _onVolumeChanged,
-                                    onToggleMute: _toggleMute,
-                                    onCastTapped: () => _openCastModal(context),
-                                    isCasting: _castService.connectedDevice != null,
-                                  ),
+                                  _buildPlaybackControls(),
                                 ],
                               ),
                             ),
@@ -873,43 +942,11 @@ class _UserMainLayoutState extends State<UserMainLayout> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             // Player Cinema Stage (Full Width)
-                            PlayerDisplay(
-                              key: _playerDisplayKey,
-                              song: _currentSong,
-                              isPlaying: _isPlaying,
-                              currentPosition: _currentPosition,
-                              totalDuration: _totalDuration,
-                              queueCount: _queue.length,
-                              isFullscreen: _isFullscreen,
-                              youtubeController: _youtubeController,
-                              isTestMode: widget.isTestMode,
-                              onPlayPauseTapped: _togglePlayPause,
-                              onOpenSearchModal: () => _openSongSearchModal(context),
-                            ),
+                            _buildPlayerStage(),
                             const SizedBox(height: 8),
 
                             // Studio Playback Controls
-                            PlayerControls(
-                              song: _currentSong,
-                              isPlaying: _isPlaying,
-                              hasSong: _currentSong != null,
-                              currentPosition: _currentPosition,
-                              currentPositionListenable: _currentPositionNotifier,
-                              totalDuration: _totalDuration,
-                              onSeek: _seek,
-                              onTogglePlayPause: _togglePlayPause,
-                              onStop: _stopSong,
-                              onNext: _nextSong,
-                              onPrevious: _previousSong,
-                              volume: _volume,
-                              isMuted: _isMuted,
-                              isFullscreen: _isFullscreen,
-                              onToggleFullscreen: _toggleFullscreen,
-                              onVolumeChanged: _onVolumeChanged,
-                              onToggleMute: _toggleMute,
-                              onCastTapped: () => _openCastModal(context),
-                              isCasting: _castService.connectedDevice != null,
-                            ),
+                            _buildPlaybackControls(),
                             const SizedBox(height: 10),
 
                             // Cari Lagu & Playlist Section (Berdampingan secara horizontal di mobile)
@@ -945,43 +982,11 @@ class _UserMainLayoutState extends State<UserMainLayout> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           // Player Cinema Stage (Full Width, Fixed)
-                          PlayerDisplay(
-                            key: _playerDisplayKey,
-                            song: _currentSong,
-                            isPlaying: _isPlaying,
-                            currentPosition: _currentPosition,
-                            totalDuration: _totalDuration,
-                            queueCount: _queue.length,
-                            isFullscreen: _isFullscreen,
-                            youtubeController: _youtubeController,
-                            isTestMode: widget.isTestMode,
-                            onPlayPauseTapped: _togglePlayPause,
-                            onOpenSearchModal: () => _openSongSearchModal(context),
-                          ),
+                          _buildPlayerStage(),
                           const SizedBox(height: 8),
 
                           // Studio Playback Controls (Fixed)
-                          PlayerControls(
-                            song: _currentSong,
-                            isPlaying: _isPlaying,
-                            hasSong: _currentSong != null,
-                            currentPosition: _currentPosition,
-                            currentPositionListenable: _currentPositionNotifier,
-                            totalDuration: _totalDuration,
-                            onSeek: _seek,
-                            onTogglePlayPause: _togglePlayPause,
-                            onStop: _stopSong,
-                            onNext: _nextSong,
-                            onPrevious: _previousSong,
-                            volume: _volume,
-                            isMuted: _isMuted,
-                            isFullscreen: _isFullscreen,
-                            onToggleFullscreen: _toggleFullscreen,
-                            onVolumeChanged: _onVolumeChanged,
-                            onToggleMute: _toggleMute,
-                            onCastTapped: () => _openCastModal(context),
-                            isCasting: _castService.connectedDevice != null,
-                          ),
+                          _buildPlaybackControls(),
                           const SizedBox(height: 10),
 
                           // Cari Lagu & Playlist Section

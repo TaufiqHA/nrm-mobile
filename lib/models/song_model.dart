@@ -6,6 +6,7 @@ class SongModel {
   final String songsinger;
   final String songurl;
   final int songcategory;
+  final String? songlyric;
   final String? songnada;
   final String? songduration;
   final DateTime? createdAt;
@@ -18,6 +19,7 @@ class SongModel {
     required this.songsinger,
     required this.songurl,
     required this.songcategory,
+    this.songlyric,
     this.songnada,
     this.songduration,
     this.createdAt,
@@ -35,6 +37,7 @@ class SongModel {
     String? songsinger,
     String? songurl,
     int? songcategory,
+    String? songlyric,
     String? songnada,
     String? songduration,
     DateTime? createdAt,
@@ -47,6 +50,7 @@ class SongModel {
       songsinger: songsinger ?? this.songsinger,
       songurl: songurl ?? this.songurl,
       songcategory: songcategory ?? this.songcategory,
+      songlyric: songlyric ?? this.songlyric,
       songnada: songnada ?? this.songnada,
       songduration: songduration ?? this.songduration,
       createdAt: createdAt ?? this.createdAt,
@@ -58,7 +62,9 @@ class SongModel {
   factory SongModel.fromJson(Map<String, dynamic> json) {
     CategoryModel? parsedCategory;
     if (json['category'] != null && json['category'] is Map<String, dynamic>) {
-      parsedCategory = CategoryModel.fromJson(json['category'] as Map<String, dynamic>);
+      parsedCategory = CategoryModel.fromJson(
+        json['category'] as Map<String, dynamic>,
+      );
     }
 
     DateTime? parsedCreatedAt;
@@ -81,6 +87,7 @@ class SongModel {
       songcategory: json['songcategory'] is int
           ? json['songcategory'] as int
           : int.tryParse(json['songcategory']?.toString() ?? '1') ?? 1,
+      songlyric: (json['songlyric'] ?? json['lyric']) as String?,
       songnada: json['songnada'] as String?,
       songduration: json['songduration'] as String?,
       createdAt: parsedCreatedAt,
@@ -96,6 +103,7 @@ class SongModel {
       'songsinger': songsinger,
       'songurl': songurl,
       'songcategory': songcategory,
+      'songlyric': songlyric,
       'songnada': songnada,
       'songduration': songduration,
       if (createdAt != null) 'created_at': createdAt?.toIso8601String(),

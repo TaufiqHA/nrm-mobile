@@ -5,13 +5,16 @@ import 'package:karaoke_app/core/services/dummy_category_service.dart';
 import 'package:karaoke_app/core/services/dummy_song_service.dart';
 import 'package:karaoke_app/screens/login_screen.dart';
 import 'package:karaoke_app/models/category_model.dart';
+import 'package:karaoke_app/models/display_mode.dart';
 import 'package:karaoke_app/models/song_model.dart';
 import 'package:karaoke_app/screens/profile/profile_screen.dart';
 import 'package:karaoke_app/screens/user/user_main_layout.dart';
 import 'package:karaoke_app/screens/user/widgets/player_controls.dart';
 import 'package:karaoke_app/screens/user/widgets/player_display.dart';
+import 'package:karaoke_app/screens/user/widgets/lyrics_display.dart';
 import 'package:karaoke_app/screens/user/widgets/song_catalog_playlist_section.dart';
 import 'package:karaoke_app/screens/user/widgets/song_search_modal.dart';
+import 'package:karaoke_app/screens/user/widgets/text_only_controls.dart';
 import 'package:karaoke_app/screens/user/widgets/youtube_video_player.dart';
 import 'package:karaoke_app/services/cast/smart_tv_cast_service.dart';
 
@@ -676,6 +679,158 @@ void main() {
     final layout = tester.widget<UserMainLayout>(find.byType(UserMainLayout));
     expect(layout.initialCategoryFilter, 2);
   });
+
+  testWidgets('LoginScreen mode selector passes Teks Only to UserMainLayout', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(home: LoginScreen(categoryService: DummyCategoryService())),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Mode Tampilan'), findsOneWidget);
+    expect(find.text('Mode Biasa (Musik + Video)'), findsOneWidget);
+
+    await tester.tap(find.text('Mode Biasa (Musik + Video)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Teks Only (Lirik Saja)').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Teks Only (Lirik Saja)'), findsOneWidget);
+
+    await tester.tap(find.text('Klik to play'));
+    await tester.pumpAndSettle();
+
+    final layout = tester.widget<UserMainLayout>(find.byType(UserMainLayout));
+    expect(layout.initialDisplayMode, DisplayMode.textOnly);
+  });
+
+  testWidgets(
+    'UserMainLayout mode Teks Only menampilkan lirik tanpa video dan audio',
+    (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      const songs = [
+        SongModel(
+          songid: 1,
+          songtitle: 'Marilah Orang Berdosa',
+          songsinger: '1',
+          songurl: 'https://www.youtube.com/watch?v=aaaaaaaaaaa',
+          songcategory: 1,
+          songlyric: 'Marilah orang berdosa datang kepada Tuhan\nDatang seperti adanya\n\nYesus memberi ampunan',
+        ),
+        SongModel(
+          songid: 2,
+          songtitle: 'Beribu Lidah Patutlah',
+          songsinger: '2',
+          songurl: 'https://www.youtube.com/watch?v=bbbbbbbbbbb',
+          songcategory: 1,
+          songlyric: 'Beribu lidah patutlah',
+        ),
+      ];
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: UserMainLayout(
+            songService: DummySongService(songs),
+            categoryService: DummyCategoryService(),
+            isTestMode: true,
+            initialDisplayMode: DisplayMode.textOnly,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Panel lirik menggantikan video dan kontrol playback penuh.
+      expect(find.byType(LyricsDisplay), findsOneWidget);
+      expect(find.byType(TextOnlyControls), findsOneWidget);
+      expect(find.byType(PlayerDisplay), findsNothing);
+      expect(find.byType(PlayerControls), findsNothing);
+      expect(find.byType(YoutubeVideoPlayerWidget), findsNothing);
+      expect(find.text('Pilih lagu untuk melihat lirik'), findsOneWidget);
+
+      // Pilih lagu pertama lalu putar dari playlist.
+      await tester.tap(find.text('Marilah Orang Berdosa').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Putar Lagu'));
+      await tester.pumpAndSettle();
+      // Tunggu snackbar antrean hilang agar tidak menutupi tombol navigasi.
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Ayat 1'), findsOneWidget);
+      expect(find.textContaining('Marilah orang berdosa'), findsOneWidget);
+      expect(find.textContaining('Yesus memberi ampunan'), findsNothing);
+      expect(find.byType(YoutubeVideoPlayerWidget), findsNothing);
+
+      // Ukuran teks bisa diperbesar dan diperkecil dari panel lirik.
+      final lyricFinder = find.textContaining('Marilah orang berdosa');
+      final initialFontSize = tester.widget<Text>(lyricFinder).style!.fontSize!;
+
+      await tester.tap(find.byTooltip('Perbesar teks'));
+      await tester.pump();
+
+      final enlargedFontSize = tester.widget<Text>(lyricFinder).style!.fontSize!;
+      expect(enlargedFontSize, greaterThan(initialFontSize));
+
+      await tester.tap(find.byTooltip('Perkecil teks'));
+      await tester.pump();
+
+      final reducedFontSize = tester.widget<Text>(lyricFinder).style!.fontSize!;
+      expect(reducedFontSize, lessThan(enlargedFontSize));
+
+      // Di ayat pertama tombol previous nonaktif.
+      final previousButton = tester.widget<InkWell>(
+        find
+            .descendant(
+              of: find.byTooltip('Ayat sebelumnya'),
+              matching: find.byType(InkWell),
+            )
+            .first,
+      );
+      expect(previousButton.onTap, isNull);
+
+      // Next pertama: ayat 2 pada lagu yang sama.
+      await tester.tap(find.byTooltip('Ayat berikutnya'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Ayat 2'), findsOneWidget);
+      expect(find.textContaining('Yesus memberi ampunan'), findsOneWidget);
+      expect(find.textContaining('Marilah orang berdosa'), findsNothing);
+
+      // Di ayat kedua tombol previous aktif kembali.
+      final previousAtSecondVerse = tester.widget<InkWell>(
+        find
+            .descendant(
+              of: find.byTooltip('Ayat sebelumnya'),
+              matching: find.byType(InkWell),
+            )
+            .first,
+      );
+      expect(previousAtSecondVerse.onTap, isNotNull);
+
+      // Next kedua: sudah di ayat terakhir, tombol next nonaktif dan tidak
+      // berpindah ke lagu berikutnya.
+      final nextButton = tester.widget<InkWell>(
+        find
+            .descendant(
+              of: find.byTooltip('Ayat berikutnya'),
+              matching: find.byType(InkWell),
+            )
+            .first,
+      );
+      expect(nextButton.onTap, isNull);
+
+      await tester.tap(find.byTooltip('Ayat berikutnya'), warnIfMissed: false);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Ayat 2'), findsOneWidget);
+      expect(find.textContaining('Yesus memberi ampunan'), findsOneWidget);
+      expect(find.textContaining('Beribu lidah patutlah'), findsNothing);
+    },
+  );
 
   testWidgets('UserMainLayout tablet mode: player on left, search top-right, playlist bottom-right', (WidgetTester tester) async {
     tester.view.physicalSize = const Size(1024, 768);
