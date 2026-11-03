@@ -144,25 +144,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                const Text(
-                                  'Pilih Jenis Musik',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                const Text(
-                                  'Ketuk kategori untuk langsung masuk, atau pilih Teks Only',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 11.5,
-                                    height: 1.3,
-                                    color: AppColors.textMuted,
-                                  ),
-                                ),
                                 SizedBox(height: isCompactHeight ? 8 : 10),
                                 _buildSelectionRow(context),
                                 if (_categoryLoadFailed &&
@@ -271,10 +252,7 @@ class _LoginScreenState extends State<LoginScreen> {
       for (var index = 0; index < _categories.length; index++)
         Padding(
           padding: const EdgeInsets.only(right: 8),
-          child: SizedBox(
-            width: 86,
-            child: _buildCategoryTile(context, index),
-          ),
+          child: SizedBox(width: 86, child: _buildCategoryTile(context, index)),
         ),
       SizedBox(
         width: 86,
@@ -287,10 +265,7 @@ class _LoginScreenState extends State<LoginScreen> {
           selected: false,
           labelMaxLines: 2,
           onTap: () {
-            _navigateToMain(
-              context,
-              displayMode: DisplayMode.textOnly,
-            );
+            _navigateToMain(context, displayMode: DisplayMode.textOnly);
           },
         ),
       ),
@@ -322,14 +297,12 @@ class _LoginScreenState extends State<LoginScreen> {
       key: ValueKey('landing_category_${category.songcategoryid}'),
       icon: spec.icon,
       color: spec.color,
+      imageUrl: spec.imageUrl,
       label: category.name,
       selected: false,
       labelMaxLines: 4,
       onTap: () {
-        _navigateToMain(
-          context,
-          categoryId: category.songcategoryid,
-        );
+        _navigateToMain(context, categoryId: category.songcategoryid);
       },
     );
   }
@@ -338,6 +311,7 @@ class _LoginScreenState extends State<LoginScreen> {
 class _IconOptionTile extends StatelessWidget {
   final IconData icon;
   final Color color;
+  final String? imageUrl;
   final String label;
   final String? description;
   final bool selected;
@@ -348,6 +322,7 @@ class _IconOptionTile extends StatelessWidget {
     super.key,
     required this.icon,
     required this.color,
+    this.imageUrl,
     required this.label,
     this.description,
     required this.selected,
@@ -428,11 +403,22 @@ class _IconOptionTile extends StatelessWidget {
                             ),
                           ),
                           Center(
-                            child: Icon(
-                              icon,
-                              color: Colors.white,
-                              size: 24,
-                            ),
+                            child: imageUrl == null
+                                ? Icon(icon, color: Colors.white, size: 24)
+                                : Padding(
+                                    padding: const EdgeInsets.all(4),
+                                    child: Image.network(
+                                      imageUrl!,
+                                      width: 34,
+                                      height: 34,
+                                      fit: BoxFit.contain,
+                                      errorBuilder: (_, _, _) => Icon(
+                                        icon,
+                                        color: Colors.white,
+                                        size: 24,
+                                      ),
+                                    ),
+                                  ),
                           ),
                         ],
                       ),

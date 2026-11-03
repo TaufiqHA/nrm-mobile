@@ -1,6 +1,16 @@
 class CategoryModel {
   final int songcategoryid;
   final String songcategoryname;
+
+  /// Key ikon bawaan dari website admin (lihat `categoryIconCatalog`).
+  final String? icon;
+
+  /// Path gambar ikon hasil upload (relatif terhadap `/storage`, atau URL penuh).
+  final String? iconImage;
+
+  /// URL absolut gambar ikon yang disediakan API (cadangan bila `iconImage` kosong).
+  final String? iconUrl;
+
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -13,27 +23,48 @@ class CategoryModel {
     int? songcategoryid,
     dynamic name,
     String? songcategoryname,
+    String? icon,
+    String? iconImage,
+    String? iconUrl,
     this.createdAt,
     this.updatedAt,
-  })  : songcategoryid = songcategoryid ??
-            (id is int ? id : (int.tryParse(id?.toString() ?? '0') ?? 0)),
-        songcategoryname =
-            (songcategoryname ?? name ?? '').toString();
+  }) : songcategoryid =
+           songcategoryid ??
+           (id is int ? id : (int.tryParse(id?.toString() ?? '0') ?? 0)),
+       songcategoryname = (songcategoryname ?? name ?? '').toString(),
+       icon = _nonEmpty(icon),
+       iconImage = _nonEmpty(iconImage),
+       iconUrl = _nonEmpty(iconUrl);
+
+  static String? _nonEmpty(String? value) {
+    final trimmed = value?.trim();
+    return (trimmed == null || trimmed.isEmpty) ? null : trimmed;
+  }
 
   CategoryModel copyWith({
     int? songcategoryid,
     String? songcategoryname,
     dynamic id,
     dynamic name,
+    String? icon,
+    String? iconImage,
+    String? iconUrl,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
     return CategoryModel(
-      songcategoryid: songcategoryid ??
+      songcategoryid:
+          songcategoryid ??
           (id != null
-              ? (id is int ? id : (int.tryParse(id.toString()) ?? this.songcategoryid))
+              ? (id is int
+                    ? id
+                    : (int.tryParse(id.toString()) ?? this.songcategoryid))
               : this.songcategoryid),
-      songcategoryname: songcategoryname ?? (name?.toString() ?? this.songcategoryname),
+      songcategoryname:
+          songcategoryname ?? (name?.toString() ?? this.songcategoryname),
+      icon: icon ?? this.icon,
+      iconImage: iconImage ?? this.iconImage,
+      iconUrl: iconUrl ?? this.iconUrl,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -51,7 +82,8 @@ class CategoryModel {
           : (int.tryParse(json['id'].toString()) ?? 0);
     }
 
-    final parsedName = (json['songcategoryname'] ?? json['name'] ?? '').toString();
+    final parsedName = (json['songcategoryname'] ?? json['name'] ?? '')
+        .toString();
 
     DateTime? parsedCreatedAt;
     if (json['created_at'] != null) {
@@ -70,6 +102,9 @@ class CategoryModel {
     return CategoryModel(
       songcategoryid: parsedId,
       songcategoryname: parsedName,
+      icon: (json['icon'] ?? json['iconKey'])?.toString(),
+      iconImage: (json['icon_image'] ?? json['iconImage'])?.toString(),
+      iconUrl: (json['icon_url'] ?? json['iconUrl'])?.toString(),
       createdAt: parsedCreatedAt ?? DateTime.now(),
       updatedAt: parsedUpdatedAt,
     );
@@ -79,6 +114,9 @@ class CategoryModel {
     return {
       'songcategoryid': songcategoryid,
       'songcategoryname': songcategoryname,
+      'icon': icon,
+      'icon_image': iconImage,
+      'icon_url': iconUrl,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
       // Backward-compatible properties

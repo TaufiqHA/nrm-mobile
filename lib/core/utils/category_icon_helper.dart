@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../models/category_model.dart';
+import '../config/api_config.dart';
 
 /// Ikon dan warna yang dipakai untuk merepresentasikan sebuah kategori lagu
 /// pada pemilih kategori berbentuk grid ikon.
@@ -8,8 +9,39 @@ class CategoryIconSpec {
   final IconData icon;
   final Color color;
 
-  const CategoryIconSpec(this.icon, this.color);
+  /// URL gambar ikon kustom dari website admin. Bila tidak null, gambar ini
+  /// yang ditampilkan menggantikan [icon].
+  final String? imageUrl;
+
+  const CategoryIconSpec(this.icon, this.color, [this.imageUrl]);
 }
+
+/// Pemetaan key ikon dari website admin (`config/category_icons.php`) ke ikon
+/// Material pada aplikasi. Key harus sama persis dengan katalog di backend.
+const Map<String, IconData> categoryIconCatalog = {
+  'music_note': Icons.music_note_rounded,
+  'library_music': Icons.library_music_rounded,
+  'queue_music': Icons.queue_music_rounded,
+  'headphones': Icons.headphones_rounded,
+  'mic': Icons.mic_rounded,
+  'piano': Icons.piano_rounded,
+  'music_video': Icons.music_video_rounded,
+  'video_library': Icons.video_library_rounded,
+  'lyrics': Icons.lyrics_rounded,
+  'star': Icons.star_rounded,
+  'favorite': Icons.favorite_rounded,
+  'celebration': Icons.celebration_rounded,
+  'bolt': Icons.bolt_rounded,
+  'child_care': Icons.child_care_rounded,
+  'ac_unit': Icons.ac_unit_rounded,
+  'wb_sunny': Icons.wb_sunny_rounded,
+  'church': Icons.church_rounded,
+  'menu_book': Icons.menu_book_rounded,
+  'language': Icons.language_rounded,
+  'public': Icons.public_rounded,
+  'flag': Icons.flag_rounded,
+  'translate': Icons.translate_rounded,
+};
 
 const List<Color> _categoryPalette = [
   Color(0xFFE53935), // merah
@@ -30,6 +62,23 @@ const List<Color> _categoryPalette = [
 CategoryIconSpec categoryIconSpec(CategoryModel category, int index) {
   final name = category.name.toLowerCase();
 
+  // Warna khusus saat nama kategori menyebut warna buku.
+  final color =
+      _colorFromName(name) ?? _categoryPalette[index % _categoryPalette.length];
+
+  // Prioritas 1: gambar ikon kustom yang diunggah lewat website admin.
+  final imageUrl = _resolveIconImageUrl(category);
+  if (imageUrl != null) {
+    return CategoryIconSpec(Icons.library_music_rounded, color, imageUrl);
+  }
+
+  // Prioritas 2: ikon bawaan yang dipilih lewat website admin.
+  final builtinIcon = categoryIconCatalog[category.icon];
+  if (builtinIcon != null) {
+    return CategoryIconSpec(builtinIcon, color);
+  }
+
+  // Prioritas 3: tebak ikon dari nama kategori (perilaku lama).
   IconData icon = Icons.library_music_rounded;
 
   if (_containsAny(name, ['anak', 'sekolah minggu', 'kids', 'children'])) {
@@ -87,11 +136,38 @@ CategoryIconSpec categoryIconSpec(CategoryModel category, int index) {
     icon = Icons.headphones_rounded;
   }
 
-  // Warna khusus saat nama kategori menyebut warna buku.
-  final color =
-      _colorFromName(name) ?? _categoryPalette[index % _categoryPalette.length];
-
   return CategoryIconSpec(icon, color);
+}
+
+/// Membangun URL gambar ikon dari path relatif yang disimpan backend.
+///
+/// Path dihitung terhadap origin dari `ApiConfig.baseUrl` (bukan `APP_URL`
+/// backend), sehingga tetap benar meskipun aplikasi memakai base URL custom.
+String? _resolveIconImageUrl(CategoryModel category) {
+  final rawPath = category.iconImage?.trim();
+  if (rawPath != null && rawPath.isNotEmpty) {
+    if (rawPath.startsWith('http://') || rawPath.startsWith('https://')) {
+      return rawPath;
+    }
+
+    final normalizedPath = rawPath.startsWith('/')
+        ? rawPath
+        : (rawPath.startsWith('storage/') ? '/$rawPath' : '/storage/$rawPath');
+
+    final base = Uri.tryParse(ApiConfig.baseUrl);
+    if (base != null && base.hasScheme && base.host.isNotEmpty) {
+      return base
+          .replace(path: normalizedPath, query: null, fragment: null)
+          .toString();
+    }
+  }
+
+  final directUrl = category.iconUrl?.trim();
+  if (directUrl != null && directUrl.isNotEmpty) {
+    return directUrl;
+  }
+
+  return null;
 }
 
 bool _containsAny(String text, List<String> keywords) {

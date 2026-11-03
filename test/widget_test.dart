@@ -25,53 +25,59 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('App opens directly to NRM Welcome screen without splash screen', (WidgetTester tester) async {
-    await tester.pumpWidget(const KaraokeApp());
+  testWidgets(
+    'App opens directly to NRM Welcome screen without splash screen',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(const KaraokeApp());
 
-    // Memverifikasi aplikasi langsung menampilkan halaman NRM tanpa splash screen
-    expect(find.byType(LoginScreen), findsOneWidget);
-    expect(find.text('NRM'), findsOneWidget);
-    expect(find.text('(Nyanyian Rohani Methodist)'), findsOneWidget);
-    expect(find.text('Pilih Jenis Musik'), findsOneWidget);
-  });
+      // Memverifikasi aplikasi langsung menampilkan halaman NRM tanpa splash screen
+      expect(find.byType(LoginScreen), findsOneWidget);
+      expect(find.text('NRM'), findsOneWidget);
+      expect(find.text('(Nyanyian Rohani Methodist)'), findsOneWidget);
+      expect(find.text('Pilih Jenis Musik'), findsNothing);
+    },
+  );
 
-  testWidgets('NRM Welcome screen renders UI elements and Play button navigates', (WidgetTester tester) async {
-    tester.view.physicalSize = const Size(800, 1000);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+  testWidgets(
+    'NRM Welcome screen renders UI elements and Play button navigates',
+    (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(800, 1000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(
-      MaterialApp(
-        home: LoginScreen(categoryService: DummyCategoryService()),
-      ),
-    );
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        MaterialApp(home: LoginScreen(categoryService: DummyCategoryService())),
+      );
+      await tester.pumpAndSettle();
 
-    // Memverifikasi elemen-elemen tampilan NRM
-    expect(find.text('NRM'), findsOneWidget);
-    expect(find.text('(Nyanyian Rohani Methodist)'), findsOneWidget);
-    expect(find.text('Pilih Jenis Musik'), findsOneWidget);
-    expect(find.text('Pop Indonesia'), findsOneWidget);
-    expect(find.text('by : Estomihi FP Simatupang'), findsOneWidget);
-    expect(find.text('Jemaat GMI Jakarta Pusat'), findsOneWidget);
+      // Memverifikasi elemen-elemen tampilan NRM
+      expect(find.text('NRM'), findsOneWidget);
+      expect(find.text('(Nyanyian Rohani Methodist)'), findsOneWidget);
+      expect(find.text('Pilih Jenis Musik'), findsNothing);
+      expect(find.text('Pop Indonesia'), findsOneWidget);
+      expect(find.text('by : Estomihi FP Simatupang'), findsOneWidget);
+      expect(find.text('Jemaat GMI Jakarta Pusat'), findsOneWidget);
 
-    // Memverifikasi TIDAK ADA form login atau kredensial
-    expect(find.byType(TextFormField), findsNothing);
-    expect(find.text('Username'), findsNothing);
-    expect(find.text('Password'), findsNothing);
+      // Memverifikasi TIDAK ADA form login atau kredensial
+      expect(find.byType(TextFormField), findsNothing);
+      expect(find.text('Username'), findsNothing);
+      expect(find.text('Password'), findsNothing);
 
-    // Memilih kategori langsung masuk ke aplikasi
-    await tester.tap(find.byKey(const ValueKey('landing_category_1')));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 600));
-    await tester.pumpAndSettle();
+      // Memilih kategori langsung masuk ke aplikasi
+      await tester.tap(find.byKey(const ValueKey('landing_category_1')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 600));
+      await tester.pumpAndSettle();
 
-    // Verifikasi berpindah ke UserMainLayout
-    expect(find.byType(UserMainLayout), findsOneWidget);
-  });
+      // Verifikasi berpindah ke UserMainLayout
+      expect(find.byType(UserMainLayout), findsOneWidget);
+    },
+  );
 
-  testWidgets('Admin Home Screen renders summary of songs and users', (WidgetTester tester) async {
+  testWidgets('Admin Home Screen renders summary of songs and users', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
@@ -95,7 +101,9 @@ void main() {
     expect(find.text('348'), findsOneWidget);
   });
 
-  testWidgets('Admin Category Screen CRUD operations test', (WidgetTester tester) async {
+  testWidgets('Admin Category Screen CRUD operations test', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
@@ -116,7 +124,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Tambah Kategori'), findsOneWidget);
-    await tester.enterText(find.widgetWithText(TextFormField, ''), 'Jazz & Blues');
+    await tester.enterText(
+      find.widgetWithText(TextFormField, ''),
+      'Jazz & Blues',
+    );
     await tester.tap(find.text('Simpan'));
     await tester.pumpAndSettle();
 
@@ -148,7 +159,9 @@ void main() {
     expect(find.text('Smooth Jazz'), findsNothing);
   });
 
-  testWidgets('Admin Song Screen CRUD and search/filter test', (WidgetTester tester) async {
+  testWidgets('Admin Song Screen CRUD and search/filter test', (
+    WidgetTester tester,
+  ) async {
     tester.view.physicalSize = const Size(1200, 800);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
@@ -177,7 +190,10 @@ void main() {
     await tester.enterText(find.byType(TextField), 'Sial');
     await tester.pumpAndSettle();
 
-    expect(find.byWidgetPredicate((w) => w is Text && w.data == 'Sial'), findsOneWidget);
+    expect(
+      find.byWidgetPredicate((w) => w is Text && w.data == 'Sial'),
+      findsOneWidget,
+    );
     expect(find.text('Rungkad'), findsNothing);
 
     // Clear search
@@ -198,7 +214,10 @@ void main() {
     // formFields[3]: Durasi
     await tester.enterText(formFields.at(0), 'Hampa');
     await tester.enterText(formFields.at(1), 'Ari Lasso');
-    await tester.enterText(formFields.at(2), 'https://example.com/audio/hampa.mp3');
+    await tester.enterText(
+      formFields.at(2),
+      'https://example.com/audio/hampa.mp3',
+    );
     await tester.enterText(formFields.at(3), '04:12');
 
     // Pilih Nada 'Pria' dari dropdown
@@ -242,7 +261,12 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Hapus Lagu'), findsOneWidget);
-    expect(find.textContaining('Apakah Anda yakin ingin menghapus lagu "Hampa (Akustik)"'), findsOneWidget);
+    expect(
+      find.textContaining(
+        'Apakah Anda yakin ingin menghapus lagu "Hampa (Akustik)"',
+      ),
+      findsOneWidget,
+    );
     await tester.tap(find.widgetWithText(ElevatedButton, 'Hapus'));
     await tester.pumpAndSettle();
 
@@ -250,11 +274,11 @@ void main() {
     expect(find.text('Hampa (Akustik)'), findsNothing);
   });
 
-  testWidgets('Admin User Screen CRUD and search/filter test', (WidgetTester tester) async {
+  testWidgets('Admin User Screen CRUD and search/filter test', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(
-      MaterialApp(
-        home: AdminUserScreen(userService: DummyUserService()),
-      ),
+      MaterialApp(home: AdminUserScreen(userService: DummyUserService())),
     );
     await tester.pumpAndSettle();
 
@@ -268,7 +292,10 @@ void main() {
     await tester.enterText(find.byType(TextField), 'karaoke_lover');
     await tester.pumpAndSettle();
 
-    expect(find.byWidgetPredicate((w) => w is Text && w.data == 'karaoke_lover'), findsOneWidget);
+    expect(
+      find.byWidgetPredicate((w) => w is Text && w.data == 'karaoke_lover'),
+      findsOneWidget,
+    );
     expect(find.text('operator'), findsNothing);
 
     // Clear search
@@ -334,7 +361,12 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Hapus Pengguna'), findsOneWidget);
-    expect(find.textContaining('Apakah Anda yakin ingin menghapus akun pengguna "budi_super"'), findsOneWidget);
+    expect(
+      find.textContaining(
+        'Apakah Anda yakin ingin menghapus akun pengguna "budi_super"',
+      ),
+      findsOneWidget,
+    );
     await tester.tap(find.widgetWithText(ElevatedButton, 'Hapus'));
     await tester.pumpAndSettle();
 
@@ -342,7 +374,9 @@ void main() {
     expect(find.text('budi_super'), findsNothing);
   });
 
-  testWidgets('Profile Screen renders user information and tabs correctly', (WidgetTester tester) async {
+  testWidgets('Profile Screen renders user information and tabs correctly', (
+    WidgetTester tester,
+  ) async {
     const testUser = UserModel(
       id: 'usr_test_1',
       username: 'karaoke_lover',
@@ -352,9 +386,7 @@ void main() {
     );
 
     await tester.pumpWidget(
-      const MaterialApp(
-        home: ProfileScreen(initialUser: testUser),
-      ),
+      const MaterialApp(home: ProfileScreen(initialUser: testUser)),
     );
     await tester.pumpAndSettle();
 
@@ -375,7 +407,9 @@ void main() {
     expect(find.text('Simpan Perubahan'), findsOneWidget);
   });
 
-  testWidgets('Profile Screen updates display name and email', (WidgetTester tester) async {
+  testWidgets('Profile Screen updates display name and email', (
+    WidgetTester tester,
+  ) async {
     const testUser = UserModel(
       id: 'usr_test_2',
       username: 'budi_singer',
@@ -412,7 +446,9 @@ void main() {
     expect(find.text('Budi Suara Emas'), findsWidgets);
   });
 
-  testWidgets('Profile Screen change password validation and process', (WidgetTester tester) async {
+  testWidgets('Profile Screen change password validation and process', (
+    WidgetTester tester,
+  ) async {
     const testUser = UserModel(
       id: 'usr_test_3',
       username: 'admin',
@@ -459,12 +495,10 @@ void main() {
     expect(find.text('Kata sandi berhasil diperbarui!'), findsOneWidget);
   });
 
-  testWidgets('HomeScreen navigates to ProfileScreen via profile button', (WidgetTester tester) async {
-    await tester.pumpWidget(
-      const MaterialApp(
-        home: HomeScreen(),
-      ),
-    );
+  testWidgets('HomeScreen navigates to ProfileScreen via profile button', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const MaterialApp(home: HomeScreen()));
     await tester.pumpAndSettle();
 
     // Tap icon profil pada header
@@ -476,38 +510,48 @@ void main() {
     expect(find.text('Manajemen Profil'), findsOneWidget);
   });
 
-  testWidgets('Admin Setting Screen renders tb_application configuration and updates values', (WidgetTester tester) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: AdminSettingScreen(applicationService: DummyApplicationService()),
+  testWidgets(
+    'Admin Setting Screen renders tb_application configuration and updates values',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: AdminSettingScreen(
+              applicationService: DummyApplicationService(),
+            ),
+          ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
+      );
+      await tester.pumpAndSettle();
 
-    // 1. Verifikasi elemen-elemen tb_application tampil
-    expect(find.text('Pengaturan Aplikasi'), findsOneWidget);
-    expect(find.text('Profil & Instansi'), findsOneWidget);
-    expect(find.text('PT Karaoke Musik Nusantara'), findsOneWidget);
-    expect(find.text('Karaoke Mobile App'), findsOneWidget);
-    expect(find.text('Status Iklan Utama'), findsOneWidget);
-    expect(find.text('Status Iklan Bawah'), findsOneWidget);
-    expect(find.text('Tautan Link'), findsWidgets);
-    expect(find.text('Unggah Gambar'), findsWidgets);
-    expect(find.text('Simpan Pengaturan'), findsOneWidget);
+      // 1. Verifikasi elemen-elemen tb_application tampil
+      expect(find.text('Pengaturan Aplikasi'), findsOneWidget);
+      expect(find.text('Profil & Instansi'), findsOneWidget);
+      expect(find.text('PT Karaoke Musik Nusantara'), findsOneWidget);
+      expect(find.text('Karaoke Mobile App'), findsOneWidget);
+      expect(find.text('Status Iklan Utama'), findsOneWidget);
+      expect(find.text('Status Iklan Bawah'), findsOneWidget);
+      expect(find.text('Tautan Link'), findsWidgets);
+      expect(find.text('Unggah Gambar'), findsWidgets);
+      expect(find.text('Simpan Pengaturan'), findsOneWidget);
 
-    // 2. Edit nama instansi
-    final companyFinder = find.widgetWithText(TextFormField, 'PT Karaoke Musik Nusantara');
-    await tester.enterText(companyFinder, 'PT Sing Star Indonesia');
+      // 2. Edit nama instansi
+      final companyFinder = find.widgetWithText(
+        TextFormField,
+        'PT Karaoke Musik Nusantara',
+      );
+      await tester.enterText(companyFinder, 'PT Sing Star Indonesia');
 
-    // 3. Simpan pengaturan
-    await tester.tap(find.text('Simpan Pengaturan'));
-    await tester.pumpAndSettle();
+      // 3. Simpan pengaturan
+      await tester.tap(find.text('Simpan Pengaturan'));
+      await tester.pumpAndSettle();
 
-    // 4. Verifikasi notifikasi berhasil
-    expect(find.text('Pengaturan aplikasi berhasil disimpan!'), findsOneWidget);
-    expect(find.text('PT Sing Star Indonesia'), findsOneWidget);
-  });
+      // 4. Verifikasi notifikasi berhasil
+      expect(
+        find.text('Pengaturan aplikasi berhasil disimpan!'),
+        findsOneWidget,
+      );
+      expect(find.text('PT Sing Star Indonesia'), findsOneWidget);
+    },
+  );
 }
-
