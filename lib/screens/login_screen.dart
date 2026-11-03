@@ -252,10 +252,10 @@ class _LoginScreenState extends State<LoginScreen> {
       for (var index = 0; index < _categories.length; index++)
         Padding(
           padding: const EdgeInsets.only(right: 8),
-          child: SizedBox(width: 86, child: _buildCategoryTile(context, index)),
+          child: SizedBox(width: 92, child: _buildCategoryTile(context, index)),
         ),
       SizedBox(
-        width: 86,
+        width: 92,
         child: _IconOptionTile(
           key: const ValueKey('landing_mode_text_only'),
           icon: Icons.text_snippet_rounded,
@@ -362,8 +362,8 @@ class _IconOptionTile extends StatelessWidget {
                   clipBehavior: Clip.none,
                   children: [
                     Container(
-                      width: 44,
-                      height: 44,
+                      width: 60,
+                      height: 60,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.topLeft,
@@ -373,7 +373,7 @@ class _IconOptionTile extends StatelessWidget {
                             Color.lerp(color, Colors.black, 0.28)!,
                           ],
                         ),
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(18),
                         border: Border.all(
                           color: Colors.white.withValues(alpha: 0.28),
                         ),
@@ -391,11 +391,11 @@ class _IconOptionTile extends StatelessWidget {
                         children: [
                           // Kilau lembut agar ikon terasa seperti app icon.
                           Positioned(
-                            top: 3,
-                            left: 5,
-                            right: 5,
+                            top: 4,
+                            left: 6,
+                            right: 6,
                             child: Container(
-                              height: 14,
+                              height: 18,
                               decoration: BoxDecoration(
                                 color: Colors.white.withValues(alpha: 0.18),
                                 borderRadius: BorderRadius.circular(10),
@@ -404,18 +404,18 @@ class _IconOptionTile extends StatelessWidget {
                           ),
                           Center(
                             child: imageUrl == null
-                                ? Icon(icon, color: Colors.white, size: 24)
+                                ? Icon(icon, color: Colors.white, size: 32)
                                 : Padding(
-                                    padding: const EdgeInsets.all(4),
+                                    padding: const EdgeInsets.all(5),
                                     child: Image.network(
                                       imageUrl!,
-                                      width: 34,
-                                      height: 34,
+                                      width: 46,
+                                      height: 46,
                                       fit: BoxFit.contain,
                                       errorBuilder: (_, _, _) => Icon(
                                         icon,
                                         color: Colors.white,
-                                        size: 24,
+                                        size: 32,
                                       ),
                                     ),
                                   ),
@@ -447,7 +447,7 @@ class _IconOptionTile extends StatelessWidget {
                       ),
                   ],
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
                 Text(
                   label,
                   textAlign: TextAlign.center,
