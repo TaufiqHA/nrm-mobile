@@ -260,8 +260,7 @@ class _LoginScreenState extends State<LoginScreen> {
           key: const ValueKey('landing_mode_text_only'),
           icon: Icons.text_snippet_rounded,
           color: const Color(0xFFFB8C00),
-          label: 'Teks Only',
-          description: 'Lirik Saja',
+          label: 'Hanya Lirik',
           selected: false,
           labelMaxLines: 2,
           onTap: () {
@@ -313,7 +312,6 @@ class _IconOptionTile extends StatelessWidget {
   final Color color;
   final String? imageUrl;
   final String label;
-  final String? description;
   final bool selected;
   final int labelMaxLines;
   final VoidCallback? onTap;
@@ -324,7 +322,6 @@ class _IconOptionTile extends StatelessWidget {
     required this.color,
     this.imageUrl,
     required this.label,
-    this.description,
     required this.selected,
     this.labelMaxLines = 2,
     this.onTap,
@@ -387,40 +384,50 @@ class _IconOptionTile extends StatelessWidget {
                           ),
                         ],
                       ),
-                      child: Stack(
-                        children: [
-                          // Kilau lembut agar ikon terasa seperti app icon.
-                          Positioned(
-                            top: 4,
-                            left: 6,
-                            right: 6,
-                            child: Container(
-                              height: 18,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.18),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                          ),
-                          Center(
-                            child: imageUrl == null
-                                ? Icon(icon, color: Colors.white, size: 32)
-                                : Padding(
-                                    padding: const EdgeInsets.all(5),
-                                    child: Image.network(
-                                      imageUrl!,
-                                      width: 46,
-                                      height: 46,
-                                      fit: BoxFit.contain,
-                                      errorBuilder: (_, _, _) => Icon(
-                                        icon,
-                                        color: Colors.white,
-                                        size: 32,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(18),
+                        child: imageUrl == null
+                            ? Stack(
+                                children: [
+                                  // Kilau lembut agar ikon terasa seperti app icon.
+                                  Positioned(
+                                    top: 4,
+                                    left: 6,
+                                    right: 6,
+                                    child: Container(
+                                      height: 18,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.18,
+                                        ),
+                                        borderRadius: BorderRadius.circular(10),
                                       ),
                                     ),
                                   ),
-                          ),
-                        ],
+                                  Center(
+                                    child: Icon(
+                                      icon,
+                                      color: Colors.white,
+                                      size: 32,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            // Ikon unggahan memenuhi kotak tanpa padding sama
+                            // sekali; kelebihan gambar dipotong mengikuti sudut.
+                            : Image.network(
+                                imageUrl!,
+                                width: 60,
+                                height: 60,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, _, _) => Center(
+                                  child: Icon(
+                                    icon,
+                                    color: Colors.white,
+                                    size: 32,
+                                  ),
+                                ),
+                              ),
                       ),
                     ),
                     if (selected)
@@ -460,22 +467,6 @@ class _IconOptionTile extends StatelessWidget {
                     color: selected ? Colors.white : AppColors.textSecondary,
                   ),
                 ),
-                if (description != null) ...[
-                  const SizedBox(height: 1),
-                  Text(
-                    description!,
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 9.5,
-                      height: 1.1,
-                      color: selected
-                          ? AppColors.accentSky
-                          : AppColors.textMuted,
-                    ),
-                  ),
-                ],
               ],
             ),
           ),

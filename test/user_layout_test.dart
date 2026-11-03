@@ -779,7 +779,7 @@ void main() {
     },
   );
 
-  testWidgets('LoginScreen Teks Only langsung membuka mode teks', (
+  testWidgets('LoginScreen Hanya Lirik langsung membuka mode teks', (
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(
@@ -787,9 +787,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    // Opsi Teks Only digabung dalam grid yang sama dengan kategori.
+    // Opsi Hanya Lirik digabung dalam grid yang sama dengan kategori.
     expect(find.text('Pilih Jenis Musik'), findsNothing);
-    expect(find.text('Teks Only'), findsOneWidget);
+    expect(find.text('Hanya Lirik'), findsOneWidget);
 
     await tester.ensureVisible(
       find.byKey(const ValueKey('landing_mode_text_only')),
