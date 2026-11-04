@@ -5,6 +5,13 @@ class SongModel {
   final String songtitle;
   final String songsinger;
   final String songurl;
+
+  /// URL YouTube asli yang disimpan backend sebelum `songurl` ditimpa audio.
+  final String? songyoutubeurl;
+
+  /// URL video MP4 hasil unduhan backend. Null untuk lagu lama yang belum
+  /// memiliki media tersimpan.
+  final String? songvideourl;
   final int songcategory;
   final String? songlyric;
   final String? songnada;
@@ -18,6 +25,8 @@ class SongModel {
     required this.songtitle,
     required this.songsinger,
     required this.songurl,
+    this.songyoutubeurl,
+    this.songvideourl,
     required this.songcategory,
     this.songlyric,
     this.songnada,
@@ -31,11 +40,16 @@ class SongModel {
   /// Mengembalikan null untuk nilai non-numerik (mis. nama penyanyi).
   int? get songNumber => int.tryParse(songsinger.trim());
 
+  /// Lagu sudah memiliki video MP4 tersimpan di storage backend.
+  bool get hasVideo => songvideourl != null && songvideourl!.trim().isNotEmpty;
+
   SongModel copyWith({
     int? songid,
     String? songtitle,
     String? songsinger,
     String? songurl,
+    String? songyoutubeurl,
+    String? songvideourl,
     int? songcategory,
     String? songlyric,
     String? songnada,
@@ -49,6 +63,8 @@ class SongModel {
       songtitle: songtitle ?? this.songtitle,
       songsinger: songsinger ?? this.songsinger,
       songurl: songurl ?? this.songurl,
+      songyoutubeurl: songyoutubeurl ?? this.songyoutubeurl,
+      songvideourl: songvideourl ?? this.songvideourl,
       songcategory: songcategory ?? this.songcategory,
       songlyric: songlyric ?? this.songlyric,
       songnada: songnada ?? this.songnada,
@@ -84,6 +100,13 @@ class SongModel {
       songtitle: json['songtitle'] as String? ?? '',
       songsinger: json['songsinger'] as String? ?? '',
       songurl: json['songurl'] as String? ?? '',
+      songyoutubeurl:
+          (json['songyoutubeurl']?.toString().trim().isEmpty ?? true)
+          ? null
+          : json['songyoutubeurl'].toString().trim(),
+      songvideourl: (json['songvideourl']?.toString().trim().isEmpty ?? true)
+          ? null
+          : json['songvideourl'].toString().trim(),
       songcategory: json['songcategory'] is int
           ? json['songcategory'] as int
           : int.tryParse(json['songcategory']?.toString() ?? '1') ?? 1,
@@ -102,6 +125,8 @@ class SongModel {
       'songtitle': songtitle,
       'songsinger': songsinger,
       'songurl': songurl,
+      'songyoutubeurl': songyoutubeurl,
+      'songvideourl': songvideourl,
       'songcategory': songcategory,
       'songlyric': songlyric,
       'songnada': songnada,

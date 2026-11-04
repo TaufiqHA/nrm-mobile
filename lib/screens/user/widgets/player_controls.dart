@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+import '../../../core/services/karaoke_media_controller.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../models/song_model.dart';
 
@@ -28,6 +30,14 @@ class PlayerControls extends StatefulWidget {
   final VoidCallback? onCastTapped;
   final bool isCasting;
 
+  /// Transpose nada aktif dalam semitone (-6..+6).
+  final int pitchSemitones;
+
+  /// Tempo relatif (1.0 = tempo asli).
+  final double tempoRate;
+  final bool tuningEnabled;
+  final VoidCallback? onOpenTuning;
+
   const PlayerControls({
     super.key,
     this.song,
@@ -49,6 +59,10 @@ class PlayerControls extends StatefulWidget {
     this.isFullscreen = false,
     this.onCastTapped,
     this.isCasting = false,
+    this.pitchSemitones = 0,
+    this.tempoRate = 1.0,
+    this.tuningEnabled = false,
+    this.onOpenTuning,
   });
 
   @override
@@ -84,9 +98,7 @@ class _PlayerControlsState extends State<PlayerControls> {
           decoration: BoxDecoration(
             color: const Color(0xFF0F172A).withValues(alpha: 0.95),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.08),
-            ),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.3),
@@ -104,10 +116,7 @@ class _PlayerControlsState extends State<PlayerControls> {
   }
 
   /// Layout Desktop: 3 Kolom Seimbang (Kiri: Info Lagu, Tengah: Playback + Seekbar, Kanan: Volume + Fullscreen)
-  Widget _buildDesktopLayout(
-    BuildContext context,
-    double maxSeconds,
-  ) {
+  Widget _buildDesktopLayout(BuildContext context, double maxSeconds) {
     final song = widget.song;
     final hasSong = widget.hasSong;
     final isPlaying = widget.isPlaying;
@@ -134,8 +143,12 @@ class _PlayerControlsState extends State<PlayerControls> {
                 ),
                 child: Center(
                   child: Icon(
-                    isPlaying ? Icons.graphic_eq_rounded : Icons.music_note_rounded,
-                    color: isPlaying ? AppColors.accentCyan : AppColors.textMuted,
+                    isPlaying
+                        ? Icons.graphic_eq_rounded
+                        : Icons.music_note_rounded,
+                    color: isPlaying
+                        ? AppColors.accentCyan
+                        : AppColors.textMuted,
                     size: 20,
                   ),
                 ),
@@ -192,7 +205,9 @@ class _PlayerControlsState extends State<PlayerControls> {
                     onPressed: hasSong ? widget.onStop : null,
                     tooltip: 'Berhenti',
                     icon: const Icon(Icons.stop_rounded),
-                    color: hasSong && isPlaying ? AppColors.error : AppColors.textMuted,
+                    color: hasSong && isPlaying
+                        ? AppColors.error
+                        : AppColors.textMuted,
                     iconSize: 24,
                     visualDensity: VisualDensity.compact,
                   ),
@@ -209,11 +224,15 @@ class _PlayerControlsState extends State<PlayerControls> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         gradient: hasSong ? AppColors.buttonGradient : null,
-                        color: hasSong ? null : Colors.white.withValues(alpha: 0.08),
+                        color: hasSong
+                            ? null
+                            : Colors.white.withValues(alpha: 0.08),
                         boxShadow: hasSong && isPlaying
                             ? [
                                 BoxShadow(
-                                  color: AppColors.accentCyan.withValues(alpha: 0.4),
+                                  color: AppColors.accentCyan.withValues(
+                                    alpha: 0.4,
+                                  ),
                                   blurRadius: 12,
                                   spreadRadius: 1,
                                 ),
@@ -222,7 +241,9 @@ class _PlayerControlsState extends State<PlayerControls> {
                       ),
                       child: Center(
                         child: Icon(
-                          isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                          isPlaying
+                              ? Icons.pause_rounded
+                              : Icons.play_arrow_rounded,
                           color: hasSong ? Colors.white : AppColors.textMuted,
                           size: 26,
                         ),
@@ -267,14 +288,21 @@ class _PlayerControlsState extends State<PlayerControls> {
                     onPressed: widget.onToggleMute,
                     iconSize: 18,
                     padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(minWidth: 26, minHeight: 26),
+                    constraints: const BoxConstraints(
+                      minWidth: 26,
+                      minHeight: 26,
+                    ),
                     visualDensity: VisualDensity.compact,
                     tooltip: widget.isMuted ? 'Batal Bisukan' : 'Bisukan',
                     icon: Icon(
                       widget.isMuted || widget.volume == 0.0
                           ? Icons.volume_off_rounded
-                          : (widget.volume < 0.5 ? Icons.volume_down_rounded : Icons.volume_up_rounded),
-                      color: widget.isMuted ? AppColors.error : AppColors.accentSky,
+                          : (widget.volume < 0.5
+                                ? Icons.volume_down_rounded
+                                : Icons.volume_up_rounded),
+                      color: widget.isMuted
+                          ? AppColors.error
+                          : AppColors.accentSky,
                     ),
                   ),
                   const SizedBox(width: 2),
@@ -283,9 +311,15 @@ class _PlayerControlsState extends State<PlayerControls> {
                     child: SliderTheme(
                       data: SliderTheme.of(context).copyWith(
                         trackHeight: 3,
-                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 4.5),
-                        overlayShape: const RoundSliderOverlayShape(overlayRadius: 7),
-                        activeTrackColor: widget.isMuted ? AppColors.textMuted : AppColors.accentCyan,
+                        thumbShape: const RoundSliderThumbShape(
+                          enabledThumbRadius: 4.5,
+                        ),
+                        overlayShape: const RoundSliderOverlayShape(
+                          overlayRadius: 7,
+                        ),
+                        activeTrackColor: widget.isMuted
+                            ? AppColors.textMuted
+                            : AppColors.accentCyan,
                         inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
                         thumbColor: Colors.white,
                       ),
@@ -308,18 +342,29 @@ class _PlayerControlsState extends State<PlayerControls> {
                       color: AppColors.textMuted,
                     ),
                   ),
+                  if (widget.tuningEnabled) ...[
+                    const SizedBox(width: 4),
+                    _buildTuningButton(),
+                  ],
 
                   if (widget.onCastTapped != null) ...[
                     const SizedBox(width: 2),
                     IconButton(
                       onPressed: widget.onCastTapped,
                       padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(minWidth: 26, minHeight: 26),
+                      constraints: const BoxConstraints(
+                        minWidth: 26,
+                        minHeight: 26,
+                      ),
                       visualDensity: VisualDensity.compact,
                       tooltip: widget.isCasting ? 'Putus Cast' : 'Cast ke TV',
                       icon: Icon(
-                        widget.isCasting ? Icons.cast_connected_rounded : Icons.cast_rounded,
-                        color: widget.isCasting ? AppColors.accentCyan : AppColors.accentSky,
+                        widget.isCasting
+                            ? Icons.cast_connected_rounded
+                            : Icons.cast_rounded,
+                        color: widget.isCasting
+                            ? AppColors.accentCyan
+                            : AppColors.accentSky,
                         size: 18,
                       ),
                     ),
@@ -329,11 +374,18 @@ class _PlayerControlsState extends State<PlayerControls> {
                     IconButton(
                       onPressed: widget.onToggleFullscreen,
                       padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(minWidth: 26, minHeight: 26),
+                      constraints: const BoxConstraints(
+                        minWidth: 26,
+                        minHeight: 26,
+                      ),
                       visualDensity: VisualDensity.compact,
-                      tooltip: widget.isFullscreen ? 'Perkecil Layar' : 'Layar Penuh',
+                      tooltip: widget.isFullscreen
+                          ? 'Perkecil Layar'
+                          : 'Layar Penuh',
                       icon: Icon(
-                        widget.isFullscreen ? Icons.fullscreen_exit_rounded : Icons.fullscreen_rounded,
+                        widget.isFullscreen
+                            ? Icons.fullscreen_exit_rounded
+                            : Icons.fullscreen_rounded,
                         color: AppColors.accentSky,
                         size: 18,
                       ),
@@ -349,10 +401,7 @@ class _PlayerControlsState extends State<PlayerControls> {
   }
 
   /// Layout Mobile: Vertikal Teratur & Sangat Kompak
-  Widget _buildMobileLayout(
-    BuildContext context,
-    double maxSeconds,
-  ) {
+  Widget _buildMobileLayout(BuildContext context, double maxSeconds) {
     final song = widget.song;
     final hasSong = widget.hasSong;
     final isPlaying = widget.isPlaying;
@@ -383,7 +432,9 @@ class _PlayerControlsState extends State<PlayerControls> {
               visualDensity: VisualDensity.compact,
               padding: EdgeInsets.zero,
               icon: Icon(
-                widget.isMuted || widget.volume == 0.0 ? Icons.volume_off_rounded : Icons.volume_up_rounded,
+                widget.isMuted || widget.volume == 0.0
+                    ? Icons.volume_off_rounded
+                    : Icons.volume_up_rounded,
                 color: widget.isMuted ? AppColors.error : AppColors.accentSky,
               ),
             ),
@@ -392,7 +443,9 @@ class _PlayerControlsState extends State<PlayerControls> {
               child: SliderTheme(
                 data: SliderTheme.of(context).copyWith(
                   trackHeight: 2,
-                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 4),
+                  thumbShape: const RoundSliderThumbShape(
+                    enabledThumbRadius: 4,
+                  ),
                   overlayShape: const RoundSliderOverlayShape(overlayRadius: 6),
                   activeTrackColor: AppColors.accentCyan,
                   inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
@@ -406,6 +459,10 @@ class _PlayerControlsState extends State<PlayerControls> {
                 ),
               ),
             ),
+            if (widget.tuningEnabled) ...[
+              const SizedBox(width: 2),
+              _buildTuningButton(compact: true),
+            ],
           ],
         ),
 
@@ -420,7 +477,9 @@ class _PlayerControlsState extends State<PlayerControls> {
               onPressed: hasSong ? widget.onStop : null,
               visualDensity: VisualDensity.compact,
               icon: const Icon(Icons.stop_rounded),
-              color: hasSong && isPlaying ? AppColors.error : AppColors.textMuted,
+              color: hasSong && isPlaying
+                  ? AppColors.error
+                  : AppColors.textMuted,
             ),
             InkWell(
               borderRadius: BorderRadius.circular(20),
@@ -458,8 +517,12 @@ class _PlayerControlsState extends State<PlayerControls> {
                 onPressed: widget.onCastTapped,
                 visualDensity: VisualDensity.compact,
                 icon: Icon(
-                  widget.isCasting ? Icons.cast_connected_rounded : Icons.cast_rounded,
-                  color: widget.isCasting ? AppColors.accentCyan : AppColors.accentSky,
+                  widget.isCasting
+                      ? Icons.cast_connected_rounded
+                      : Icons.cast_rounded,
+                  color: widget.isCasting
+                      ? AppColors.accentCyan
+                      : AppColors.accentSky,
                   size: 20,
                 ),
               ),
@@ -479,9 +542,70 @@ class _PlayerControlsState extends State<PlayerControls> {
     );
   }
 
-  Widget _buildDesktopSeekbar(BuildContext context, double maxSeconds, bool hasSong) {
+  Widget _buildTuningButton({bool compact = false}) {
+    final semitones = widget.pitchSemitones;
+    final tempo = widget.tempoRate;
+    final isDefault = semitones == 0 && (tempo - 1.0).abs() < 0.0001;
+    final pitchLabel = semitones == 0
+        ? '0'
+        : '${semitones > 0 ? '+' : ''}$semitones';
+    final tempoLevel = KaraokeMediaController.tempoLevelLabelForRate(tempo);
+    final summary = compact
+        ? (semitones == 0 ? 'T$tempoLevel' : '$pitchLabel·T$tempoLevel')
+        : 'Nada $pitchLabel · Tempo $tempoLevel';
+
+    return Tooltip(
+      message: 'Nada & Tempo',
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: widget.tuningEnabled ? widget.onOpenTuning : null,
+        child: Container(
+          height: compact ? 24 : 28,
+          padding: const EdgeInsets.symmetric(horizontal: 6),
+          decoration: BoxDecoration(
+            color: isDefault
+                ? Colors.white.withValues(alpha: 0.04)
+                : AppColors.primaryElectric.withValues(alpha: 0.18),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isDefault
+                  ? Colors.white.withValues(alpha: 0.1)
+                  : AppColors.accentCyan.withValues(alpha: 0.55),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.tune_rounded,
+                size: 13,
+                color: isDefault ? AppColors.textMuted : AppColors.accentSky,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                summary,
+                style: TextStyle(
+                  fontSize: compact ? 10 : 11,
+                  fontWeight: FontWeight.w700,
+                  color: isDefault ? AppColors.textMuted : AppColors.accentSky,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDesktopSeekbar(
+    BuildContext context,
+    double maxSeconds,
+    bool hasSong,
+  ) {
     Widget buildRow(Duration currentPos) {
-      final double currentSeconds = currentPos.inSeconds.clamp(0, maxSeconds.toInt()).toDouble();
+      final double currentSeconds = currentPos.inSeconds
+          .clamp(0, maxSeconds.toInt())
+          .toDouble();
       final double sliderValue = _isDragging
           ? _dragPosition.clamp(0.0, maxSeconds)
           : (hasSong ? currentSeconds : 0.0).clamp(0.0, maxSeconds);
@@ -508,9 +632,13 @@ class _PlayerControlsState extends State<PlayerControls> {
             child: SliderTheme(
               data: SliderTheme.of(context).copyWith(
                 trackHeight: 3,
-                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 4.5),
+                thumbShape: const RoundSliderThumbShape(
+                  enabledThumbRadius: 4.5,
+                ),
                 overlayShape: const RoundSliderOverlayShape(overlayRadius: 8),
-                activeTrackColor: hasSong ? AppColors.accentCyan : AppColors.textMuted,
+                activeTrackColor: hasSong
+                    ? AppColors.accentCyan
+                    : AppColors.textMuted,
                 inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
                 thumbColor: hasSong ? Colors.white : AppColors.textMuted,
                 overlayColor: AppColors.accentCyan.withValues(alpha: 0.2),
@@ -570,9 +698,15 @@ class _PlayerControlsState extends State<PlayerControls> {
     return buildRow(widget.currentPosition);
   }
 
-  Widget _buildMobileSeekbar(BuildContext context, double maxSeconds, bool hasSong) {
+  Widget _buildMobileSeekbar(
+    BuildContext context,
+    double maxSeconds,
+    bool hasSong,
+  ) {
     Widget buildRow(Duration currentPos) {
-      final double currentSeconds = currentPos.inSeconds.clamp(0, maxSeconds.toInt()).toDouble();
+      final double currentSeconds = currentPos.inSeconds
+          .clamp(0, maxSeconds.toInt())
+          .toDouble();
       final double sliderValue = _isDragging
           ? _dragPosition.clamp(0.0, maxSeconds)
           : (hasSong ? currentSeconds : 0.0).clamp(0.0, maxSeconds);
@@ -585,7 +719,11 @@ class _PlayerControlsState extends State<PlayerControls> {
                   ? Duration(seconds: _dragPosition.toInt())
                   : currentPos,
             ),
-            style: const TextStyle(fontSize: 10, color: AppColors.accentLight, fontWeight: FontWeight.w600),
+            style: const TextStyle(
+              fontSize: 10,
+              color: AppColors.accentLight,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           Expanded(
             child: SliderTheme(

@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
+
+import '../../../core/services/karaoke_media_controller.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/youtube_helper.dart';
 import '../../../models/song_model.dart';
+import 'song_video_player.dart';
 import 'youtube_video_player.dart';
 
 /// Panggung Karaoke Cinema Terbuka (Tanpa Card Box Sempit & Tanpa Visualizer).
@@ -15,7 +19,13 @@ class PlayerDisplay extends StatelessWidget {
   final VoidCallback? onToggleFullscreen;
   final bool isFullscreen;
   final YoutubePlayerController? youtubeController;
+  final KaraokeMediaController? mediaController;
+  final GlobalKey<VideoState>? videoKey;
+  final String? mediaError;
+  final VoidCallback? onRetryMedia;
+  final ValueChanged<bool>? onFullscreenChanged;
   final bool isTestMode;
+  final bool isCasting;
   final VoidCallback? onPlayPauseTapped;
   final VoidCallback? onOpenSearchModal;
 
@@ -29,10 +39,24 @@ class PlayerDisplay extends StatelessWidget {
     this.onToggleFullscreen,
     this.isFullscreen = false,
     this.youtubeController,
+    this.mediaController,
+    this.videoKey,
+    this.mediaError,
+    this.onRetryMedia,
+    this.onFullscreenChanged,
     this.isTestMode = false,
+    this.isCasting = false,
     this.onPlayPauseTapped,
     this.onOpenSearchModal,
   });
+
+  String? _thumbnailFor(SongModel song) {
+    final videoId =
+        YoutubeHelper.extractVideoId(song.songyoutubeurl) ??
+        YoutubeHelper.extractVideoId(song.songurl);
+    if (videoId != null) return YoutubeHelper.getThumbnailUrl(videoId);
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,14 +64,35 @@ class PlayerDisplay extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isCompact = constraints.maxWidth < 450 || constraints.maxHeight < 250;
+        final isCompact =
+            constraints.maxWidth < 450 || constraints.maxHeight < 250;
 
         return AspectRatio(
-          aspectRatio: 16 / 9,
+          // Ikuti rasio video asli agar tidak ada letterbox dan panggung bisa
+          // memakai ruang vertikal yang tersedia.
+          aspectRatio: mediaController?.videoAspectRatio ?? (16 / 9),
           child: Stack(
             children: [
-              // 1. Main Stage Area (YouTube Video or Clean Standby Stage)
-              if (song != null)
+              // 1. Main Stage Area (Video tersimpan, YouTube fallback, atau standby)
+              if (song != null && mediaController != null)
+                Positioned.fill(
+                  child: SongVideoPlayer(
+                    controller: mediaController!,
+                    videoKey: videoKey,
+                    songTitle: song!.songtitle,
+                    songSinger: song!.songsinger,
+                    thumbnailUrl: mediaController!.isAudioOnly
+                        ? _thumbnailFor(song!)
+                        : null,
+                    isPlaying: isPlaying,
+                    isCasting: isCasting,
+                    errorMessage: mediaError,
+                    onRetry: onRetryMedia,
+                    onTogglePlayback: onPlayPauseTapped,
+                    onFullscreenChanged: onFullscreenChanged,
+                  ),
+                )
+              else if (song != null)
                 Positioned.fill(
                   child: YoutubeVideoPlayerWidget(
                     controller: youtubeController,
@@ -79,9 +124,13 @@ class PlayerDisplay extends StatelessWidget {
                             height: isCompact ? 40 : 54,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: AppColors.primaryElectric.withValues(alpha: 0.2),
+                              color: AppColors.primaryElectric.withValues(
+                                alpha: 0.2,
+                              ),
                               border: Border.all(
-                                color: AppColors.accentCyan.withValues(alpha: 0.3),
+                                color: AppColors.accentCyan.withValues(
+                                  alpha: 0.3,
+                                ),
                               ),
                             ),
                             child: Icon(
@@ -112,7 +161,10 @@ class PlayerDisplay extends StatelessWidget {
                   top: 8,
                   left: 8,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF0F172A).withValues(alpha: 0.85),
                       borderRadius: BorderRadius.circular(20),

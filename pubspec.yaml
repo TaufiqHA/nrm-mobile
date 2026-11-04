@@ -42,6 +42,9 @@ dependencies:
   youtube_explode_dart: ^2.3.6
   # Iklan AdMob native (in-feed) — hanya Android/iOS.
   google_mobile_ads: ^9.1.0
+  media_kit: ^1.2.6
+  media_kit_video: ^2.0.1
+  media_kit_libs_video: ^1.0.7
 
 dev_dependencies:
   flutter_test:

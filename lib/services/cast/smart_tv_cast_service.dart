@@ -17,6 +17,8 @@ class SmartTvCastService {
       StreamController<CastDevice?>.broadcast();
 
   CastDevice? _connectedDevice;
+  String? _activeDlnaControlUrl;
+  String? _activeDlnaDeviceId;
   bool _isScanning = false;
   final bool isTestMode;
   final List<CastDevice>? initialDevices;
@@ -380,6 +382,7 @@ class SmartTvCastService {
 
   /// Menghubungkan ke perangkat TV
   Future<bool> connect(CastDevice device) async {
+    _clearDlnaControl();
     if (isTestMode) {
       _connectedDevice = device.copyWith(isConnected: true);
       if (!_connectedDeviceController.isClosed) {
@@ -481,6 +484,7 @@ class SmartTvCastService {
       await _terminateLoungeSession();
     }
 
+    _clearDlnaControl();
     _connectedDevice = null;
     if (!_connectedDeviceController.isClosed) {
       _connectedDeviceController.add(null);
@@ -745,6 +749,19 @@ class SmartTvCastService {
     _loungeCommandOffset = 1;
   }
 
+  /// Menunggu sesi Google Cast siap setelah proses connect.
+  Future<GoogleCastSession?> _waitForCastSession({
+    Duration timeout = const Duration(seconds: 3),
+  }) async {
+    final deadline = DateTime.now().add(timeout);
+    while (DateTime.now().isBefore(deadline)) {
+      final session = GoogleCastSessionManager.instance.currentSession;
+      if (session != null) return session;
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    }
+    return GoogleCastSessionManager.instance.currentSession;
+  }
+
   /// Mentransmisikan video ke TV yang terhubung (mendukung Google Cast, DIAL YouTube, Samsung Tizen, Roku, dan DLNA)
   Future<bool> castVideo(
     String videoId, {
@@ -757,6 +774,8 @@ class SmartTvCastService {
     if (isTestMode) {
       return true;
     }
+
+    _clearDlnaControl();
 
     // 0. YouTube Lounge API (jika terhubung via YouTube TV Code)
     if (_connectedDevice?.id.startsWith('tv_code_') == true ||
@@ -784,7 +803,7 @@ class SmartTvCastService {
     if (_connectedDevice?.type == CastDeviceType.chromecast ||
         _connectedDevice?.id.startsWith('chromecast_') == true) {
       try {
-        final currentSession = GoogleCastSessionManager.instance.currentSession;
+        final currentSession = await _waitForCastSession();
         if (currentSession != null) {
           final directStreamUrl = await getDirectStreamUrl(videoId);
           if (directStreamUrl != null && directStreamUrl.isNotEmpty) {
@@ -849,6 +868,57 @@ class SmartTvCastService {
     }
 
     return dialSuccess;
+  }
+
+  /// Mentransmisikan file video yang sudah tersimpan di storage backend.
+  ///
+  /// Chromecast memakai URL media langsung. Smart TV non-Chromecast dicoba
+  /// lewat DLNA; perangkat berbasis YouTube Lounge tidak mendukung URL ini.
+  Future<bool> castDirectVideo(
+    String mediaUrl, {
+    String? title,
+    String? artist,
+    String? thumbnailUrl,
+  }) async {
+    final url = mediaUrl.trim();
+    if (_connectedDevice == null || url.isEmpty) return false;
+    if (isTestMode) return true;
+
+    _clearDlnaControl();
+
+    if (_connectedDevice?.type == CastDeviceType.chromecast ||
+        _connectedDevice?.id.startsWith('chromecast_') == true) {
+      try {
+        final currentSession = await _waitForCastSession();
+        if (currentSession != null) {
+          final mediaInfo = GoogleCastMediaInformation(
+            contentId: url,
+            streamType: CastMediaStreamType.buffered,
+            contentUrl: Uri.parse(url),
+            contentType: 'video/mp4',
+            metadata: GoogleCastMovieMediaMetadata(
+              title: title ?? 'Karaoke Track',
+              subtitle: artist,
+              images: thumbnailUrl != null
+                  ? [GoogleCastImage(url: Uri.parse(thumbnailUrl))]
+                  : null,
+            ),
+          );
+          await GoogleCastRemoteMediaClient.instance.loadMedia(mediaInfo);
+          return true;
+        }
+      } catch (_) {}
+    }
+
+    final ip = _connectedDevice!.ipAddress;
+    if (ip == '127.0.0.1' || ip == 'Chromecast') return false;
+
+    return _castViaDlna(
+      ip,
+      url,
+      title: title,
+      controlUrl: _connectedDevice?.controlUrl,
+    );
   }
 
   Future<bool> _launchYouTubeViaDial(
@@ -1011,11 +1081,61 @@ class SmartTvCastService {
             },
             body: soapPlay,
           ).timeout(const Duration(seconds: 2));
+          _activeDlnaControlUrl = endpoint;
+          _activeDlnaDeviceId = _connectedDevice?.id;
           return true;
         }
       } catch (_) {}
     }
     return false;
+  }
+
+  bool get _hasDlnaControl =>
+      _activeDlnaControlUrl != null &&
+      _activeDlnaDeviceId == _connectedDevice?.id;
+
+  void _clearDlnaControl() {
+    _activeDlnaControlUrl = null;
+    _activeDlnaDeviceId = null;
+  }
+
+  String _formatDlnaTime(Duration position) {
+    final hours = position.inHours.toString().padLeft(2, '0');
+    final minutes = position.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds = position.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$hours:$minutes:$seconds';
+  }
+
+  /// Mengirim perintah AVTransport ke TV DLNA yang sedang aktif.
+  Future<bool> _sendDlnaAction(String action, String body) async {
+    final controlUrl = _activeDlnaControlUrl;
+    if (controlUrl == null || controlUrl.isEmpty) return false;
+
+    final soap =
+        '<?xml version="1.0" encoding="utf-8"?>'
+        '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">'
+        '<s:Body>'
+        '<u:$action xmlns:u="urn:schemas-upnp-org:service:AVTransport:1">'
+        '<InstanceID>0</InstanceID>'
+        '$body'
+        '</u:$action>'
+        '</s:Body>'
+        '</s:Envelope>';
+
+    try {
+      final response = await http.post(
+        Uri.parse(controlUrl),
+        headers: {
+          'Content-Type': 'text/xml; charset="utf-8"',
+          'SOAPAction': '"urn:schemas-upnp-org:service:AVTransport:1#$action"',
+        },
+        body: soap,
+      ).timeout(const Duration(seconds: 2));
+
+      return response.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
   }
 
   /// Kontrol playback TV: Play
@@ -1025,6 +1145,10 @@ class SmartTvCastService {
         _loungeScreenId != null) {
       await _sendLoungeCommand('play', {});
       return;
+    }
+    if (_hasDlnaControl) {
+      final sent = await _sendDlnaAction('Play', '<Speed>1</Speed>');
+      if (sent) return;
     }
     try {
       await GoogleCastRemoteMediaClient.instance.play();
@@ -1039,6 +1163,10 @@ class SmartTvCastService {
       await _sendLoungeCommand('pause', {});
       return;
     }
+    if (_hasDlnaControl) {
+      final sent = await _sendDlnaAction('Pause', '');
+      if (sent) return;
+    }
     try {
       await GoogleCastRemoteMediaClient.instance.pause();
     } catch (_) {}
@@ -1052,6 +1180,13 @@ class SmartTvCastService {
       await _sendLoungeCommand(
           'seekTo', {'newTime': position.inSeconds.toString()});
       return;
+    }
+    if (_hasDlnaControl) {
+      final sent = await _sendDlnaAction(
+        'Seek',
+        '<Unit>REL_TIME</Unit><Target>${_formatDlnaTime(position)}</Target>',
+      );
+      if (sent) return;
     }
     try {
       await GoogleCastRemoteMediaClient.instance.seek(

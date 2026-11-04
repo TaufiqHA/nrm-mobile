@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:media_kit/media_kit.dart';
 import 'core/theme/app_colors.dart';
 import 'screens/login_screen.dart';
 import 'services/ad_manager.dart';
@@ -10,6 +11,9 @@ import 'services/cast/smart_tv_cast_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inisialisasi media_kit (libmpv) untuk pemutar video karaoke.
+  MediaKit.ensureInitialized();
 
   // Initialize Google Cast context
   await SmartTvCastService.initGoogleCastContext();

@@ -8,6 +8,9 @@ import '../../../services/cast/smart_tv_cast_service.dart';
 class CastDeviceModal extends StatefulWidget {
   final SmartTvCastService castService;
   final String? currentVideoId;
+
+  /// URL video MP4 yang sudah tersimpan di storage backend.
+  final String? mediaUrl;
   final String? songTitle;
   final String? songSinger;
   final String? songThumbnail;
@@ -17,6 +20,7 @@ class CastDeviceModal extends StatefulWidget {
     super.key,
     required this.castService,
     this.currentVideoId,
+    this.mediaUrl,
     this.songTitle,
     this.songSinger,
     this.songThumbnail,
@@ -27,6 +31,7 @@ class CastDeviceModal extends StatefulWidget {
     BuildContext context, {
     required SmartTvCastService castService,
     String? currentVideoId,
+    String? mediaUrl,
     String? songTitle,
     String? songSinger,
     String? songThumbnail,
@@ -39,6 +44,7 @@ class CastDeviceModal extends StatefulWidget {
       builder: (context) => CastDeviceModal(
         castService: castService,
         currentVideoId: currentVideoId,
+        mediaUrl: mediaUrl,
         songTitle: songTitle,
         songSinger: songSinger,
         songThumbnail: songThumbnail,
@@ -102,6 +108,32 @@ class _CastDeviceModalState extends State<CastDeviceModal> {
     }
   }
 
+  bool get _hasCastableContent =>
+      (widget.mediaUrl?.trim().isNotEmpty ?? false) ||
+      widget.currentVideoId != null;
+
+  Future<bool> _castCurrentContent() async {
+    final mediaUrl = widget.mediaUrl?.trim();
+    if (mediaUrl != null && mediaUrl.isNotEmpty) {
+      final success = await widget.castService.castDirectVideo(
+        mediaUrl,
+        title: widget.songTitle,
+        artist: widget.songSinger,
+        thumbnailUrl: widget.songThumbnail,
+      );
+      if (success) return true;
+    }
+    if (widget.currentVideoId != null) {
+      return widget.castService.castVideo(
+        widget.currentVideoId!,
+        title: widget.songTitle,
+        artist: widget.songSinger,
+        thumbnailUrl: widget.songThumbnail,
+      );
+    }
+    return false;
+  }
+
   Future<void> _connect(CastDevice device) async {
     if (_connectingDeviceId != null || _isConnectingWithCode) return;
     setState(() {
@@ -113,13 +145,8 @@ class _CastDeviceModalState extends State<CastDeviceModal> {
     try {
       final success = await widget.castService.connect(device);
       bool castOk = true;
-      if (widget.currentVideoId != null) {
-        castOk = await widget.castService.castVideo(
-          widget.currentVideoId!,
-          title: widget.songTitle,
-          artist: widget.songSinger,
-          thumbnailUrl: widget.songThumbnail,
-        );
+      if (_hasCastableContent) {
+        castOk = await _castCurrentContent();
       } else {
         await widget.castService.wakeOrLaunchApp(device);
       }
@@ -135,7 +162,7 @@ class _CastDeviceModalState extends State<CastDeviceModal> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      widget.currentVideoId != null
+                      _hasCastableContent
                           ? (castOk
                               ? 'Terhubung ke ${device.name}. Video sedang diputar di TV.'
                               : 'Terhubung ke ${device.name}. Jika belum tampil di TV, izinkan koneksi menggunakan remote TV.')
@@ -229,13 +256,8 @@ class _CastDeviceModalState extends State<CastDeviceModal> {
       }
 
       bool castOk = true;
-      if (widget.currentVideoId != null) {
-        castOk = await widget.castService.castVideo(
-          widget.currentVideoId!,
-          title: widget.songTitle,
-          artist: widget.songSinger,
-          thumbnailUrl: widget.songThumbnail,
-        );
+      if (_hasCastableContent) {
+        castOk = await _castCurrentContent();
       }
       widget.onDeviceChanged?.call();
       if (mounted) {
@@ -253,7 +275,7 @@ class _CastDeviceModalState extends State<CastDeviceModal> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      widget.currentVideoId != null
+                      _hasCastableContent
                           ? (castOk
                               ? 'Terhubung dengan Kode TV ($code). Video sedang diputar di TV.'
                               : 'Terhubung ke TV ($code), namun video belum dapat diputar. Silakan putar ulang lagu.')
