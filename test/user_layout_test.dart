@@ -554,12 +554,14 @@ void main() {
       );
     }
 
-    // Footer tetap terlihat menempel di bagian bawah layar.
-    final footerBottom = tester
-        .getBottomLeft(find.text('Jemaat GMI Jakarta Pusat'))
-        .dy;
-    expect(footerBottom, greaterThan(600));
-    expect(footerBottom, lessThanOrEqualTo(640));
+    // Teks credit tampil di bawah baris ikon, ter-center, dan tetap terlihat.
+    final selectorRect = tester.getRect(
+      find.byKey(const ValueKey('landing_category_selector')),
+    );
+    final creditRect = tester.getRect(find.text('Jemaat GMI Jakarta Pusat'));
+    expect(creditRect.top, greaterThan(selectorRect.bottom));
+    expect(creditRect.bottom, lessThanOrEqualTo(640));
+    expect(creditRect.center.dx, closeTo(180, 1));
   });
 
   testWidgets(

@@ -218,40 +218,41 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
 
-                  // Footer selalu menempel di bawah layar.
+                  // Footer terpusat dan diangkat dari dasar layar, berada di
+                  // bawah baris tombol kategori dan mode lirik only.
                   Padding(
                     padding: EdgeInsets.fromLTRB(
                       24,
                       4,
                       24,
-                      isCompactHeight ? 16 : 22,
+                      (constraints.maxHeight * 0.12).clamp(56.0, 150.0),
                     ),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
-                            'by : Estomihi FP Simatupang',
-                            style: TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              height: 1.35,
-                            ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: const [
+                        Text(
+                          'by : Estomihi FP Simatupang',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            height: 1.35,
                           ),
-                          SizedBox(height: 4),
-                          Text(
-                            'Jemaat GMI Jakarta Pusat',
-                            style: TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              height: 1.35,
-                            ),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          'Jemaat GMI Jakarta Pusat',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            height: 1.35,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
