@@ -40,12 +40,17 @@ class AdSlotView extends StatelessWidget {
   /// (mis. layout karaoke). Bila `null`, tinggi mengikuti isi iklan.
   final double? maxHeight;
 
+  /// Bila diisi, slot menampilkan tombol close di pojok kanan atas.
+  /// Pemanggil bertanggung jawab menyembunyikan slot setelah tombol ditekan.
+  final VoidCallback? onClose;
+
   const AdSlotView({
     super.key,
     required this.ad,
     this.active = true,
     this.padding = const EdgeInsets.symmetric(horizontal: 12),
     this.maxHeight,
+    this.onClose,
   });
 
   bool get _hasRenderable =>
@@ -98,12 +103,41 @@ class AdSlotView extends StatelessWidget {
     }
 
     final height = maxHeight;
-    if (height == null) return content;
+    final Widget slot = height == null
+        ? content
+        // Batasi tinggi agar tidak overflow pada Column dengan tinggi tetap.
+        : ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: height),
+            child: ClipRect(child: content),
+          );
 
-    // Batasi tinggi agar tidak overflow pada Column dengan tinggi tetap.
-    return ConstrainedBox(
-      constraints: BoxConstraints(maxHeight: height),
-      child: ClipRect(child: content),
+    if (onClose == null) return slot;
+
+    return Stack(
+      children: [
+        slot,
+        Positioned(
+          top: 2,
+          right: 2,
+          child: Material(
+            color: Colors.black.withValues(alpha: 0.55),
+            shape: const CircleBorder(),
+            clipBehavior: Clip.antiAlias,
+            child: IconButton(
+              key: const ValueKey('ad_slot_close'),
+              onPressed: onClose,
+              tooltip: 'Tutup iklan',
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints.tightFor(
+                width: 32,
+                height: 32,
+              ),
+              iconSize: 18,
+              icon: const Icon(Icons.close_rounded, color: Colors.white),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

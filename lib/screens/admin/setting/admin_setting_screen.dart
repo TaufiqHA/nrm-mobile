@@ -1,8 +1,10 @@
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+
 import '../../../core/services/api_application_service.dart';
 import '../../../core/services/application_service.dart';
 import '../../../core/theme/app_colors.dart';
@@ -11,10 +13,7 @@ import '../../../models/application_model.dart';
 class AdminSettingScreen extends StatefulWidget {
   final ApplicationService? applicationService;
 
-  const AdminSettingScreen({
-    super.key,
-    this.applicationService,
-  });
+  const AdminSettingScreen({super.key, this.applicationService});
 
   @override
   State<AdminSettingScreen> createState() => _AdminSettingScreenState();
@@ -72,13 +71,16 @@ class _AdminSettingScreenState extends State<AdminSettingScreen> {
           _adsBottomActive = config.isAdsBottomActive;
 
           // Deteksi mode awal
-          if (_ads1Controller.text.isNotEmpty && !_ads1Controller.text.startsWith('http')) {
+          if (_ads1Controller.text.isNotEmpty &&
+              !_ads1Controller.text.startsWith('http')) {
             _ads1Mode = 1;
           }
-          if (_ads2Controller.text.isNotEmpty && !_ads2Controller.text.startsWith('http')) {
+          if (_ads2Controller.text.isNotEmpty &&
+              !_ads2Controller.text.startsWith('http')) {
             _ads2Mode = 1;
           }
-          if (_adsBottomController.text.isNotEmpty && !_adsBottomController.text.startsWith('http')) {
+          if (_adsBottomController.text.isNotEmpty &&
+              !_adsBottomController.text.startsWith('http')) {
             _adsBottomMode = 1;
           }
 
@@ -149,7 +151,9 @@ class _AdminSettingScreenState extends State<AdminSettingScreen> {
     }
   }
 
-  Future<void> _showMissingPluginDialog(TextEditingController controller) async {
+  Future<void> _showMissingPluginDialog(
+    TextEditingController controller,
+  ) async {
     final textController = TextEditingController();
     await showDialog(
       context: context,
@@ -167,13 +171,21 @@ class _AdminSettingScreenState extends State<AdminSettingScreen> {
                 color: AppColors.accentCyan.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.info_outline_rounded, color: AppColors.accentCyan, size: 20),
+              child: const Icon(
+                Icons.info_outline_rounded,
+                color: AppColors.accentCyan,
+                size: 20,
+              ),
             ),
             const SizedBox(width: 10),
             const Expanded(
               child: Text(
                 'Perlu Restart Aplikasi',
-                style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
@@ -184,12 +196,20 @@ class _AdminSettingScreenState extends State<AdminSettingScreen> {
           children: [
             const Text(
               'Plugin pemilih galeri (image_picker) baru saja ditambahkan ke proyek. Agar plugin ini aktif di perangkat, aplikasi perlu dihentikan (stop) dan di-run ulang (flutter run).',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.4),
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 13,
+                height: 1.4,
+              ),
             ),
             const SizedBox(height: 14),
             const Text(
               'Atau masukkan path / nama file gambar secara manual:',
-              style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 6),
             TextField(
@@ -197,10 +217,16 @@ class _AdminSettingScreenState extends State<AdminSettingScreen> {
               style: const TextStyle(color: Colors.white, fontSize: 13),
               decoration: InputDecoration(
                 hintText: 'Contoh: banner-promo.png',
-                hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                hintStyle: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 12,
+                ),
                 filled: true,
                 fillColor: AppColors.inputBackground,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: const BorderSide(color: AppColors.inputBorder),
@@ -212,7 +238,10 @@ class _AdminSettingScreenState extends State<AdminSettingScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Tutup', style: TextStyle(color: AppColors.textMuted)),
+            child: const Text(
+              'Tutup',
+              style: TextStyle(color: AppColors.textMuted),
+            ),
           ),
           ElevatedButton(
             onPressed: () {
@@ -226,9 +255,17 @@ class _AdminSettingScreenState extends State<AdminSettingScreen> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryElectric,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
-            child: const Text('Simpan File', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Simpan File',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -245,29 +282,53 @@ class _AdminSettingScreenState extends State<AdminSettingScreen> {
       applicationid: _applicationId,
       applicationcompany: _companyController.text.trim(),
       applicationname: _appNameController.text.trim(),
-      applicationads1: _ads1Controller.text.trim().isEmpty ? null : _ads1Controller.text.trim(),
-      applicationads2: _ads2Controller.text.trim().isEmpty ? null : _ads2Controller.text.trim(),
+      applicationads1: _ads1Controller.text.trim().isEmpty
+          ? null
+          : _ads1Controller.text.trim(),
+      applicationads2: _ads2Controller.text.trim().isEmpty
+          ? null
+          : _ads2Controller.text.trim(),
       applicationadsactive: _adsActive ? 'Y' : 'N',
-      applicationadsbottom: _adsBottomController.text.trim().isEmpty ? null : _adsBottomController.text.trim(),
+      applicationadsbottom: _adsBottomController.text.trim().isEmpty
+          ? null
+          : _adsBottomController.text.trim(),
       applicationadsbottomactive: _adsBottomActive ? 'Y' : 'N',
       applicationadshome: _loadedConfig?.applicationadshome,
       applicationadshomeactive: _loadedConfig?.applicationadshomeactive ?? 'Y',
       applicationadslyric: _loadedConfig?.applicationadslyric,
-      applicationadslyricactive: _loadedConfig?.applicationadslyricactive ?? 'Y',
+      applicationadslyricactive:
+          _loadedConfig?.applicationadslyricactive ?? 'Y',
+      applicationadslyrictop: _loadedConfig?.applicationadslyrictop,
+      applicationadslyrictopactive:
+          _loadedConfig?.applicationadslyrictopactive ?? 'Y',
+      applicationadslyricbottom: _loadedConfig?.applicationadslyricbottom,
+      applicationadslyricbottomactive:
+          _loadedConfig?.applicationadslyricbottomactive ?? 'Y',
       applicationads1type: _loadedConfig?.applicationads1type ?? 'image',
       applicationads1unit: _loadedConfig?.applicationads1unit,
       applicationads2type: _loadedConfig?.applicationads2type ?? 'image',
       applicationads2unit: _loadedConfig?.applicationads2unit,
       applicationadshometype: _loadedConfig?.applicationadshometype ?? 'image',
       applicationadshomeunit: _loadedConfig?.applicationadshomeunit,
-      applicationadslyrictype: _loadedConfig?.applicationadslyrictype ?? 'image',
+      applicationadslyrictype:
+          _loadedConfig?.applicationadslyrictype ?? 'image',
       applicationadslyricunit: _loadedConfig?.applicationadslyricunit,
-      applicationadsbottomtype: _loadedConfig?.applicationadsbottomtype ?? 'image',
+      applicationadslyrictoptype:
+          _loadedConfig?.applicationadslyrictoptype ?? 'image',
+      applicationadslyrictopunit: _loadedConfig?.applicationadslyrictopunit,
+      applicationadslyricbottomtype:
+          _loadedConfig?.applicationadslyricbottomtype ?? 'image',
+      applicationadslyricbottomunit:
+          _loadedConfig?.applicationadslyricbottomunit,
+      applicationadsbottomtype:
+          _loadedConfig?.applicationadsbottomtype ?? 'image',
       applicationadsbottomunit: _loadedConfig?.applicationadsbottomunit,
     );
 
     try {
-      final saved = await _applicationService.updateApplicationConfig(updatedConfig);
+      final saved = await _applicationService.updateApplicationConfig(
+        updatedConfig,
+      );
       if (mounted) {
         setState(() {
           _applicationId = saved.applicationid;
@@ -307,7 +368,10 @@ class _AdminSettingScreenState extends State<AdminSettingScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: AppColors.inputFocusedBorder, width: 1.5),
+        borderSide: const BorderSide(
+          color: AppColors.inputFocusedBorder,
+          width: 1.5,
+        ),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
@@ -339,7 +403,9 @@ class _AdminSettingScreenState extends State<AdminSettingScreen> {
         child: _isLoading
             ? const Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.accentCyan),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    AppColors.accentCyan,
+                  ),
                 ),
               )
             : RefreshIndicator(
@@ -415,7 +481,11 @@ class _AdminSettingScreenState extends State<AdminSettingScreen> {
                                             color: Colors.white,
                                           ),
                                         )
-                                      : const Icon(Icons.save_rounded, size: 18, color: Colors.white),
+                                      : const Icon(
+                                          Icons.save_rounded,
+                                          size: 18,
+                                          color: Colors.white,
+                                        ),
                                   label: const Text(
                                     'Simpan Pengaturan',
                                     style: TextStyle(
@@ -426,7 +496,9 @@ class _AdminSettingScreenState extends State<AdminSettingScreen> {
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColors.primaryElectric,
                                     foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 14,
+                                    ),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(10),
                                     ),
@@ -602,7 +674,9 @@ class _AdminSettingScreenState extends State<AdminSettingScreen> {
                 ),
               ),
               subtitle: Text(
-                _adsActive ? 'Iklan aktif dan ditayangkan' : 'Iklan dinonaktifkan',
+                _adsActive
+                    ? 'Iklan aktif dan ditayangkan'
+                    : 'Iklan dinonaktifkan',
                 style: TextStyle(
                   color: _adsActive ? Colors.greenAccent : AppColors.textMuted,
                   fontSize: 12,
@@ -696,9 +770,13 @@ class _AdminSettingScreenState extends State<AdminSettingScreen> {
                 ),
               ),
               subtitle: Text(
-                _adsBottomActive ? 'Iklan bawah aktif ditayangkan' : 'Iklan bawah dinonaktifkan',
+                _adsBottomActive
+                    ? 'Iklan bawah aktif ditayangkan'
+                    : 'Iklan bawah dinonaktifkan',
                 style: TextStyle(
-                  color: _adsBottomActive ? Colors.greenAccent : AppColors.textMuted,
+                  color: _adsBottomActive
+                      ? Colors.greenAccent
+                      : AppColors.textMuted,
                   fontSize: 12,
                 ),
               ),
@@ -734,7 +812,8 @@ class _AdminSettingScreenState extends State<AdminSettingScreen> {
   }) {
     final value = controller.text.trim();
     final hasContent = value.isNotEmpty;
-    final isNetworkUrl = value.startsWith('http://') || value.startsWith('https://');
+    final isNetworkUrl =
+        value.startsWith('http://') || value.startsWith('https://');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -760,7 +839,9 @@ class _AdminSettingScreenState extends State<AdminSettingScreen> {
                   borderRadius: BorderRadius.circular(7),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: currentMode == 0 ? AppColors.primaryElectric : Colors.transparent,
+                      color: currentMode == 0
+                          ? AppColors.primaryElectric
+                          : Colors.transparent,
                       borderRadius: BorderRadius.circular(7),
                     ),
                     alignment: Alignment.center,
@@ -770,15 +851,21 @@ class _AdminSettingScreenState extends State<AdminSettingScreen> {
                         Icon(
                           Icons.link_rounded,
                           size: 15,
-                          color: currentMode == 0 ? Colors.white : AppColors.textMuted,
+                          color: currentMode == 0
+                              ? Colors.white
+                              : AppColors.textMuted,
                         ),
                         const SizedBox(width: 6),
                         Text(
                           'Tautan Link',
                           style: TextStyle(
-                            color: currentMode == 0 ? Colors.white : AppColors.textSecondary,
+                            color: currentMode == 0
+                                ? Colors.white
+                                : AppColors.textSecondary,
                             fontSize: 12,
-                            fontWeight: currentMode == 0 ? FontWeight.bold : FontWeight.w500,
+                            fontWeight: currentMode == 0
+                                ? FontWeight.bold
+                                : FontWeight.w500,
                           ),
                         ),
                       ],
@@ -793,7 +880,9 @@ class _AdminSettingScreenState extends State<AdminSettingScreen> {
                   borderRadius: BorderRadius.circular(7),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: currentMode == 1 ? AppColors.primaryElectric : Colors.transparent,
+                      color: currentMode == 1
+                          ? AppColors.primaryElectric
+                          : Colors.transparent,
                       borderRadius: BorderRadius.circular(7),
                     ),
                     alignment: Alignment.center,
@@ -803,15 +892,21 @@ class _AdminSettingScreenState extends State<AdminSettingScreen> {
                         Icon(
                           Icons.cloud_upload_rounded,
                           size: 15,
-                          color: currentMode == 1 ? Colors.white : AppColors.textMuted,
+                          color: currentMode == 1
+                              ? Colors.white
+                              : AppColors.textMuted,
                         ),
                         const SizedBox(width: 6),
                         Text(
                           'Unggah Gambar',
                           style: TextStyle(
-                            color: currentMode == 1 ? Colors.white : AppColors.textSecondary,
+                            color: currentMode == 1
+                                ? Colors.white
+                                : AppColors.textSecondary,
                             fontSize: 12,
-                            fontWeight: currentMode == 1 ? FontWeight.bold : FontWeight.w500,
+                            fontWeight: currentMode == 1
+                                ? FontWeight.bold
+                                : FontWeight.w500,
                           ),
                         ),
                       ],
@@ -836,7 +931,11 @@ class _AdminSettingScreenState extends State<AdminSettingScreen> {
               prefixIcon: Icons.link_rounded,
               suffixIcon: hasContent
                   ? IconButton(
-                      icon: const Icon(Icons.clear_rounded, color: AppColors.textMuted, size: 18),
+                      icon: const Icon(
+                        Icons.clear_rounded,
+                        color: AppColors.textMuted,
+                        size: 18,
+                      ),
                       tooltip: 'Bersihkan',
                       onPressed: () {
                         setState(() => controller.clear());
@@ -906,17 +1005,18 @@ class _AdminSettingScreenState extends State<AdminSettingScreen> {
                               ? Image.network(
                                   value,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) => const Icon(
-                                    Icons.image_rounded,
-                                    color: AppColors.accentCyan,
-                                  ),
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Icon(
+                                        Icons.image_rounded,
+                                        color: AppColors.accentCyan,
+                                      ),
                                 )
                               : (!kIsWeb && File(value).existsSync()
-                                  ? Image.file(File(value), fit: BoxFit.cover)
-                                  : const Icon(
-                                      Icons.image_rounded,
-                                      color: AppColors.accentCyan,
-                                    )),
+                                    ? Image.file(File(value), fit: BoxFit.cover)
+                                    : const Icon(
+                                        Icons.image_rounded,
+                                        color: AppColors.accentCyan,
+                                      )),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -948,12 +1048,20 @@ class _AdminSettingScreenState extends State<AdminSettingScreen> {
                       ),
                       const SizedBox(width: 6),
                       IconButton(
-                        icon: const Icon(Icons.edit_rounded, color: AppColors.accentSky, size: 18),
+                        icon: const Icon(
+                          Icons.edit_rounded,
+                          color: AppColors.accentSky,
+                          size: 18,
+                        ),
                         tooltip: 'Ganti Gambar',
                         onPressed: () => _pickImage(controller),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.delete_outline_rounded, color: AppColors.error, size: 18),
+                        icon: const Icon(
+                          Icons.delete_outline_rounded,
+                          color: AppColors.error,
+                          size: 18,
+                        ),
                         tooltip: 'Hapus Gambar',
                         onPressed: () {
                           setState(() => controller.clear());
@@ -972,7 +1080,9 @@ class _AdminSettingScreenState extends State<AdminSettingScreen> {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: AppColors.primaryElectric.withValues(alpha: 0.2),
+                              color: AppColors.primaryElectric.withValues(
+                                alpha: 0.2,
+                              ),
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
@@ -996,7 +1106,10 @@ class _AdminSettingScreenState extends State<AdminSettingScreen> {
                               SizedBox(height: 2),
                               Text(
                                 'Format JPG, PNG, WEBP (maks. 5 MB)',
-                                style: TextStyle(color: AppColors.textMuted, fontSize: 11),
+                                style: TextStyle(
+                                  color: AppColors.textMuted,
+                                  fontSize: 11,
+                                ),
                               ),
                             ],
                           ),

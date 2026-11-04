@@ -96,6 +96,13 @@ class ApplicationModel {
   final String? applicationadslyric;
   final String applicationadslyricactive; // 'Y' or 'N'
 
+  // Slot iklan atas & bawah khusus halaman lirik only. Terpisah dari slot
+  // halaman musik agar admin bisa mengatur banner lirik secara independen.
+  final String? applicationadslyrictop;
+  final String applicationadslyrictopactive; // 'Y' or 'N'
+  final String? applicationadslyricbottom;
+  final String applicationadslyricbottomactive; // 'Y' or 'N'
+
   // Konfigurasi jenis iklan + Ad Unit per slot (dari panel admin website).
   final String applicationads1type;
   final String? applicationads1unit;
@@ -105,6 +112,10 @@ class ApplicationModel {
   final String? applicationadshomeunit;
   final String applicationadslyrictype;
   final String? applicationadslyricunit;
+  final String applicationadslyrictoptype;
+  final String? applicationadslyrictopunit;
+  final String applicationadslyricbottomtype;
+  final String? applicationadslyricbottomunit;
   final String applicationadsbottomtype;
   final String? applicationadsbottomunit;
 
@@ -121,6 +132,10 @@ class ApplicationModel {
     this.applicationadshomeactive = 'Y',
     this.applicationadslyric,
     this.applicationadslyricactive = 'Y',
+    this.applicationadslyrictop,
+    this.applicationadslyrictopactive = 'Y',
+    this.applicationadslyricbottom,
+    this.applicationadslyricbottomactive = 'Y',
     this.applicationads1type = 'image',
     this.applicationads1unit,
     this.applicationads2type = 'image',
@@ -129,6 +144,10 @@ class ApplicationModel {
     this.applicationadshomeunit,
     this.applicationadslyrictype = 'image',
     this.applicationadslyricunit,
+    this.applicationadslyrictoptype = 'image',
+    this.applicationadslyrictopunit,
+    this.applicationadslyricbottomtype = 'image',
+    this.applicationadslyricbottomunit,
     this.applicationadsbottomtype = 'image',
     this.applicationadsbottomunit,
   });
@@ -137,6 +156,10 @@ class ApplicationModel {
   bool get isAdsBottomActive => applicationadsbottomactive.toUpperCase() == 'Y';
   bool get isAdsHomeActive => applicationadshomeactive.toUpperCase() == 'Y';
   bool get isAdsLyricActive => applicationadslyricactive.toUpperCase() == 'Y';
+  bool get isAdsLyricTopActive =>
+      applicationadslyrictopactive.toUpperCase() == 'Y';
+  bool get isAdsLyricBottomActive =>
+      applicationadslyricbottomactive.toUpperCase() == 'Y';
 
   /// Slot iklan 1 (Header / Atas).
   AdSlotConfig get ads1Config => AdSlotConfig(
@@ -166,6 +189,20 @@ class ApplicationModel {
     unit: applicationadslyricunit,
   );
 
+  /// Slot iklan atas khusus halaman lirik only.
+  AdSlotConfig get adsLyricTopConfig => AdSlotConfig(
+    image: applicationadslyrictop,
+    format: AdFormat.fromRaw(applicationadslyrictoptype),
+    unit: applicationadslyrictopunit,
+  );
+
+  /// Slot iklan bawah khusus halaman lirik only.
+  AdSlotConfig get adsLyricBottomConfig => AdSlotConfig(
+    image: applicationadslyricbottom,
+    format: AdFormat.fromRaw(applicationadslyricbottomtype),
+    unit: applicationadslyricbottomunit,
+  );
+
   /// Slot iklan bawah (Footer).
   AdSlotConfig get adsBottomConfig => AdSlotConfig(
     image: applicationadsbottom,
@@ -186,6 +223,10 @@ class ApplicationModel {
     String? applicationadshomeactive,
     String? applicationadslyric,
     String? applicationadslyricactive,
+    String? applicationadslyrictop,
+    String? applicationadslyrictopactive,
+    String? applicationadslyricbottom,
+    String? applicationadslyricbottomactive,
     String? applicationads1type,
     String? applicationads1unit,
     String? applicationads2type,
@@ -194,6 +235,10 @@ class ApplicationModel {
     String? applicationadshomeunit,
     String? applicationadslyrictype,
     String? applicationadslyricunit,
+    String? applicationadslyrictoptype,
+    String? applicationadslyrictopunit,
+    String? applicationadslyricbottomtype,
+    String? applicationadslyricbottomunit,
     String? applicationadsbottomtype,
     String? applicationadsbottomunit,
   }) {
@@ -213,6 +258,15 @@ class ApplicationModel {
       applicationadslyric: applicationadslyric ?? this.applicationadslyric,
       applicationadslyricactive:
           applicationadslyricactive ?? this.applicationadslyricactive,
+      applicationadslyrictop:
+          applicationadslyrictop ?? this.applicationadslyrictop,
+      applicationadslyrictopactive:
+          applicationadslyrictopactive ?? this.applicationadslyrictopactive,
+      applicationadslyricbottom:
+          applicationadslyricbottom ?? this.applicationadslyricbottom,
+      applicationadslyricbottomactive:
+          applicationadslyricbottomactive ??
+          this.applicationadslyricbottomactive,
       applicationads1type: applicationads1type ?? this.applicationads1type,
       applicationads1unit: applicationads1unit ?? this.applicationads1unit,
       applicationads2type: applicationads2type ?? this.applicationads2type,
@@ -225,6 +279,14 @@ class ApplicationModel {
           applicationadslyrictype ?? this.applicationadslyrictype,
       applicationadslyricunit:
           applicationadslyricunit ?? this.applicationadslyricunit,
+      applicationadslyrictoptype:
+          applicationadslyrictoptype ?? this.applicationadslyrictoptype,
+      applicationadslyrictopunit:
+          applicationadslyrictopunit ?? this.applicationadslyrictopunit,
+      applicationadslyricbottomtype:
+          applicationadslyricbottomtype ?? this.applicationadslyricbottomtype,
+      applicationadslyricbottomunit:
+          applicationadslyricbottomunit ?? this.applicationadslyricbottomunit,
       applicationadsbottomtype:
           applicationadsbottomtype ?? this.applicationadsbottomtype,
       applicationadsbottomunit:
@@ -251,6 +313,12 @@ class ApplicationModel {
       applicationadslyric: json['applicationadslyric'] as String?,
       applicationadslyricactive:
           json['applicationadslyricactive'] as String? ?? 'Y',
+      applicationadslyrictop: json['applicationadslyrictop'] as String?,
+      applicationadslyrictopactive:
+          json['applicationadslyrictopactive'] as String? ?? 'Y',
+      applicationadslyricbottom: json['applicationadslyricbottom'] as String?,
+      applicationadslyricbottomactive:
+          json['applicationadslyricbottomactive'] as String? ?? 'Y',
       applicationads1type: json['applicationads1type'] as String? ?? 'image',
       applicationads1unit: json['applicationads1unit'] as String?,
       applicationads2type: json['applicationads2type'] as String? ?? 'image',
@@ -261,6 +329,13 @@ class ApplicationModel {
       applicationadslyrictype:
           json['applicationadslyrictype'] as String? ?? 'image',
       applicationadslyricunit: json['applicationadslyricunit'] as String?,
+      applicationadslyrictoptype:
+          json['applicationadslyrictoptype'] as String? ?? 'image',
+      applicationadslyrictopunit: json['applicationadslyrictopunit'] as String?,
+      applicationadslyricbottomtype:
+          json['applicationadslyricbottomtype'] as String? ?? 'image',
+      applicationadslyricbottomunit:
+          json['applicationadslyricbottomunit'] as String?,
       applicationadsbottomtype:
           json['applicationadsbottomtype'] as String? ?? 'image',
       applicationadsbottomunit: json['applicationadsbottomunit'] as String?,
@@ -281,6 +356,10 @@ class ApplicationModel {
       'applicationadshomeactive': applicationadshomeactive,
       'applicationadslyric': applicationadslyric,
       'applicationadslyricactive': applicationadslyricactive,
+      'applicationadslyrictop': applicationadslyrictop,
+      'applicationadslyrictopactive': applicationadslyrictopactive,
+      'applicationadslyricbottom': applicationadslyricbottom,
+      'applicationadslyricbottomactive': applicationadslyricbottomactive,
       'applicationads1type': applicationads1type,
       'applicationads1unit': applicationads1unit,
       'applicationads2type': applicationads2type,
@@ -289,6 +368,10 @@ class ApplicationModel {
       'applicationadshomeunit': applicationadshomeunit,
       'applicationadslyrictype': applicationadslyrictype,
       'applicationadslyricunit': applicationadslyricunit,
+      'applicationadslyrictoptype': applicationadslyrictoptype,
+      'applicationadslyrictopunit': applicationadslyrictopunit,
+      'applicationadslyricbottomtype': applicationadslyricbottomtype,
+      'applicationadslyricbottomunit': applicationadslyricbottomunit,
       'applicationadsbottomtype': applicationadsbottomtype,
       'applicationadsbottomunit': applicationadsbottomunit,
     };

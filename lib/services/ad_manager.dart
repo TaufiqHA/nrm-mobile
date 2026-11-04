@@ -20,7 +20,8 @@ class AdManager {
 
   static final AdManager instance = AdManager._();
 
-  static bool get _supported => !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+  static bool get _supported =>
+      !kIsWeb && (Platform.isAndroid || Platform.isIOS);
 
   // ---- Konfigurasi Ad Unit (berasal dari konfigurasi aplikasi) ----
   String? _interstitialUnit;
@@ -68,12 +69,15 @@ class AdManager {
       if (config.isAdsActive) config.ads2Config,
       if (config.isAdsHomeActive) config.adsHomeConfig,
       if (config.isAdsLyricActive) config.adsLyricConfig,
+      if (config.isAdsLyricTopActive) config.adsLyricTopConfig,
+      if (config.isAdsLyricBottomActive) config.adsLyricBottomConfig,
       if (config.isAdsBottomActive) config.adsBottomConfig,
     ];
     for (final slot in slots) {
       if (!slot.isAdMob) continue;
       final unit = slot.unit;
-      if (slot.isInterstitial && _interstitialUnit == null) _interstitialUnit = unit;
+      if (slot.isInterstitial && _interstitialUnit == null)
+        _interstitialUnit = unit;
       if (slot.isAppOpen && _appOpenUnit == null) _appOpenUnit = unit;
       if (slot.isReward && _rewardUnit == null) _rewardUnit = unit;
     }
@@ -93,7 +97,11 @@ class AdManager {
 
   void _loadInterstitial() {
     final unit = _interstitialUnit;
-    if (unit == null || unit.isEmpty || _interstitial != null || _loadingInterstitial) return;
+    if (unit == null ||
+        unit.isEmpty ||
+        _interstitial != null ||
+        _loadingInterstitial)
+      return;
     _loadingInterstitial = true;
     InterstitialAd.load(
       adUnitId: unit,
@@ -105,7 +113,9 @@ class AdManager {
         },
         onAdFailedToLoad: (error) {
           _loadingInterstitial = false;
-          debugPrint('AdMob: gagal memuat interstitial. ${error.code}: ${error.message}');
+          debugPrint(
+            'AdMob: gagal memuat interstitial. ${error.code}: ${error.message}',
+          );
         },
       ),
     );
@@ -138,7 +148,9 @@ class AdManager {
         _loadInterstitial();
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
-        debugPrint('AdMob: gagal menampilkan interstitial. ${error.code}: ${error.message}');
+        debugPrint(
+          'AdMob: gagal menampilkan interstitial. ${error.code}: ${error.message}',
+        );
         ad.dispose();
         _loadInterstitial();
       },
@@ -152,7 +164,8 @@ class AdManager {
 
   void _loadAppOpen() {
     final unit = _appOpenUnit;
-    if (unit == null || unit.isEmpty || _appOpen != null || _loadingAppOpen) return;
+    if (unit == null || unit.isEmpty || _appOpen != null || _loadingAppOpen)
+      return;
     _loadingAppOpen = true;
     AppOpenAd.load(
       adUnitId: unit,
@@ -168,7 +181,9 @@ class AdManager {
         },
         onAdFailedToLoad: (error) {
           _loadingAppOpen = false;
-          debugPrint('AdMob: gagal memuat app open. ${error.code}: ${error.message}');
+          debugPrint(
+            'AdMob: gagal memuat app open. ${error.code}: ${error.message}',
+          );
         },
       ),
     );
@@ -196,7 +211,9 @@ class AdManager {
         _loadAppOpen();
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
-        debugPrint('AdMob: gagal menampilkan app open. ${error.code}: ${error.message}');
+        debugPrint(
+          'AdMob: gagal menampilkan app open. ${error.code}: ${error.message}',
+        );
         ad.dispose();
         _loadAppOpen();
       },
@@ -253,7 +270,9 @@ class AdManager {
         },
         onAdFailedToLoad: (error) {
           _loadingReward = false;
-          debugPrint('AdMob: gagal memuat reward. ${error.code}: ${error.message}');
+          debugPrint(
+            'AdMob: gagal memuat reward. ${error.code}: ${error.message}',
+          );
         },
       ),
     );
@@ -268,12 +287,16 @@ class AdManager {
         if (earned) onReward?.call();
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
-        debugPrint('AdMob: gagal menampilkan reward. ${error.code}: ${error.message}');
+        debugPrint(
+          'AdMob: gagal menampilkan reward. ${error.code}: ${error.message}',
+        );
         ad.dispose();
       },
     );
-    ad.show(onUserEarnedReward: (ad, reward) {
-      earned = true;
-    });
+    ad.show(
+      onUserEarnedReward: (ad, reward) {
+        earned = true;
+      },
+    );
   }
 }

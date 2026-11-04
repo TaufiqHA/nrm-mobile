@@ -72,6 +72,10 @@ class _UserMainLayoutState extends State<UserMainLayout> {
   ApplicationModel? _appConfig;
   bool _pageAdShown = false;
 
+  // Slot iklan atas/bawah yang sudah ditutup pengguna pada sesi ini.
+  bool _topAdClosed = false;
+  bool _bottomAdClosed = false;
+
   UserModel? _currentUser;
   List<SongModel> _allSongs = [];
   List<CategoryModel> _categories = [];
@@ -81,6 +85,36 @@ class _UserMainLayoutState extends State<UserMainLayout> {
   int? _initialCategoryFilter;
 
   bool get _isTextOnly => widget.initialDisplayMode == DisplayMode.textOnly;
+
+  /// Slot iklan atas: halaman musik memakai slot 1, halaman lirik memakai slot
+  /// khusus lirik agar pengaturannya terpisah di panel admin website.
+  AdSlotConfig? get _topAdConfig {
+    final config = _appConfig;
+    if (config == null) return null;
+    return _isTextOnly ? config.adsLyricTopConfig : config.ads1Config;
+  }
+
+  bool get _topAdActive {
+    final config = _appConfig;
+    if (config == null) return false;
+    return _isTextOnly ? config.isAdsLyricTopActive : config.isAdsActive;
+  }
+
+  /// Slot iklan bawah: halaman musik memakai footer biasa, halaman lirik
+  /// memakai slot khusus lirik.
+  AdSlotConfig? get _bottomAdConfig {
+    final config = _appConfig;
+    if (config == null) return null;
+    return _isTextOnly ? config.adsLyricBottomConfig : config.adsBottomConfig;
+  }
+
+  bool get _bottomAdActive {
+    final config = _appConfig;
+    if (config == null) return false;
+    return _isTextOnly
+        ? config.isAdsLyricBottomActive
+        : config.isAdsBottomActive;
+  }
 
   List<LyricVerse> get _currentVerses =>
       LyricParser.parse(_currentSong?.songlyric);
@@ -1220,8 +1254,7 @@ class _UserMainLayoutState extends State<UserMainLayout> {
       isMuted: _isMuted,
       isFullscreen: _isFullscreen,
       onToggleFullscreen:
-          _isCasting ||
-              (_isMediaActive && _mediaController.isAudioOnly)
+          _isCasting || (_isMediaActive && _mediaController.isAudioOnly)
           ? null
           : _toggleFullscreen,
       onVolumeChanged: _onVolumeChanged,
@@ -1261,13 +1294,16 @@ class _UserMainLayoutState extends State<UserMainLayout> {
                 isCompact: isCompactLandscape,
               ),
 
-              // Iklan slot 1 (Header / Atas)
-              if (_appConfig != null)
+              // Iklan slot atas: slot 1 untuk halaman musik, slot khusus lirik
+              // untuk mode Hanya Lirik.
+              if (_appConfig != null && !_topAdClosed)
                 AdSlotView(
-                  ad: _appConfig!.ads1Config,
-                  active: _appConfig!.isAdsActive,
+                  key: const ValueKey('ad_slot_top'),
+                  ad: _topAdConfig!,
+                  active: _topAdActive,
                   padding: const EdgeInsets.fromLTRB(14, 2, 14, 2),
                   maxHeight: 120,
+                  onClose: () => setState(() => _topAdClosed = true),
                 ),
 
               // 2. Main Karaoke Screen Content
@@ -1464,13 +1500,16 @@ class _UserMainLayoutState extends State<UserMainLayout> {
                 ),
               ),
 
-              // Iklan slot bawah (Footer)
-              if (_appConfig != null)
+              // Iklan slot bawah: footer biasa untuk halaman musik, slot khusus
+              // lirik untuk mode Hanya Lirik.
+              if (_appConfig != null && !_bottomAdClosed)
                 AdSlotView(
-                  ad: _appConfig!.adsBottomConfig,
-                  active: _appConfig!.isAdsBottomActive,
+                  key: const ValueKey('ad_slot_bottom'),
+                  ad: _bottomAdConfig!,
+                  active: _bottomAdActive,
                   padding: const EdgeInsets.fromLTRB(14, 2, 14, 4),
                   maxHeight: 120,
+                  onClose: () => setState(() => _bottomAdClosed = true),
                 ),
             ],
           ),

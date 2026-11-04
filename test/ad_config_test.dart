@@ -75,6 +75,12 @@ void main() {
         'applicationadslyrictype': 'admob_native',
         'applicationadslyricunit': 'ca-app-pub-1/4',
         'applicationadslyricactive': 'Y',
+        'applicationadslyrictop': 'banners/lyric-top.jpg',
+        'applicationadslyrictoptype': 'image',
+        'applicationadslyrictopactive': 'N',
+        'applicationadslyricbottomtype': 'admob_banner',
+        'applicationadslyricbottomunit': 'ca-app-pub-1/5',
+        'applicationadslyricbottomactive': 'Y',
       });
 
       expect(model.isAdsHomeActive, isFalse);
@@ -84,6 +90,12 @@ void main() {
       expect(model.isAdsLyricActive, isTrue);
       expect(model.adsLyricConfig.isNative, isTrue);
       expect(model.adsLyricConfig.unit, 'ca-app-pub-1/4');
+
+      expect(model.isAdsLyricTopActive, isFalse);
+      expect(model.adsLyricTopConfig.image, 'banners/lyric-top.jpg');
+      expect(model.isAdsLyricBottomActive, isTrue);
+      expect(model.adsLyricBottomConfig.isBanner, isTrue);
+      expect(model.adsLyricBottomConfig.unit, 'ca-app-pub-1/5');
     });
 
     test('defaults to image type when fields are missing', () {
@@ -96,8 +108,12 @@ void main() {
       expect(model.ads1Config.isAdMob, isFalse);
       expect(model.adsHomeConfig.isImage, isTrue);
       expect(model.adsLyricConfig.isImage, isTrue);
+      expect(model.adsLyricTopConfig.isImage, isTrue);
+      expect(model.adsLyricBottomConfig.isImage, isTrue);
       expect(model.isAdsHomeActive, isTrue);
       expect(model.isAdsLyricActive, isTrue);
+      expect(model.isAdsLyricTopActive, isTrue);
+      expect(model.isAdsLyricBottomActive, isTrue);
     });
 
     test('toJson includes ad type and unit fields', () {
@@ -110,6 +126,10 @@ void main() {
         applicationadshomeactive: 'N',
         applicationadslyrictype: 'admob_interstitial',
         applicationadslyricunit: 'ca-app-pub-1/10',
+        applicationadslyrictoptype: 'admob_banner',
+        applicationadslyrictopunit: 'ca-app-pub-1/11',
+        applicationadslyricbottom: 'banners/lyric-bottom.jpg',
+        applicationadslyricbottomactive: 'N',
       );
       final json = model.toJson();
       expect(json['applicationads1type'], 'admob_banner');
@@ -117,6 +137,10 @@ void main() {
       expect(json['applicationadshomeactive'], 'N');
       expect(json['applicationadslyrictype'], 'admob_interstitial');
       expect(json['applicationadslyricunit'], 'ca-app-pub-1/10');
+      expect(json['applicationadslyrictoptype'], 'admob_banner');
+      expect(json['applicationadslyrictopunit'], 'ca-app-pub-1/11');
+      expect(json['applicationadslyricbottom'], 'banners/lyric-bottom.jpg');
+      expect(json['applicationadslyricbottomactive'], 'N');
     });
   });
 
