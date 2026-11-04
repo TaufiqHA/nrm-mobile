@@ -15,6 +15,7 @@ import '../../core/services/application_service.dart';
 import '../../core/services/api_application_service.dart';
 import '../../models/application_model.dart';
 import '../../services/ad_manager.dart';
+import '../../widgets/ad_popup.dart';
 import '../../widgets/ad_slot_view.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/lyric_parser.dart';
@@ -69,7 +70,7 @@ class _UserMainLayoutState extends State<UserMainLayout> {
   StreamSubscription? _castSubscription;
 
   ApplicationModel? _appConfig;
-  bool _middleAdShown = false;
+  bool _pageAdShown = false;
 
   UserModel? _currentUser;
   List<SongModel> _allSongs = [];
@@ -532,56 +533,26 @@ class _UserMainLayoutState extends State<UserMainLayout> {
       if (!mounted) return;
       setState(() => _appConfig = config);
       AdManager.instance.configure(config);
-      WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowMiddleAd());
+      WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowPageAd());
     } catch (e) {
       debugPrint('User layout app config load error: $e');
     }
   }
 
-  /// Menampilkan iklan slot 2 (Konten / Pop-up) satu kali per sesi bila jenisnya
-  /// iklan inline (gambar/native/banner). Format full-screen ditangani AdManager.
-  void _maybeShowMiddleAd() {
-    if (_middleAdShown || !mounted) return;
+  /// Menampilkan pop-up iklan satu kali per layar: slot halaman lirik untuk
+  /// mode teks-only, atau slot konten untuk halaman player biasa. Format
+  /// full-screen ditangani AdManager.
+  void _maybeShowPageAd() {
+    if (_pageAdShown || !mounted) return;
     final config = _appConfig;
-    if (config == null || !config.isAdsActive) return;
+    if (config == null) return;
 
-    final ad = config.ads2Config;
-    final hasContent =
-        (ad.isImage && (ad.image ?? '').trim().isNotEmpty) ||
-        ((ad.isNative || ad.isBanner) && ad.hasUnit);
-    if (!ad.isInline || !hasContent) return;
+    final ad = _isTextOnly ? config.adsLyricConfig : config.ads2Config;
+    final active = _isTextOnly ? config.isAdsLyricActive : config.isAdsActive;
+    if (!active || !hasAdPopupContent(ad)) return;
 
-    _middleAdShown = true;
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: AppColors.surfaceDark,
-        insetPadding: const EdgeInsets.all(20),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.cardGlassBorder),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Align(
-              alignment: Alignment.centerRight,
-              child: IconButton(
-                icon: const Icon(
-                  Icons.close_rounded,
-                  color: AppColors.textMuted,
-                ),
-                onPressed: () => Navigator.of(ctx).pop(),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-              child: AdSlotView(ad: ad, padding: EdgeInsets.zero),
-            ),
-          ],
-        ),
-      ),
-    );
+    _pageAdShown = true;
+    showAdPopup(context, ad);
   }
 
   void _detachYoutubePlayback() {

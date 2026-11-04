@@ -1,19 +1,28 @@
 import 'package:flutter/material.dart';
 
+import '../core/services/api_application_service.dart';
 import '../core/services/api_category_service.dart';
+import '../core/services/application_service.dart';
 import '../core/services/category_service.dart';
 import '../core/theme/app_colors.dart';
 import '../core/utils/category_icon_helper.dart';
 import '../models/category_model.dart';
 import '../models/display_mode.dart';
+import '../widgets/ad_popup.dart';
 import 'user/user_main_layout.dart';
 
 class LoginScreen extends StatefulWidget {
   /// Parameter authService dipertahankan untuk kompatibilitas dengan caller lama
   final dynamic authService;
   final CategoryService? categoryService;
+  final ApplicationService? applicationService;
 
-  const LoginScreen({super.key, this.authService, this.categoryService});
+  const LoginScreen({
+    super.key,
+    this.authService,
+    this.categoryService,
+    this.applicationService,
+  });
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -21,15 +30,35 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   late final CategoryService _categoryService;
+  late final ApplicationService _applicationService;
   List<CategoryModel> _categories = [];
   bool _isLoadingCategories = true;
   bool _categoryLoadFailed = false;
+  bool _homeAdShown = false;
 
   @override
   void initState() {
     super.initState();
     _categoryService = widget.categoryService ?? ApiCategoryService();
+    _applicationService = widget.applicationService ?? ApiApplicationService();
     _loadCategories();
+    _loadAppConfig();
+  }
+
+  Future<void> _loadAppConfig() async {
+    try {
+      final config = await _applicationService.getApplicationConfig();
+      if (!mounted || !config.isAdsHomeActive) return;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || _homeAdShown) return;
+        if (!hasAdPopupContent(config.adsHomeConfig)) return;
+        _homeAdShown = true;
+        showAdPopup(context, config.adsHomeConfig);
+      });
+    } catch (e) {
+      debugPrint('Login screen app config load error: $e');
+    }
   }
 
   Future<void> _loadCategories() async {
@@ -43,7 +72,9 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
       setState(() {
         // Kategori yang dinonaktifkan lewat admin tidak boleh tampil ke user.
-        _categories = categories.where((category) => category.isActive).toList();
+        _categories = categories
+            .where((category) => category.isActive)
+            .toList();
         _isLoadingCategories = false;
       });
     } catch (e) {

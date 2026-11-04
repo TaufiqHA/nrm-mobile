@@ -13,7 +13,10 @@ void main() {
       expect(AdFormat.fromRaw('admob'), AdFormat.admobNative);
       expect(AdFormat.fromRaw('admob_native'), AdFormat.admobNative);
       expect(AdFormat.fromRaw('admob_banner'), AdFormat.admobBanner);
-      expect(AdFormat.fromRaw('admob_interstitial'), AdFormat.admobInterstitial);
+      expect(
+        AdFormat.fromRaw('admob_interstitial'),
+        AdFormat.admobInterstitial,
+      );
       expect(AdFormat.fromRaw('admob_app_open'), AdFormat.admobAppOpen);
       expect(AdFormat.fromRaw('admob_reward'), AdFormat.admobReward);
     });
@@ -60,6 +63,29 @@ void main() {
       expect(bottom.isInline, isFalse);
     });
 
+    test('parses home and lyric-only page ad slots', () {
+      final model = ApplicationModel.fromJson({
+        'applicationid': 1,
+        'applicationcompany': 'PT Uji',
+        'applicationname': 'Karaoke Uji',
+        'applicationadshome': 'banners/home.jpg',
+        'applicationadshometype': 'image',
+        'applicationadshomeactive': 'N',
+        'applicationadslyric': null,
+        'applicationadslyrictype': 'admob_native',
+        'applicationadslyricunit': 'ca-app-pub-1/4',
+        'applicationadslyricactive': 'Y',
+      });
+
+      expect(model.isAdsHomeActive, isFalse);
+      expect(model.adsHomeConfig.isImage, isTrue);
+      expect(model.adsHomeConfig.image, 'banners/home.jpg');
+
+      expect(model.isAdsLyricActive, isTrue);
+      expect(model.adsLyricConfig.isNative, isTrue);
+      expect(model.adsLyricConfig.unit, 'ca-app-pub-1/4');
+    });
+
     test('defaults to image type when fields are missing', () {
       final model = ApplicationModel.fromJson({
         'applicationid': 1,
@@ -68,6 +94,10 @@ void main() {
       });
       expect(model.ads1Config.isImage, isTrue);
       expect(model.ads1Config.isAdMob, isFalse);
+      expect(model.adsHomeConfig.isImage, isTrue);
+      expect(model.adsLyricConfig.isImage, isTrue);
+      expect(model.isAdsHomeActive, isTrue);
+      expect(model.isAdsLyricActive, isTrue);
     });
 
     test('toJson includes ad type and unit fields', () {
@@ -77,10 +107,16 @@ void main() {
         applicationname: 'Karaoke Uji',
         applicationads1type: 'admob_banner',
         applicationads1unit: 'ca-app-pub-1/9',
+        applicationadshomeactive: 'N',
+        applicationadslyrictype: 'admob_interstitial',
+        applicationadslyricunit: 'ca-app-pub-1/10',
       );
       final json = model.toJson();
       expect(json['applicationads1type'], 'admob_banner');
       expect(json['applicationads1unit'], 'ca-app-pub-1/9');
+      expect(json['applicationadshomeactive'], 'N');
+      expect(json['applicationadslyrictype'], 'admob_interstitial');
+      expect(json['applicationadslyricunit'], 'ca-app-pub-1/10');
     });
   });
 

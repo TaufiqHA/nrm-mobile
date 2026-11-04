@@ -63,7 +63,14 @@ class AdManager {
     _appOpenUnit = null;
     _rewardUnit = null;
 
-    for (final slot in [config.ads1Config, config.ads2Config, config.adsBottomConfig]) {
+    final slots = <AdSlotConfig>[
+      if (config.isAdsActive) config.ads1Config,
+      if (config.isAdsActive) config.ads2Config,
+      if (config.isAdsHomeActive) config.adsHomeConfig,
+      if (config.isAdsLyricActive) config.adsLyricConfig,
+      if (config.isAdsBottomActive) config.adsBottomConfig,
+    ];
+    for (final slot in slots) {
       if (!slot.isAdMob) continue;
       final unit = slot.unit;
       if (slot.isInterstitial && _interstitialUnit == null) _interstitialUnit = unit;
