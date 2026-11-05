@@ -2,11 +2,11 @@
 /// Cukup ubah konfigurasi di file ini untuk mengubah endpoint seluruh aplikasi.
 class ApiConfig {
   /// Protokol default untuk backend ('http' atau 'https')
-  static const String defaultProtocol = 'http';
+  static const String defaultProtocol = 'https';
 
   /// Host/Domain default untuk backend
-  //static const String defaultHost = 'nyanyianrohanimethodist.xyz';
-  static const String defaultHost = '10.186.142.207:8000';
+  static const String defaultHost = 'nyanyianrohanimethodist.xyz';
+  //static const String defaultHost = '10.153.52.12:8000';
 
   /// Path prefix API
   static const String apiPrefix = '/api';

@@ -289,6 +289,8 @@ class _AdminSettingScreenState extends State<AdminSettingScreen> {
           ? null
           : _ads2Controller.text.trim(),
       applicationadsactive: _adsActive ? 'Y' : 'N',
+      applicationads1active: _adsActive ? 'Y' : 'N',
+      applicationads2active: _adsActive ? 'Y' : 'N',
       applicationadsbottom: _adsBottomController.text.trim().isEmpty
           ? null
           : _adsBottomController.text.trim(),

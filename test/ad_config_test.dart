@@ -114,6 +114,37 @@ void main() {
       expect(model.isAdsLyricActive, isTrue);
       expect(model.isAdsLyricTopActive, isTrue);
       expect(model.isAdsLyricBottomActive, isTrue);
+      expect(model.isAds1Active, isTrue);
+      expect(model.isAds2Active, isTrue);
+    });
+
+    test('parses per-slot active flags independently from aggregate', () {
+      final model = ApplicationModel.fromJson({
+        'applicationid': 1,
+        'applicationcompany': 'PT Uji',
+        'applicationname': 'Karaoke Uji',
+        'applicationadsactive': 'Y',
+        'applicationads1active': 'N',
+        'applicationads2active': 'Y',
+      });
+
+      // Agregat tetap Y karena slot 2 masih aktif, tetapi slot 1 nonaktif.
+      expect(model.isAdsActive, isTrue);
+      expect(model.isAds1Active, isFalse);
+      expect(model.isAds2Active, isTrue);
+    });
+
+    test('falls back to aggregate when per-slot flags are missing', () {
+      final model = ApplicationModel.fromJson({
+        'applicationid': 1,
+        'applicationcompany': 'PT Uji',
+        'applicationname': 'Karaoke Uji',
+        'applicationadsactive': 'N',
+      });
+
+      expect(model.isAdsActive, isFalse);
+      expect(model.isAds1Active, isFalse);
+      expect(model.isAds2Active, isFalse);
     });
 
     test('toJson includes ad type and unit fields', () {
@@ -123,6 +154,8 @@ void main() {
         applicationname: 'Karaoke Uji',
         applicationads1type: 'admob_banner',
         applicationads1unit: 'ca-app-pub-1/9',
+        applicationads1active: 'N',
+        applicationads2active: 'Y',
         applicationadshomeactive: 'N',
         applicationadslyrictype: 'admob_interstitial',
         applicationadslyricunit: 'ca-app-pub-1/10',
@@ -134,6 +167,8 @@ void main() {
       final json = model.toJson();
       expect(json['applicationads1type'], 'admob_banner');
       expect(json['applicationads1unit'], 'ca-app-pub-1/9');
+      expect(json['applicationads1active'], 'N');
+      expect(json['applicationads2active'], 'Y');
       expect(json['applicationadshomeactive'], 'N');
       expect(json['applicationadslyrictype'], 'admob_interstitial');
       expect(json['applicationadslyricunit'], 'ca-app-pub-1/10');

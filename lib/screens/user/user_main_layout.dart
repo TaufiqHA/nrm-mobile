@@ -62,7 +62,8 @@ class UserMainLayout extends StatefulWidget {
   State<UserMainLayout> createState() => _UserMainLayoutState();
 }
 
-class _UserMainLayoutState extends State<UserMainLayout> {
+class _UserMainLayoutState extends State<UserMainLayout>
+    with WidgetsBindingObserver {
   late final SongService _songService;
   late final CategoryService _categoryService;
   late final SmartTvCastService _castService;
@@ -97,7 +98,7 @@ class _UserMainLayoutState extends State<UserMainLayout> {
   bool get _topAdActive {
     final config = _appConfig;
     if (config == null) return false;
-    return _isTextOnly ? config.isAdsLyricTopActive : config.isAdsActive;
+    return _isTextOnly ? config.isAdsLyricTopActive : config.isAds1Active;
   }
 
   /// Slot iklan bawah: halaman musik memakai footer biasa, halaman lirik
@@ -304,6 +305,7 @@ class _UserMainLayoutState extends State<UserMainLayout> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _songService = widget.songService ?? ApiSongService();
     _categoryService = widget.categoryService ?? ApiCategoryService();
     _castService =
@@ -408,6 +410,7 @@ class _UserMainLayoutState extends State<UserMainLayout> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _castSubscription?.cancel();
     if (widget.castService == null) {
       _castService.dispose();
@@ -424,6 +427,15 @@ class _UserMainLayoutState extends State<UserMainLayout> {
     _stopPlaybackTimer();
     _currentPositionNotifier.dispose();
     super.dispose();
+  }
+
+  /// Muat ulang konfigurasi iklan saat aplikasi kembali ke foreground agar
+  /// perubahan status slot dari panel admin website langsung diterapkan.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _loadAppConfig();
+    }
   }
 
   void _startPlaybackTimer() {
@@ -582,7 +594,7 @@ class _UserMainLayoutState extends State<UserMainLayout> {
     if (config == null) return;
 
     final ad = _isTextOnly ? config.adsLyricConfig : config.ads2Config;
-    final active = _isTextOnly ? config.isAdsLyricActive : config.isAdsActive;
+    final active = _isTextOnly ? config.isAdsLyricActive : config.isAds2Active;
     if (!active || !hasAdPopupContent(ad)) return;
 
     _pageAdShown = true;
