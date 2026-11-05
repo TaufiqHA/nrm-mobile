@@ -86,7 +86,9 @@ class ApplicationModel {
   final String applicationname;
   final String? applicationads1;
   final String? applicationads2;
-  final String applicationadsactive; // 'Y' or 'N'
+  final String applicationadsactive; // 'Y' or 'N' (agregat kompatibilitas)
+  final String applicationads1active; // 'Y' or 'N' (status slot 1)
+  final String applicationads2active; // 'Y' or 'N' (status slot 2)
   final String? applicationadsbottom;
   final String applicationadsbottomactive; // 'Y' or 'N'
 
@@ -126,6 +128,8 @@ class ApplicationModel {
     this.applicationads1,
     this.applicationads2,
     this.applicationadsactive = 'Y',
+    this.applicationads1active = 'Y',
+    this.applicationads2active = 'Y',
     this.applicationadsbottom,
     this.applicationadsbottomactive = 'Y',
     this.applicationadshome,
@@ -153,6 +157,8 @@ class ApplicationModel {
   });
 
   bool get isAdsActive => applicationadsactive.toUpperCase() == 'Y';
+  bool get isAds1Active => applicationads1active.toUpperCase() == 'Y';
+  bool get isAds2Active => applicationads2active.toUpperCase() == 'Y';
   bool get isAdsBottomActive => applicationadsbottomactive.toUpperCase() == 'Y';
   bool get isAdsHomeActive => applicationadshomeactive.toUpperCase() == 'Y';
   bool get isAdsLyricActive => applicationadslyricactive.toUpperCase() == 'Y';
@@ -217,6 +223,8 @@ class ApplicationModel {
     String? applicationads1,
     String? applicationads2,
     String? applicationadsactive,
+    String? applicationads1active,
+    String? applicationads2active,
     String? applicationadsbottom,
     String? applicationadsbottomactive,
     String? applicationadshome,
@@ -249,6 +257,10 @@ class ApplicationModel {
       applicationads1: applicationads1 ?? this.applicationads1,
       applicationads2: applicationads2 ?? this.applicationads2,
       applicationadsactive: applicationadsactive ?? this.applicationadsactive,
+      applicationads1active:
+          applicationads1active ?? this.applicationads1active,
+      applicationads2active:
+          applicationads2active ?? this.applicationads2active,
       applicationadsbottom: applicationadsbottom ?? this.applicationadsbottom,
       applicationadsbottomactive:
           applicationadsbottomactive ?? this.applicationadsbottomactive,
@@ -304,6 +316,14 @@ class ApplicationModel {
       applicationads1: json['applicationads1'] as String?,
       applicationads2: json['applicationads2'] as String?,
       applicationadsactive: json['applicationadsactive'] as String? ?? 'Y',
+      applicationads1active:
+          json['applicationads1active'] as String? ??
+          json['applicationadsactive'] as String? ??
+          'Y',
+      applicationads2active:
+          json['applicationads2active'] as String? ??
+          json['applicationadsactive'] as String? ??
+          'Y',
       applicationadsbottom: json['applicationadsbottom'] as String?,
       applicationadsbottomactive:
           json['applicationadsbottomactive'] as String? ?? 'Y',
@@ -350,6 +370,8 @@ class ApplicationModel {
       'applicationads1': applicationads1,
       'applicationads2': applicationads2,
       'applicationadsactive': applicationadsactive,
+      'applicationads1active': applicationads1active,
+      'applicationads2active': applicationads2active,
       'applicationadsbottom': applicationadsbottom,
       'applicationadsbottomactive': applicationadsbottomactive,
       'applicationadshome': applicationadshome,

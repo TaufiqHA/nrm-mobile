@@ -65,8 +65,8 @@ class AdManager {
     _rewardUnit = null;
 
     final slots = <AdSlotConfig>[
-      if (config.isAdsActive) config.ads1Config,
-      if (config.isAdsActive) config.ads2Config,
+      if (config.isAds1Active) config.ads1Config,
+      if (config.isAds2Active) config.ads2Config,
       if (config.isAdsHomeActive) config.adsHomeConfig,
       if (config.isAdsLyricActive) config.adsLyricConfig,
       if (config.isAdsLyricTopActive) config.adsLyricTopConfig,
@@ -85,6 +85,21 @@ class AdManager {
     if (!_configuredOnce) {
       _configuredOnce = true;
       _showAppOpenWhenReady = true;
+    }
+
+    // Iklan yang sudah terlanjur dimuat harus dibuang saat slotnya dinonaktifkan,
+    // agar tidak tetap tampil walau admin sudah mematikan slot tersebut.
+    if (_interstitialUnit == null && _interstitial != null) {
+      _interstitial!.dispose();
+      _interstitial = null;
+    }
+    if (_appOpenUnit == null && _appOpen != null) {
+      _appOpen!.dispose();
+      _appOpen = null;
+    }
+    if (_rewardUnit == null && _reward != null) {
+      _reward!.dispose();
+      _reward = null;
     }
 
     _loadInterstitial();
@@ -126,6 +141,7 @@ class AdManager {
   /// [_interstitialCooldown]).
   void maybeShowInterstitial() {
     if (!_supported) return;
+    if (_interstitialUnit == null || _interstitialUnit!.isEmpty) return;
     _songOpens++;
 
     final ad = _interstitial;
@@ -192,6 +208,7 @@ class AdManager {
   /// Tampilkan app open bila tersedia dan jeda sudah lewat.
   Future<void> maybeShowAppOpen() async {
     if (!_supported) return;
+    if (_appOpenUnit == null || _appOpenUnit!.isEmpty) return;
     final ad = _appOpen;
     if (ad == null) {
       _loadAppOpen();
