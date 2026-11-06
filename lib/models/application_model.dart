@@ -105,6 +105,15 @@ class ApplicationModel {
   final String? applicationadslyricbottom;
   final String applicationadslyricbottomactive; // 'Y' or 'N'
 
+  // Slot iklan khusus halaman BUKU MERAH (Musik). Terpisah dari slot halaman
+  // karaoke dan halaman lirik agar banner tiap halaman tidak saling menimpa.
+  final String? applicationadsmusiktop;
+  final String applicationadsmusiktopactive; // 'Y' or 'N'
+  final String? applicationadsmusik;
+  final String applicationadsmusikactive; // 'Y' or 'N'
+  final String? applicationadsmusikbottom;
+  final String applicationadsmusikbottomactive; // 'Y' or 'N'
+
   // Konfigurasi jenis iklan + Ad Unit per slot (dari panel admin website).
   final String applicationads1type;
   final String? applicationads1unit;
@@ -118,6 +127,12 @@ class ApplicationModel {
   final String? applicationadslyrictopunit;
   final String applicationadslyricbottomtype;
   final String? applicationadslyricbottomunit;
+  final String applicationadsmusiktoptype;
+  final String? applicationadsmusiktopunit;
+  final String applicationadsmusiktype;
+  final String? applicationadsmusikunit;
+  final String applicationadsmusikbottomtype;
+  final String? applicationadsmusikbottomunit;
   final String applicationadsbottomtype;
   final String? applicationadsbottomunit;
 
@@ -140,6 +155,12 @@ class ApplicationModel {
     this.applicationadslyrictopactive = 'Y',
     this.applicationadslyricbottom,
     this.applicationadslyricbottomactive = 'Y',
+    this.applicationadsmusiktop,
+    this.applicationadsmusiktopactive = 'Y',
+    this.applicationadsmusik,
+    this.applicationadsmusikactive = 'Y',
+    this.applicationadsmusikbottom,
+    this.applicationadsmusikbottomactive = 'Y',
     this.applicationads1type = 'image',
     this.applicationads1unit,
     this.applicationads2type = 'image',
@@ -152,6 +173,12 @@ class ApplicationModel {
     this.applicationadslyrictopunit,
     this.applicationadslyricbottomtype = 'image',
     this.applicationadslyricbottomunit,
+    this.applicationadsmusiktoptype = 'image',
+    this.applicationadsmusiktopunit,
+    this.applicationadsmusiktype = 'image',
+    this.applicationadsmusikunit,
+    this.applicationadsmusikbottomtype = 'image',
+    this.applicationadsmusikbottomunit,
     this.applicationadsbottomtype = 'image',
     this.applicationadsbottomunit,
   });
@@ -166,6 +193,11 @@ class ApplicationModel {
       applicationadslyrictopactive.toUpperCase() == 'Y';
   bool get isAdsLyricBottomActive =>
       applicationadslyricbottomactive.toUpperCase() == 'Y';
+  bool get isAdsMusikTopActive =>
+      applicationadsmusiktopactive.toUpperCase() == 'Y';
+  bool get isAdsMusikActive => applicationadsmusikactive.toUpperCase() == 'Y';
+  bool get isAdsMusikBottomActive =>
+      applicationadsmusikbottomactive.toUpperCase() == 'Y';
 
   /// Slot iklan 1 (Header / Atas).
   AdSlotConfig get ads1Config => AdSlotConfig(
@@ -216,6 +248,27 @@ class ApplicationModel {
     unit: applicationadsbottomunit,
   );
 
+  /// Slot iklan atas khusus halaman BUKU MERAH (Musik).
+  AdSlotConfig get adsMusikTopConfig => AdSlotConfig(
+    image: applicationadsmusiktop,
+    format: AdFormat.fromRaw(applicationadsmusiktoptype),
+    unit: applicationadsmusiktopunit,
+  );
+
+  /// Slot iklan pop-up khusus halaman BUKU MERAH (Musik).
+  AdSlotConfig get adsMusikConfig => AdSlotConfig(
+    image: applicationadsmusik,
+    format: AdFormat.fromRaw(applicationadsmusiktype),
+    unit: applicationadsmusikunit,
+  );
+
+  /// Slot iklan bawah khusus halaman BUKU MERAH (Musik).
+  AdSlotConfig get adsMusikBottomConfig => AdSlotConfig(
+    image: applicationadsmusikbottom,
+    format: AdFormat.fromRaw(applicationadsmusikbottomtype),
+    unit: applicationadsmusikbottomunit,
+  );
+
   ApplicationModel copyWith({
     int? applicationid,
     String? applicationcompany,
@@ -235,6 +288,12 @@ class ApplicationModel {
     String? applicationadslyrictopactive,
     String? applicationadslyricbottom,
     String? applicationadslyricbottomactive,
+    String? applicationadsmusiktop,
+    String? applicationadsmusiktopactive,
+    String? applicationadsmusik,
+    String? applicationadsmusikactive,
+    String? applicationadsmusikbottom,
+    String? applicationadsmusikbottomactive,
     String? applicationads1type,
     String? applicationads1unit,
     String? applicationads2type,
@@ -247,6 +306,12 @@ class ApplicationModel {
     String? applicationadslyrictopunit,
     String? applicationadslyricbottomtype,
     String? applicationadslyricbottomunit,
+    String? applicationadsmusiktoptype,
+    String? applicationadsmusiktopunit,
+    String? applicationadsmusiktype,
+    String? applicationadsmusikunit,
+    String? applicationadsmusikbottomtype,
+    String? applicationadsmusikbottomunit,
     String? applicationadsbottomtype,
     String? applicationadsbottomunit,
   }) {
@@ -279,6 +344,17 @@ class ApplicationModel {
       applicationadslyricbottomactive:
           applicationadslyricbottomactive ??
           this.applicationadslyricbottomactive,
+      applicationadsmusiktop: applicationadsmusiktop ?? this.applicationadsmusiktop,
+      applicationadsmusiktopactive:
+          applicationadsmusiktopactive ?? this.applicationadsmusiktopactive,
+      applicationadsmusik: applicationadsmusik ?? this.applicationadsmusik,
+      applicationadsmusikactive:
+          applicationadsmusikactive ?? this.applicationadsmusikactive,
+      applicationadsmusikbottom:
+          applicationadsmusikbottom ?? this.applicationadsmusikbottom,
+      applicationadsmusikbottomactive:
+          applicationadsmusikbottomactive ??
+          this.applicationadsmusikbottomactive,
       applicationads1type: applicationads1type ?? this.applicationads1type,
       applicationads1unit: applicationads1unit ?? this.applicationads1unit,
       applicationads2type: applicationads2type ?? this.applicationads2type,
@@ -299,6 +375,18 @@ class ApplicationModel {
           applicationadslyricbottomtype ?? this.applicationadslyricbottomtype,
       applicationadslyricbottomunit:
           applicationadslyricbottomunit ?? this.applicationadslyricbottomunit,
+      applicationadsmusiktoptype:
+          applicationadsmusiktoptype ?? this.applicationadsmusiktoptype,
+      applicationadsmusiktopunit:
+          applicationadsmusiktopunit ?? this.applicationadsmusiktopunit,
+      applicationadsmusiktype:
+          applicationadsmusiktype ?? this.applicationadsmusiktype,
+      applicationadsmusikunit:
+          applicationadsmusikunit ?? this.applicationadsmusikunit,
+      applicationadsmusikbottomtype:
+          applicationadsmusikbottomtype ?? this.applicationadsmusikbottomtype,
+      applicationadsmusikbottomunit:
+          applicationadsmusikbottomunit ?? this.applicationadsmusikbottomunit,
       applicationadsbottomtype:
           applicationadsbottomtype ?? this.applicationadsbottomtype,
       applicationadsbottomunit:
@@ -339,6 +427,15 @@ class ApplicationModel {
       applicationadslyricbottom: json['applicationadslyricbottom'] as String?,
       applicationadslyricbottomactive:
           json['applicationadslyricbottomactive'] as String? ?? 'Y',
+      applicationadsmusiktop: json['applicationadsmusiktop'] as String?,
+      applicationadsmusiktopactive:
+          json['applicationadsmusiktopactive'] as String? ?? 'Y',
+      applicationadsmusik: json['applicationadsmusik'] as String?,
+      applicationadsmusikactive:
+          json['applicationadsmusikactive'] as String? ?? 'Y',
+      applicationadsmusikbottom: json['applicationadsmusikbottom'] as String?,
+      applicationadsmusikbottomactive:
+          json['applicationadsmusikbottomactive'] as String? ?? 'Y',
       applicationads1type: json['applicationads1type'] as String? ?? 'image',
       applicationads1unit: json['applicationads1unit'] as String?,
       applicationads2type: json['applicationads2type'] as String? ?? 'image',
@@ -356,6 +453,17 @@ class ApplicationModel {
           json['applicationadslyricbottomtype'] as String? ?? 'image',
       applicationadslyricbottomunit:
           json['applicationadslyricbottomunit'] as String?,
+      applicationadsmusiktoptype:
+          json['applicationadsmusiktoptype'] as String? ?? 'image',
+      applicationadsmusiktopunit:
+          json['applicationadsmusiktopunit'] as String?,
+      applicationadsmusiktype:
+          json['applicationadsmusiktype'] as String? ?? 'image',
+      applicationadsmusikunit: json['applicationadsmusikunit'] as String?,
+      applicationadsmusikbottomtype:
+          json['applicationadsmusikbottomtype'] as String? ?? 'image',
+      applicationadsmusikbottomunit:
+          json['applicationadsmusikbottomunit'] as String?,
       applicationadsbottomtype:
           json['applicationadsbottomtype'] as String? ?? 'image',
       applicationadsbottomunit: json['applicationadsbottomunit'] as String?,
@@ -382,6 +490,12 @@ class ApplicationModel {
       'applicationadslyrictopactive': applicationadslyrictopactive,
       'applicationadslyricbottom': applicationadslyricbottom,
       'applicationadslyricbottomactive': applicationadslyricbottomactive,
+      'applicationadsmusiktop': applicationadsmusiktop,
+      'applicationadsmusiktopactive': applicationadsmusiktopactive,
+      'applicationadsmusik': applicationadsmusik,
+      'applicationadsmusikactive': applicationadsmusikactive,
+      'applicationadsmusikbottom': applicationadsmusikbottom,
+      'applicationadsmusikbottomactive': applicationadsmusikbottomactive,
       'applicationads1type': applicationads1type,
       'applicationads1unit': applicationads1unit,
       'applicationads2type': applicationads2type,
@@ -394,6 +508,12 @@ class ApplicationModel {
       'applicationadslyrictopunit': applicationadslyrictopunit,
       'applicationadslyricbottomtype': applicationadslyricbottomtype,
       'applicationadslyricbottomunit': applicationadslyricbottomunit,
+      'applicationadsmusiktoptype': applicationadsmusiktoptype,
+      'applicationadsmusiktopunit': applicationadsmusiktopunit,
+      'applicationadsmusiktype': applicationadsmusiktype,
+      'applicationadsmusikunit': applicationadsmusikunit,
+      'applicationadsmusikbottomtype': applicationadsmusikbottomtype,
+      'applicationadsmusikbottomunit': applicationadsmusikbottomunit,
       'applicationadsbottomtype': applicationadsbottomtype,
       'applicationadsbottomunit': applicationadsbottomunit,
     };

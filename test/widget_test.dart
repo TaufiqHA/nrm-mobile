@@ -38,6 +38,23 @@ void main() {
     },
   );
 
+  testWidgets('Landing screen shows the Musik menu entry', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 1000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(home: LoginScreen(categoryService: DummyCategoryService())),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('landing_menu_music')), findsOneWidget);
+    expect(find.text('BUKU MERAH (Musik)'), findsOneWidget);
+  });
+
   testWidgets(
     'NRM Welcome screen renders UI elements and Play button navigates',
     (WidgetTester tester) async {

@@ -791,7 +791,7 @@ void main() {
 
     // Opsi Hanya Lirik digabung dalam grid yang sama dengan kategori.
     expect(find.text('Pilih Jenis Musik'), findsNothing);
-    expect(find.text('Hanya Lirik'), findsOneWidget);
+    expect(find.text('BUKU MERAH (Lirik)'), findsOneWidget);
 
     await tester.ensureVisible(
       find.byKey(const ValueKey('landing_mode_text_only')),

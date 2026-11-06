@@ -71,6 +71,9 @@ class AdManager {
       if (config.isAdsLyricActive) config.adsLyricConfig,
       if (config.isAdsLyricTopActive) config.adsLyricTopConfig,
       if (config.isAdsLyricBottomActive) config.adsLyricBottomConfig,
+      if (config.isAdsMusikTopActive) config.adsMusikTopConfig,
+      if (config.isAdsMusikActive) config.adsMusikConfig,
+      if (config.isAdsMusikBottomActive) config.adsMusikBottomConfig,
       if (config.isAdsBottomActive) config.adsBottomConfig,
     ];
     for (final slot in slots) {

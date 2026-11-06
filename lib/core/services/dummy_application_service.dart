@@ -12,6 +12,12 @@ class DummyApplicationService implements ApplicationService {
     applicationadsactive: 'Y',
     applicationadsbottom: null,
     applicationadsbottomactive: 'Y',
+    applicationadsmusiktop: null,
+    applicationadsmusiktopactive: 'Y',
+    applicationadsmusik: null,
+    applicationadsmusikactive: 'Y',
+    applicationadsmusikbottom: null,
+    applicationadsmusikbottomactive: 'Y',
   );
 
   ApplicationModel _config;

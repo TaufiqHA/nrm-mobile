@@ -10,6 +10,7 @@ import '../models/category_model.dart';
 import '../models/display_mode.dart';
 import '../widgets/ad_popup.dart';
 import 'user/user_main_layout.dart';
+import 'music/music_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   /// Parameter authService dipertahankan untuk kompatibilitas dengan caller lama
@@ -102,6 +103,19 @@ class _LoginScreenState extends State<LoginScreen> {
           return FadeTransition(opacity: animation, child: child);
         },
         transitionDuration: const Duration(milliseconds: 500),
+      ),
+    );
+  }
+
+  void _openMusic(BuildContext context) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const MusicScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 300),
       ),
     );
   }
@@ -290,10 +304,22 @@ class _LoginScreenState extends State<LoginScreen> {
       SizedBox(
         width: 92,
         child: _IconOptionTile(
+          key: const ValueKey('landing_menu_music'),
+          icon: Icons.library_music_rounded,
+          color: const Color(0xFF7C4DFF),
+          label: 'BUKU MERAH (Musik)',
+          selected: false,
+          labelMaxLines: 2,
+          onTap: () => _openMusic(context),
+        ),
+      ),
+      SizedBox(
+        width: 92,
+        child: _IconOptionTile(
           key: const ValueKey('landing_mode_text_only'),
           icon: Icons.text_snippet_rounded,
           color: const Color(0xFFFB8C00),
-          label: 'Hanya Lirik',
+          label: 'BUKU MERAH (Lirik)',
           selected: false,
           labelMaxLines: 2,
           onTap: () {
