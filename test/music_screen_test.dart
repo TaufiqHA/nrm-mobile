@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:karaoke_app/core/services/dummy_application_service.dart';
 import 'package:karaoke_app/core/services/dummy_music_service.dart';
+import 'package:karaoke_app/core/services/music_service.dart';
 import 'package:karaoke_app/models/application_model.dart';
 import 'package:karaoke_app/models/music_model.dart';
 import 'package:karaoke_app/screens/music/music_screen.dart';
@@ -14,10 +15,24 @@ import 'package:media_kit_video/media_kit_video.dart';
 const _topAd = 'https://example.com/ads/top.jpg';
 const _bottomAd = 'https://example.com/ads/bottom.jpg';
 
+class _CountingMusicService implements MusicService {
+  _CountingMusicService(this._music);
+
+  final List<MusicModel> _music;
+  int calls = 0;
+
+  @override
+  Future<List<MusicModel>> getMusic({String? search}) async {
+    calls++;
+    return List.unmodifiable(_music);
+  }
+}
+
 void main() {
   Future<void> pumpMusicScreen(
     WidgetTester tester, {
     List<MusicModel>? music,
+    MusicService? musicService,
     ApplicationModel? appConfig,
     Size size = const Size(900, 1400),
   }) async {
@@ -29,7 +44,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: MusicScreen(
-          musicService: DummyMusicService(music),
+          musicService: musicService ?? DummyMusicService(music),
           applicationService: DummyApplicationService(appConfig),
           isTestMode: true,
         ),
@@ -285,5 +300,58 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('ad_popup_dialog')), findsNothing);
+  });
+
+  testWidgets('pull to refresh on song list reloads the music', (
+    WidgetTester tester,
+  ) async {
+    final service = _CountingMusicService(const [
+      MusicModel(
+        musicid: 1,
+        musictitle: 'Nyanyian Pagi',
+        musicartist: 'NRM',
+        musicduration: 225,
+        streamUrl: 'https://example.com/music/1/stream',
+      ),
+    ]);
+
+    await pumpMusicScreen(tester, musicService: service);
+
+    expect(service.calls, 1);
+    expect(find.text('Nyanyian Pagi'), findsOneWidget);
+
+    await tester.drag(find.byType(ListView), const Offset(0, 320));
+    await tester.pumpAndSettle();
+
+    expect(service.calls, 2);
+    expect(find.text('Nyanyian Pagi'), findsOneWidget);
+  });
+
+  testWidgets('pull to refresh on empty playlist reloads the music', (
+    WidgetTester tester,
+  ) async {
+    final service = _CountingMusicService(const [
+      MusicModel(
+        musicid: 1,
+        musictitle: 'Nyanyian Pagi',
+        musicartist: 'NRM',
+        musicduration: 225,
+        streamUrl: 'https://example.com/music/1/stream',
+      ),
+    ]);
+
+    await pumpMusicScreen(tester, musicService: service);
+
+    expect(service.calls, 1);
+    expect(find.text('Playlist masih kosong'), findsOneWidget);
+
+    await tester.drag(
+      find.byType(SingleChildScrollView),
+      const Offset(0, 320),
+    );
+    await tester.pumpAndSettle();
+
+    expect(service.calls, 2);
+    expect(find.text('Playlist masih kosong'), findsOneWidget);
   });
 }

@@ -16,6 +16,7 @@ class SongCatalogPlaylistSection extends StatefulWidget {
   final Function(int oldIndex, int newIndex)? onReorderQueue;
   final VoidCallback? onClearQueue;
   final Future<void> Function()? onRefresh;
+  final bool enablePullToRefresh;
   final Axis axis;
   final int? initialCategory;
   final VoidCallback? onOpenSearchModal;
@@ -33,6 +34,7 @@ class SongCatalogPlaylistSection extends StatefulWidget {
     this.onReorderQueue,
     this.onClearQueue,
     this.onRefresh,
+    this.enablePullToRefresh = false,
     this.axis = Axis.horizontal,
     this.initialCategory,
     this.onOpenSearchModal,
@@ -75,6 +77,19 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
     }).toList();
     sortSongsByNumber(matches);
     return matches;
+  }
+
+  /// Membungkus daftar dengan pull-to-refresh hanya bila diaktifkan.
+  Widget _withRefresh(Widget child) {
+    final onRefresh = widget.onRefresh;
+    if (!widget.enablePullToRefresh || onRefresh == null) return child;
+
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      color: AppColors.accentCyan,
+      backgroundColor: AppColors.surfaceDark,
+      child: child,
+    );
   }
 
   @override
@@ -278,21 +293,26 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
                         ),
                       ),
                     )
-                  : ListView.separated(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      itemCount: filteredSongs.length,
-                      separatorBuilder: (context, index) => const SizedBox(height: 6),
-                      itemBuilder: (context, index) {
-                        final song = filteredSongs[index];
-                        final isCurrent = widget.currentPlayingSong?.songid == song.songid;
+                  : _withRefresh(
+                      ListView.separated(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.only(bottom: 8),
+                        itemCount: filteredSongs.length,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: 6),
+                        itemBuilder: (context, index) {
+                          final song = filteredSongs[index];
+                          final isCurrent =
+                              widget.currentPlayingSong?.songid == song.songid;
 
-                        return _buildSearchResultCard(
-                          song: song,
-                          isCurrent: isCurrent,
-                          cardBg: cardBg,
-                          cardBorder: cardBorder,
-                        );
-                      },
+                          return _buildSearchResultCard(
+                            song: song,
+                            isCurrent: isCurrent,
+                            cardBg: cardBg,
+                            cardBorder: cardBorder,
+                          );
+                        },
+                      ),
                     ),
         ),
       ],
@@ -465,92 +485,104 @@ class _SongCatalogPlaylistSectionState extends State<SongCatalogPlaylistSection>
               border: Border.all(color: const Color(0xFF6B8FB5)),
             ),
             child: widget.queue.isEmpty
-                ? Center(
-                    child: SingleChildScrollView(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(
-                              Icons.queue_music_rounded,
-                              size: 26,
-                              color: Colors.white54,
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              'Playlist masih kosong',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
-                            ),
-                            SizedBox(height: 2),
-                            Text(
-                              'Tekan ikon (+) pada lagu untuk menambahkan',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 9,
-                                color: Colors.white70,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  )
-                : ReorderableListView.builder(
-                    padding: const EdgeInsets.only(bottom: 6),
-                    buildDefaultDragHandles: false,
-                    itemCount: widget.queue.length,
-                    onReorder: (oldIndex, newIndex) {
-                      if (widget.onReorderQueue != null) {
-                        widget.onReorderQueue!(oldIndex, newIndex);
-                      }
-                    },
-                    itemBuilder: (context, index) {
-                      final song = widget.queue[index];
+                ? _withRefresh(_buildEmptyPlaylistState())
+                : _withRefresh(
+                    ReorderableListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.only(bottom: 6),
+                      buildDefaultDragHandles: false,
+                      itemCount: widget.queue.length,
+                      onReorder: (oldIndex, newIndex) {
+                        if (widget.onReorderQueue != null) {
+                          widget.onReorderQueue!(oldIndex, newIndex);
+                        }
+                      },
+                      itemBuilder: (context, index) {
+                        final song = widget.queue[index];
 
-                      return Padding(
-                        key: ValueKey('queue_${song.songid}_$index'),
-                        padding: const EdgeInsets.only(bottom: 6.0),
-                        child: ReorderableDelayedDragStartListener(
-                          index: index,
-                          child: Dismissible(
-                            key: ValueKey('dismiss_queue_${song.songid}_$index'),
-                            direction: DismissDirection.endToStart,
-                            background: Container(
-                              alignment: Alignment.centerRight,
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              decoration: BoxDecoration(
-                                color: AppColors.error,
-                                borderRadius: BorderRadius.circular(6),
+                        return Padding(
+                          key: ValueKey('queue_${song.songid}_$index'),
+                          padding: const EdgeInsets.only(bottom: 6.0),
+                          child: ReorderableDelayedDragStartListener(
+                            index: index,
+                            child: Dismissible(
+                              key: ValueKey('dismiss_queue_${song.songid}_$index'),
+                              direction: DismissDirection.endToStart,
+                              background: Container(
+                                alignment: Alignment.centerRight,
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                decoration: BoxDecoration(
+                                  color: AppColors.error,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: const Icon(
+                                  Icons.delete_rounded,
+                                  color: Colors.white,
+                                  size: 22,
+                                ),
                               ),
-                              child: const Icon(
-                                Icons.delete_rounded,
-                                color: Colors.white,
-                                size: 22,
+                              onDismissed: (_) {
+                                widget.onRemoveFromQueue?.call(index);
+                              },
+                              child: _buildPlaylistCard(
+                                song: song,
+                                index: index,
+                                cardBg: cardBg,
+                                cardBorder: cardBorder,
                               ),
-                            ),
-                            onDismissed: (_) {
-                              widget.onRemoveFromQueue?.call(index);
-                            },
-                            child: _buildPlaylistCard(
-                              song: song,
-                              index: index,
-                              cardBg: cardBg,
-                              cardBorder: cardBorder,
                             ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
           ),
         ),
       ],
+    );
+  }
+
+  /// Empty state playlist yang tetap bisa di-scroll agar swipe-down
+  /// (pull-to-refresh) berfungsi saat playlist kosong.
+  Widget _buildEmptyPlaylistState() {
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.queue_music_rounded,
+                  size: 26,
+                  color: Colors.white54,
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Playlist masih kosong',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'Tekan ikon (+) pada lagu untuk menambahkan',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 9,
+                    color: Colors.white70,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 

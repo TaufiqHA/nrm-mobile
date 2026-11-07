@@ -156,6 +156,41 @@ class _MusicScreenState extends State<MusicScreen> {
     }
   }
 
+  /// Memuat ulang daftar musik tanpa menampilkan state loading penuh.
+  /// Dipakai oleh pull-to-refresh agar halaman dan pemutaran tidak berkedip.
+  Future<void> _refreshMusic() async {
+    try {
+      final result = await _musicService.getMusic();
+      if (!mounted) return;
+
+      final availableIds = result.map((item) => item.musicid).toSet();
+      _queue.removeWhere((item) => !availableIds.contains(item.musicid));
+
+      var current = _current;
+      if (current != null && !availableIds.contains(current.musicid)) {
+        current = null;
+        _player.stop();
+      }
+
+      setState(() {
+        _music = result;
+        _current = current;
+        _error = null;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Gagal memperbarui daftar musik. Periksa koneksi Anda.',
+          ),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
   MusicModel? _musicById(int id) {
     for (final item in _music) {
       if (item.musicid == id) return item;
@@ -618,7 +653,8 @@ class _MusicScreenState extends State<MusicScreen> {
       onRemoveFromQueue: _removeFromQueue,
       onReorderQueue: _reorderQueue,
       onClearQueue: _clearQueue,
-      onRefresh: _loadMusic,
+      onRefresh: _refreshMusic,
+      enablePullToRefresh: true,
       onOpenSearchModal: _openSearchModal,
     );
   }
