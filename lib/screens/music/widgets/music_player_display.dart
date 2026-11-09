@@ -9,12 +9,16 @@ class MusicPlayerDisplay extends StatelessWidget {
   final MusicModel? music;
   final bool isPlaying;
   final String? errorMessage;
+  final bool hasLyrics;
+  final VoidCallback? onToggleLyrics;
 
   const MusicPlayerDisplay({
     super.key,
     this.music,
     this.isPlaying = false,
     this.errorMessage,
+    this.hasLyrics = false,
+    this.onToggleLyrics,
   });
 
   @override
@@ -113,36 +117,42 @@ class MusicPlayerDisplay extends StatelessWidget {
                     ),
                     if (isPlaying) ...[
                       const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.accentCyan.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: AppColors.accentCyan.withValues(alpha: 0.35),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
                           ),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.graphic_eq_rounded,
-                              size: 12,
-                              color: AppColors.accentCyan,
-                            ),
-                            SizedBox(width: 4),
-                            Text(
-                              'Sedang diputar',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.accentSky,
+                          decoration: BoxDecoration(
+                            color: AppColors.accentCyan.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: AppColors.accentCyan.withValues(
+                                alpha: 0.35,
                               ),
                             ),
-                          ],
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.graphic_eq_rounded,
+                                size: 12,
+                                color: AppColors.accentCyan,
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                'Sedang diputar',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.accentSky,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -161,10 +171,46 @@ class MusicPlayerDisplay extends StatelessWidget {
                   ],
                 ),
               ),
+              if (onToggleLyrics != null) ...[
+                const SizedBox(width: 6),
+                _buildLyricsButton(),
+              ],
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildLyricsButton() {
+    final enabled = music != null && hasLyrics;
+
+    return Tooltip(
+      message: enabled ? 'Tampilkan lirik' : 'Lirik belum tersedia',
+      child: InkWell(
+        onTap: enabled ? onToggleLyrics : null,
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: enabled
+                ? AppColors.accentCyan.withValues(alpha: 0.14)
+                : Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: enabled
+                  ? AppColors.accentCyan.withValues(alpha: 0.45)
+                  : Colors.white.withValues(alpha: 0.1),
+            ),
+          ),
+          child: Icon(
+            Icons.lyrics_rounded,
+            size: 18,
+            color: enabled ? AppColors.accentSky : AppColors.textMuted,
+          ),
+        ),
+      ),
     );
   }
 }

@@ -7,6 +7,7 @@ class MusicModel {
   final int? musicduration;
   final String? coverUrl;
   final String? streamUrl;
+  final String? songlyric;
   final bool isActive;
   final int sortOrder;
 
@@ -19,6 +20,7 @@ class MusicModel {
     this.musicduration,
     this.coverUrl,
     this.streamUrl,
+    this.songlyric,
     this.isActive = true,
     this.sortOrder = 0,
   });
@@ -33,6 +35,7 @@ class MusicModel {
       musicduration: _toNullableInt(json['musicduration']),
       coverUrl: _nonEmpty(json['cover_url'] ?? json['coverUrl']),
       streamUrl: _nonEmpty(json['stream_url'] ?? json['streamUrl']),
+      songlyric: _nonEmpty(json['songlyric'] ?? json['lyric']),
       isActive: _parseBool(json['is_active'] ?? json['isActive']),
       sortOrder: _toInt(json['sort_order'] ?? json['sortOrder']),
     );

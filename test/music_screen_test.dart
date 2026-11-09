@@ -6,6 +6,7 @@ import 'package:karaoke_app/core/services/music_service.dart';
 import 'package:karaoke_app/models/application_model.dart';
 import 'package:karaoke_app/models/music_model.dart';
 import 'package:karaoke_app/screens/music/music_screen.dart';
+import 'package:karaoke_app/screens/music/widgets/music_lyrics_display.dart';
 import 'package:karaoke_app/screens/music/widgets/music_player_display.dart';
 import 'package:karaoke_app/screens/user/widgets/player_controls.dart';
 import 'package:karaoke_app/screens/user/widgets/song_catalog_playlist_section.dart';
@@ -121,6 +122,115 @@ void main() {
       ),
       findsOneWidget,
     );
+  });
+
+  testWidgets(
+    'lyrics button replaces the song card with a larger lyric panel',
+    (WidgetTester tester) async {
+      const lyric = 'Ayat 1\nBeribu lidah patutlah\n\nReff\nMenyembah Dia';
+      await pumpMusicScreen(
+        tester,
+        music: const [
+          MusicModel(
+            musicid: 2,
+            musictitle: 'Nyanyian Sore',
+            musicartist: 'NRM',
+            musicduration: 198,
+            streamUrl: 'https://example.com/music/2/stream',
+            songlyric: lyric,
+          ),
+        ],
+      );
+
+      await tester.tap(find.byKey(const ValueKey('search_song_card_2')));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(
+          of: find.byKey(const ValueKey('playlist_song_card_2')),
+          matching: find.byIcon(Icons.play_arrow_rounded),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final normalHeight = tester
+          .getSize(find.byType(MusicPlayerDisplay))
+          .height;
+
+      await tester.tap(find.byTooltip('Tampilkan lirik'));
+      await tester.pumpAndSettle();
+
+      final lyricsFinder = find.byKey(const ValueKey('music_lyrics_display'));
+      expect(lyricsFinder, findsOneWidget);
+      expect(find.byType(MusicPlayerDisplay), findsNothing);
+      expect(find.textContaining('Beribu lidah patutlah'), findsOneWidget);
+      expect(find.text('Reff'), findsOneWidget);
+      expect(tester.getSize(lyricsFinder).height, greaterThan(normalHeight));
+
+      await tester.tap(find.byTooltip('Tutup lirik'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(MusicLyricsDisplay), findsNothing);
+      expect(find.byType(MusicPlayerDisplay), findsOneWidget);
+    },
+  );
+
+  testWidgets('lyrics panel fits on a small phone without overflow', (
+    WidgetTester tester,
+  ) async {
+    await pumpMusicScreen(
+      tester,
+      size: const Size(360, 640),
+      music: const [
+        MusicModel(
+          musicid: 2,
+          musictitle: 'Nyanyian Sore',
+          musicartist: 'NRM',
+          musicduration: 198,
+          streamUrl: 'https://example.com/music/2/stream',
+          songlyric: 'Ayat 1\nBeribu lidah patutlah',
+        ),
+      ],
+    );
+
+    await tester.tap(find.byKey(const ValueKey('search_song_card_2')));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const ValueKey('playlist_song_card_2')),
+        matching: find.byIcon(Icons.play_arrow_rounded),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Tampilkan lirik'));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('music_lyrics_display')), findsOneWidget);
+    expect(find.textContaining('Beribu lidah patutlah'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('lyrics button is disabled when the song has no lyric', (
+    WidgetTester tester,
+  ) async {
+    await pumpMusicScreen(tester);
+
+    await tester.tap(find.byKey(const ValueKey('search_song_card_2')));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const ValueKey('playlist_song_card_2')),
+        matching: find.byIcon(Icons.play_arrow_rounded),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byTooltip('Lirik belum tersedia'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Lirik belum tersedia'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MusicLyricsDisplay), findsNothing);
   });
 
   testWidgets('tuning button opens Nada & Tempo and changes pitch', (
@@ -345,10 +455,7 @@ void main() {
     expect(service.calls, 1);
     expect(find.text('Playlist masih kosong'), findsOneWidget);
 
-    await tester.drag(
-      find.byType(SingleChildScrollView),
-      const Offset(0, 320),
-    );
+    await tester.drag(find.byType(SingleChildScrollView), const Offset(0, 320));
     await tester.pumpAndSettle();
 
     expect(service.calls, 2);
