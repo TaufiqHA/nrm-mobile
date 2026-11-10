@@ -13,6 +13,7 @@ class AppColors {
   static const Color accentSky = Color(0xFF90E0EF);
   static const Color accentNeon = Color(0xFF48CAE4);
   static const Color accentLight = Color(0xFFCAF0F8);
+  static const Color accentOrange = Color(0xFFFB8C00);
 
   // Surface & Card Colors
   static const Color surfaceDark = Color(0xFF0F223D);
@@ -36,41 +37,25 @@ class AppColors {
   static const LinearGradient backgroundGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [
-      primaryDark,
-      primaryNavy,
-      surfaceDark,
-      primaryRoyal,
-    ],
+    colors: [primaryDark, primaryNavy, surfaceDark, primaryRoyal],
     stops: [0.0, 0.3, 0.7, 1.0],
   );
 
   static const LinearGradient cardGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [
-      Color(0x2E00B4D8),
-      Color(0x140D47A1),
-    ],
+    colors: [Color(0x2E00B4D8), Color(0x140D47A1)],
   );
 
   static const LinearGradient buttonGradient = LinearGradient(
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
-    colors: [
-      accentCyan,
-      primaryElectric,
-      primaryRoyal,
-    ],
+    colors: [accentCyan, primaryElectric, primaryRoyal],
   );
 
   static const LinearGradient iconGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [
-      accentSky,
-      accentCyan,
-      primaryElectric,
-    ],
+    colors: [accentSky, accentCyan, primaryElectric],
   );
 }

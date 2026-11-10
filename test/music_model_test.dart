@@ -13,6 +13,7 @@ void main() {
         'musicduration': 225,
         'cover_url': 'https://example.com/cover.jpg',
         'stream_url': 'https://example.com/api/music/7/stream',
+        'songlyric': 'Ayat 1\nNyanyian pagi telah tiba',
         'is_active': 1,
         'sort_order': 3,
       });
@@ -23,6 +24,7 @@ void main() {
       expect(music.musicduration, 225);
       expect(music.coverUrl, 'https://example.com/cover.jpg');
       expect(music.streamUrl, 'https://example.com/api/music/7/stream');
+      expect(music.songlyric, 'Ayat 1\nNyanyian pagi telah tiba');
       expect(music.isActive, isTrue);
       expect(music.sortOrder, 3);
     });
@@ -40,6 +42,7 @@ void main() {
       expect(music.musicartist, isNull);
       expect(music.coverUrl, isNull);
       expect(music.streamUrl, isNull);
+      expect(music.songlyric, isNull);
     });
 
     test('formats duration as mm:ss and h:mm:ss', () {

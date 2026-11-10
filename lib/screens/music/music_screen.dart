@@ -23,6 +23,7 @@ import '../user/widgets/playback_tuning_sheet.dart';
 import '../user/widgets/player_controls.dart';
 import '../user/widgets/song_catalog_playlist_section.dart';
 import '../user/widgets/song_search_modal.dart';
+import 'widgets/music_lyrics_display.dart';
 import 'widgets/music_player_display.dart';
 
 /// Halaman Musik: player audio, daftar lagu, dan playlist dengan UI yang sama
@@ -59,6 +60,7 @@ class _MusicScreenState extends State<MusicScreen> {
   bool _isLoading = true;
   String? _error;
   String? _playbackError;
+  bool _showLyrics = false;
   double _volume = 0.8;
   bool _isMuted = false;
   int _pitchSemitones = 0;
@@ -80,8 +82,7 @@ class _MusicScreenState extends State<MusicScreen> {
   void initState() {
     super.initState();
     _musicService = widget.musicService ?? ApiMusicService();
-    _applicationService =
-        widget.applicationService ?? ApiApplicationService();
+    _applicationService = widget.applicationService ?? ApiApplicationService();
     _player = MusicPlayerController(isTestMode: widget.isTestMode)
       ..onCompleted = _handleCompleted
       ..onPlayingChanged = _handlePlayingChanged
@@ -140,6 +141,7 @@ class _MusicScreenState extends State<MusicScreen> {
 
       if (_current != null && !availableIds.contains(_current!.musicid)) {
         _current = null;
+        _showLyrics = false;
         _player.stop();
       }
 
@@ -169,6 +171,7 @@ class _MusicScreenState extends State<MusicScreen> {
       var current = _current;
       if (current != null && !availableIds.contains(current.musicid)) {
         current = null;
+        _showLyrics = false;
         _player.stop();
       }
 
@@ -272,6 +275,16 @@ class _MusicScreenState extends State<MusicScreen> {
     _player.pause();
     _player.seek(Duration.zero);
     setState(() {});
+  }
+
+  bool get _currentHasLyrics {
+    final lyric = _current?.songlyric?.trim();
+    return lyric != null && lyric.isNotEmpty;
+  }
+
+  void _toggleLyrics() {
+    if (_current == null) return;
+    setState(() => _showLyrics = !_showLyrics);
   }
 
   void _playNext() {
@@ -585,8 +598,15 @@ class _MusicScreenState extends State<MusicScreen> {
       builder: (context, constraints) {
         final isCompact = constraints.maxHeight < 650;
         final cardHeight = constraints.maxHeight < 550
-            ? 130.0
-            : (isCompact ? 170.0 : 200.0);
+            ? 120.0
+            : (isCompact ? 130.0 : 140.0);
+        final showLyrics = _showLyrics && _current != null;
+        final desiredLyricsHeight = constraints.maxHeight * 0.5;
+        final controlsReserve = constraints.maxWidth < 480 ? 188.0 : 96.0;
+        final maxLyricsHeight = constraints.maxHeight - controlsReserve - 80;
+        final lyricsHeight = maxLyricsHeight <= 140
+            ? desiredLyricsHeight
+            : desiredLyricsHeight.clamp(140.0, maxLyricsHeight);
 
         return Padding(
           padding: EdgeInsets.symmetric(
@@ -597,12 +617,19 @@ class _MusicScreenState extends State<MusicScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SizedBox(
-                height: cardHeight,
-                child: MusicPlayerDisplay(
-                  music: _current,
-                  isPlaying: _player.playingNotifier.value,
-                  errorMessage: _playbackError,
-                ),
+                height: showLyrics ? lyricsHeight : cardHeight,
+                child: showLyrics
+                    ? MusicLyricsDisplay(
+                        music: _current,
+                        onClose: _toggleLyrics,
+                      )
+                    : MusicPlayerDisplay(
+                        music: _current,
+                        isPlaying: _player.playingNotifier.value,
+                        errorMessage: _playbackError,
+                        hasLyrics: _currentHasLyrics,
+                        onToggleLyrics: _current == null ? null : _toggleLyrics,
+                      ),
               ),
               const SizedBox(height: 8),
               _buildPlayerControls(),

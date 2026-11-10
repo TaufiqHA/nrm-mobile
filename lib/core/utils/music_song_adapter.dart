@@ -11,6 +11,7 @@ extension MusicSongAdapter on MusicModel {
       songsinger: musicartist ?? 'NRM',
       songurl: streamUrl ?? '',
       songcategory: 0,
+      songlyric: songlyric,
       songduration: formattedDuration,
     );
   }
