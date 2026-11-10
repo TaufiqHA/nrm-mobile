@@ -598,8 +598,8 @@ class _MusicScreenState extends State<MusicScreen> {
       builder: (context, constraints) {
         final isCompact = constraints.maxHeight < 650;
         final cardHeight = constraints.maxHeight < 550
-            ? 130.0
-            : (isCompact ? 170.0 : 200.0);
+            ? 120.0
+            : (isCompact ? 130.0 : 140.0);
         final showLyrics = _showLyrics && _current != null;
         final desiredLyricsHeight = constraints.maxHeight * 0.5;
         final controlsReserve = constraints.maxWidth < 480 ? 188.0 : 96.0;

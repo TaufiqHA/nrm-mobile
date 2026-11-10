@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:karaoke_app/core/services/dummy_application_service.dart';
+import 'package:karaoke_app/core/theme/app_colors.dart';
 import 'package:karaoke_app/core/services/dummy_music_service.dart';
 import 'package:karaoke_app/core/services/music_service.dart';
 import 'package:karaoke_app/models/application_model.dart';
@@ -36,6 +37,7 @@ void main() {
     MusicService? musicService,
     ApplicationModel? appConfig,
     Size size = const Size(900, 1400),
+    TextScaler? textScaler,
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1.0;
@@ -44,6 +46,12 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        builder: textScaler == null
+            ? null
+            : (context, child) => MediaQuery(
+                data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+                child: child!,
+              ),
         home: MusicScreen(
           musicService: musicService ?? DummyMusicService(music),
           applicationService: DummyApplicationService(appConfig),
@@ -156,6 +164,32 @@ void main() {
           .getSize(find.byType(MusicPlayerDisplay))
           .height;
 
+      final cardFinder = find.byType(MusicPlayerDisplay);
+      expect(
+        find.descendant(
+          of: cardFinder,
+          matching: find.text('Klik untuk tampilkan lirik'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        tester.widget<Icon>(find.byIcon(Icons.lyrics_rounded).first).color,
+        AppColors.accentOrange,
+      );
+      expect(find.textContaining('Ketuk'), findsNothing);
+      expect(
+        find.descendant(of: cardFinder, matching: find.text('NRM')),
+        findsNothing,
+      );
+
+      final titleRect = tester.getRect(
+        find.descendant(of: cardFinder, matching: find.text('Nyanyian Sore')),
+      );
+      final lyricsButtonRect = tester.getRect(
+        find.byTooltip('Tampilkan lirik'),
+      );
+      expect(lyricsButtonRect.top, greaterThan(titleRect.bottom));
+
       await tester.tap(find.byTooltip('Tampilkan lirik'));
       await tester.pumpAndSettle();
 
@@ -202,11 +236,66 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    final cardFinder = find.byType(MusicPlayerDisplay);
+    expect(
+      find.descendant(
+        of: cardFinder,
+        matching: find.text('Klik untuk tampilkan lirik'),
+      ),
+      findsOneWidget,
+    );
+
+    final cardRect = tester.getRect(cardFinder);
+    final lyricsButtonRect = tester.getRect(find.byTooltip('Tampilkan lirik'));
+    expect(lyricsButtonRect.top, greaterThan(cardRect.top));
+    expect(lyricsButtonRect.right, lessThanOrEqualTo(cardRect.right));
+    expect(lyricsButtonRect.right, greaterThan(cardRect.center.dx));
+
     await tester.tap(find.byTooltip('Tampilkan lirik'));
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('music_lyrics_display')), findsOneWidget);
     expect(find.textContaining('Beribu lidah patutlah'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('player card does not overflow with large text', (
+    WidgetTester tester,
+  ) async {
+    await pumpMusicScreen(
+      tester,
+      size: const Size(360, 900),
+      textScaler: TextScaler.linear(1.5),
+      music: const [
+        MusicModel(
+          musicid: 2,
+          musictitle: 'Ya Khalik Semesta Yang Maha Besar',
+          musicartist: '2',
+          musicduration: 198,
+          streamUrl: 'https://example.com/music/2/stream',
+          songlyric: 'Ayat 1\nBeribu lidah patutlah',
+        ),
+      ],
+    );
+
+    final searchCard = find.byKey(const ValueKey('search_song_card_2'));
+    await tester.ensureVisible(searchCard);
+    await tester.pumpAndSettle();
+    await tester.tap(searchCard);
+    await tester.pumpAndSettle();
+
+    final playlistCard = find.byKey(const ValueKey('playlist_song_card_2'));
+    await tester.ensureVisible(playlistCard);
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(
+        of: playlistCard,
+        matching: find.byIcon(Icons.play_arrow_rounded),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byTooltip('Tampilkan lirik'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -283,6 +372,10 @@ void main() {
 
     expect(displayY, lessThan(controlsY));
     expect(controlsY, lessThan(catalogY));
+    expect(
+      tester.getSize(find.byType(MusicPlayerDisplay)).height,
+      lessThanOrEqualTo(140),
+    );
   });
 
   testWidgets('logout button shows confirmation dialog', (

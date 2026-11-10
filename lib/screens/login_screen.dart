@@ -307,7 +307,7 @@ class _LoginScreenState extends State<LoginScreen> {
           key: const ValueKey('landing_menu_music'),
           icon: Icons.library_music_rounded,
           color: const Color(0xFF7C4DFF),
-          label: 'BUKU MERAH (Musik)',
+          label: 'BUKU MERAH (Musik Lirik)',
           selected: false,
           labelMaxLines: 2,
           onTap: () => _openMusic(context),
