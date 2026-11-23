@@ -95,6 +95,13 @@ class ApplicationModel {
   // Slot iklan khusus halaman utama dan halaman lirik only.
   final String? applicationadshome;
   final String applicationadshomeactive; // 'Y' or 'N'
+
+  // Banner atas & bawah khusus halaman utama (layar landing). Pop-up halaman
+  // utama tetap memakai [applicationadshome].
+  final String? applicationadshometop;
+  final String applicationadshometopactive; // 'Y' or 'N'
+  final String? applicationadshomebottom;
+  final String applicationadshomebottomactive; // 'Y' or 'N'
   final String? applicationadslyric;
   final String applicationadslyricactive; // 'Y' or 'N'
 
@@ -121,6 +128,10 @@ class ApplicationModel {
   final String? applicationads2unit;
   final String applicationadshometype;
   final String? applicationadshomeunit;
+  final String applicationadshometoptype;
+  final String? applicationadshometopunit;
+  final String applicationadshomebottomtype;
+  final String? applicationadshomebottomunit;
   final String applicationadslyrictype;
   final String? applicationadslyricunit;
   final String applicationadslyrictoptype;
@@ -149,6 +160,10 @@ class ApplicationModel {
     this.applicationadsbottomactive = 'Y',
     this.applicationadshome,
     this.applicationadshomeactive = 'Y',
+    this.applicationadshometop,
+    this.applicationadshometopactive = 'Y',
+    this.applicationadshomebottom,
+    this.applicationadshomebottomactive = 'Y',
     this.applicationadslyric,
     this.applicationadslyricactive = 'Y',
     this.applicationadslyrictop,
@@ -167,6 +182,10 @@ class ApplicationModel {
     this.applicationads2unit,
     this.applicationadshometype = 'image',
     this.applicationadshomeunit,
+    this.applicationadshometoptype = 'image',
+    this.applicationadshometopunit,
+    this.applicationadshomebottomtype = 'image',
+    this.applicationadshomebottomunit,
     this.applicationadslyrictype = 'image',
     this.applicationadslyricunit,
     this.applicationadslyrictoptype = 'image',
@@ -188,6 +207,10 @@ class ApplicationModel {
   bool get isAds2Active => applicationads2active.toUpperCase() == 'Y';
   bool get isAdsBottomActive => applicationadsbottomactive.toUpperCase() == 'Y';
   bool get isAdsHomeActive => applicationadshomeactive.toUpperCase() == 'Y';
+  bool get isAdsHomeTopActive =>
+      applicationadshometopactive.toUpperCase() == 'Y';
+  bool get isAdsHomeBottomActive =>
+      applicationadshomebottomactive.toUpperCase() == 'Y';
   bool get isAdsLyricActive => applicationadslyricactive.toUpperCase() == 'Y';
   bool get isAdsLyricTopActive =>
       applicationadslyrictopactive.toUpperCase() == 'Y';
@@ -218,6 +241,20 @@ class ApplicationModel {
     image: applicationadshome,
     format: AdFormat.fromRaw(applicationadshometype),
     unit: applicationadshomeunit,
+  );
+
+  /// Banner atas halaman utama (layar landing).
+  AdSlotConfig get adsHomeTopConfig => AdSlotConfig(
+    image: applicationadshometop,
+    format: AdFormat.fromRaw(applicationadshometoptype),
+    unit: applicationadshometopunit,
+  );
+
+  /// Banner bawah halaman utama (layar landing).
+  AdSlotConfig get adsHomeBottomConfig => AdSlotConfig(
+    image: applicationadshomebottom,
+    format: AdFormat.fromRaw(applicationadshomebottomtype),
+    unit: applicationadshomebottomunit,
   );
 
   /// Slot iklan halaman lirik only (popup saat mode teks dibuka).
@@ -282,6 +319,10 @@ class ApplicationModel {
     String? applicationadsbottomactive,
     String? applicationadshome,
     String? applicationadshomeactive,
+    String? applicationadshometop,
+    String? applicationadshometopactive,
+    String? applicationadshomebottom,
+    String? applicationadshomebottomactive,
     String? applicationadslyric,
     String? applicationadslyricactive,
     String? applicationadslyrictop,
@@ -300,6 +341,10 @@ class ApplicationModel {
     String? applicationads2unit,
     String? applicationadshometype,
     String? applicationadshomeunit,
+    String? applicationadshometoptype,
+    String? applicationadshometopunit,
+    String? applicationadshomebottomtype,
+    String? applicationadshomebottomunit,
     String? applicationadslyrictype,
     String? applicationadslyricunit,
     String? applicationadslyrictoptype,
@@ -332,6 +377,15 @@ class ApplicationModel {
       applicationadshome: applicationadshome ?? this.applicationadshome,
       applicationadshomeactive:
           applicationadshomeactive ?? this.applicationadshomeactive,
+      applicationadshometop:
+          applicationadshometop ?? this.applicationadshometop,
+      applicationadshometopactive:
+          applicationadshometopactive ?? this.applicationadshometopactive,
+      applicationadshomebottom:
+          applicationadshomebottom ?? this.applicationadshomebottom,
+      applicationadshomebottomactive:
+          applicationadshomebottomactive ??
+          this.applicationadshomebottomactive,
       applicationadslyric: applicationadslyric ?? this.applicationadslyric,
       applicationadslyricactive:
           applicationadslyricactive ?? this.applicationadslyricactive,
@@ -363,6 +417,14 @@ class ApplicationModel {
           applicationadshometype ?? this.applicationadshometype,
       applicationadshomeunit:
           applicationadshomeunit ?? this.applicationadshomeunit,
+      applicationadshometoptype:
+          applicationadshometoptype ?? this.applicationadshometoptype,
+      applicationadshometopunit:
+          applicationadshometopunit ?? this.applicationadshometopunit,
+      applicationadshomebottomtype:
+          applicationadshomebottomtype ?? this.applicationadshomebottomtype,
+      applicationadshomebottomunit:
+          applicationadshomebottomunit ?? this.applicationadshomebottomunit,
       applicationadslyrictype:
           applicationadslyrictype ?? this.applicationadslyrictype,
       applicationadslyricunit:
@@ -418,6 +480,12 @@ class ApplicationModel {
       applicationadshome: json['applicationadshome'] as String?,
       applicationadshomeactive:
           json['applicationadshomeactive'] as String? ?? 'Y',
+      applicationadshometop: json['applicationadshometop'] as String?,
+      applicationadshometopactive:
+          json['applicationadshometopactive'] as String? ?? 'Y',
+      applicationadshomebottom: json['applicationadshomebottom'] as String?,
+      applicationadshomebottomactive:
+          json['applicationadshomebottomactive'] as String? ?? 'Y',
       applicationadslyric: json['applicationadslyric'] as String?,
       applicationadslyricactive:
           json['applicationadslyricactive'] as String? ?? 'Y',
@@ -443,6 +511,14 @@ class ApplicationModel {
       applicationadshometype:
           json['applicationadshometype'] as String? ?? 'image',
       applicationadshomeunit: json['applicationadshomeunit'] as String?,
+      applicationadshometoptype:
+          json['applicationadshometoptype'] as String? ?? 'image',
+      applicationadshometopunit:
+          json['applicationadshometopunit'] as String?,
+      applicationadshomebottomtype:
+          json['applicationadshomebottomtype'] as String? ?? 'image',
+      applicationadshomebottomunit:
+          json['applicationadshomebottomunit'] as String?,
       applicationadslyrictype:
           json['applicationadslyrictype'] as String? ?? 'image',
       applicationadslyricunit: json['applicationadslyricunit'] as String?,
@@ -484,6 +560,10 @@ class ApplicationModel {
       'applicationadsbottomactive': applicationadsbottomactive,
       'applicationadshome': applicationadshome,
       'applicationadshomeactive': applicationadshomeactive,
+      'applicationadshometop': applicationadshometop,
+      'applicationadshometopactive': applicationadshometopactive,
+      'applicationadshomebottom': applicationadshomebottom,
+      'applicationadshomebottomactive': applicationadshomebottomactive,
       'applicationadslyric': applicationadslyric,
       'applicationadslyricactive': applicationadslyricactive,
       'applicationadslyrictop': applicationadslyrictop,
@@ -502,6 +582,10 @@ class ApplicationModel {
       'applicationads2unit': applicationads2unit,
       'applicationadshometype': applicationadshometype,
       'applicationadshomeunit': applicationadshomeunit,
+      'applicationadshometoptype': applicationadshometoptype,
+      'applicationadshometopunit': applicationadshometopunit,
+      'applicationadshomebottomtype': applicationadshomebottomtype,
+      'applicationadshomebottomunit': applicationadshomebottomunit,
       'applicationadslyrictype': applicationadslyrictype,
       'applicationadslyricunit': applicationadslyricunit,
       'applicationadslyrictoptype': applicationadslyrictoptype,

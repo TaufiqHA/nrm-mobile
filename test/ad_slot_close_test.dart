@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:karaoke_app/core/services/dummy_application_service.dart';
@@ -8,6 +11,8 @@ import 'package:karaoke_app/screens/user/user_main_layout.dart';
 import 'package:karaoke_app/widgets/ad_slot_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'helpers/ad_test_images.dart';
+
 const _topAd = 'https://example.com/ads/top.jpg';
 const _bottomAd = 'https://example.com/ads/bottom.jpg';
 
@@ -15,10 +20,28 @@ Widget _wrap(Widget child) => MaterialApp(
   home: Scaffold(body: Center(child: child)),
 );
 
+/// Provider gambar yang tidak pernah selesai dimuat (untuk menguji slot
+/// tersembunyi selama iklan belum siap).
+class _PendingImageProvider extends ImageProvider<_PendingImageProvider> {
+  @override
+  Future<_PendingImageProvider> obtainKey(ImageConfiguration configuration) =>
+      SynchronousFuture<_PendingImageProvider>(this);
+
+  @override
+  ImageStreamCompleter loadImage(
+    _PendingImageProvider key,
+    ImageDecoderCallback decode,
+  ) => OneFrameImageStreamCompleter(Completer<ImageInfo>().future);
+}
+
 void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
+    useTestAdImages();
   });
+
+  tearDown(useTestAdImages);
+  tearDownAll(resetTestAdImages);
 
   testWidgets('Tombol close muncul dan memanggil callback', (tester) async {
     var closed = false;
@@ -27,7 +50,7 @@ void main() {
       _wrap(
         SizedBox(
           width: 300,
-          height: 100,
+          height: 300,
           child: AdSlotView(
             ad: const AdSlotConfig(image: _topAd),
             onClose: () => closed = true,
@@ -35,7 +58,7 @@ void main() {
         ),
       ),
     );
-    await tester.pump();
+    await settleAdImages(tester);
 
     final closeButton = find.byKey(const ValueKey('ad_slot_close'));
     expect(closeButton, findsOneWidget);
@@ -49,9 +72,23 @@ void main() {
     await tester.pumpWidget(
       _wrap(const AdSlotView(ad: AdSlotConfig(image: _topAd))),
     );
-    await tester.pump();
+    await settleAdImages(tester);
 
     expect(find.byKey(const ValueKey('ad_slot_close')), findsNothing);
+  });
+
+  testWidgets('Slot iklan tidak tampil sebelum gambar berhasil dimuat', (
+    tester,
+  ) async {
+    AdSlotView.debugImageProviderBuilder = (_) => _PendingImageProvider();
+
+    await tester.pumpWidget(
+      _wrap(const AdSlotView(ad: AdSlotConfig(image: _topAd))),
+    );
+    await settleAdImages(tester);
+
+    expect(find.byType(AdSlotView), findsOneWidget);
+    expect(find.text('Iklan'), findsNothing);
   });
 
   testWidgets('Slot iklan atas dan bawah bisa ditutup terpisah', (

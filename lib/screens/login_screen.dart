@@ -6,9 +6,12 @@ import '../core/services/application_service.dart';
 import '../core/services/category_service.dart';
 import '../core/theme/app_colors.dart';
 import '../core/utils/category_icon_helper.dart';
+import '../models/application_model.dart';
 import '../models/category_model.dart';
 import '../models/display_mode.dart';
+import '../services/ad_manager.dart';
 import '../widgets/ad_popup.dart';
+import '../widgets/ad_slot_view.dart';
 import 'user/user_main_layout.dart';
 import 'music/music_screen.dart';
 
@@ -36,6 +39,11 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoadingCategories = true;
   bool _categoryLoadFailed = false;
   bool _homeAdShown = false;
+  ApplicationModel? _appConfig;
+
+  // Slot banner halaman utama yang sudah ditutup pengguna pada sesi ini.
+  bool _homeTopAdClosed = false;
+  bool _homeBottomAdClosed = false;
 
   @override
   void initState() {
@@ -49,7 +57,11 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _loadAppConfig() async {
     try {
       final config = await _applicationService.getApplicationConfig();
-      if (!mounted || !config.isAdsHomeActive) return;
+      if (!mounted) return;
+      setState(() => _appConfig = config);
+      AdManager.instance.configure(config);
+
+      if (!config.isAdsHomeActive) return;
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted || _homeAdShown) return;
@@ -227,10 +239,36 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
 
                           SizedBox(height: isCompactHeight ? 18 : 24),
+
+                          // Banner iklan atas halaman utama (layar landing).
+                          if (_appConfig != null && !_homeTopAdClosed)
+                            AdSlotView(
+                              key: const ValueKey('ad_slot_home_top'),
+                              ad: _appConfig!.adsHomeTopConfig,
+                              active: _appConfig!.isAdsHomeTopActive,
+                              padding: EdgeInsets.zero,
+                              maxHeight: 120,
+                              onClose: () =>
+                                  setState(() => _homeTopAdClosed = true),
+                            ),
+
+                          SizedBox(height: isCompactHeight ? 10 : 14),
                         ],
                       ),
                     ),
                   ),
+
+                  // Banner iklan bawah halaman utama (layar landing).
+                  if (_appConfig != null && !_homeBottomAdClosed)
+                    AdSlotView(
+                      key: const ValueKey('ad_slot_home_bottom'),
+                      ad: _appConfig!.adsHomeBottomConfig,
+                      active: _appConfig!.isAdsHomeBottomActive,
+                      padding: const EdgeInsets.fromLTRB(24, 4, 24, 4),
+                      maxHeight: 120,
+                      onClose: () =>
+                          setState(() => _homeBottomAdClosed = true),
+                    ),
 
                   // Footer terpusat dan diangkat dari dasar layar, berada di
                   // bawah baris tombol kategori dan mode lirik only.

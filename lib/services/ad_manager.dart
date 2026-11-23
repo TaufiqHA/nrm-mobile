@@ -68,6 +68,8 @@ class AdManager {
       if (config.isAds1Active) config.ads1Config,
       if (config.isAds2Active) config.ads2Config,
       if (config.isAdsHomeActive) config.adsHomeConfig,
+      if (config.isAdsHomeTopActive) config.adsHomeTopConfig,
+      if (config.isAdsHomeBottomActive) config.adsHomeBottomConfig,
       if (config.isAdsLyricActive) config.adsLyricConfig,
       if (config.isAdsLyricTopActive) config.adsLyricTopConfig,
       if (config.isAdsLyricBottomActive) config.adsLyricBottomConfig,

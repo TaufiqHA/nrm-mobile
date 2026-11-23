@@ -9,12 +9,22 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#FFFFFF"
+        android:background="#FAFAFA"
         android:orientation="vertical"
         android:paddingLeft="14dp"
         android:paddingRight="14dp"
         android:paddingTop="10dp"
         android:paddingBottom="10dp">
+
+        <!-- Label penanda iklan: wajib agar tidak disamarkan sebagai konten. -->
+        <TextView
+            android:id="@+id/ad_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
+            android:text="Iklan · Bersponsor"
+            android:textColor="#757575"
+            android:textSize="10sp" />
 
         <!-- Ikon + headline + advertiser -->
         <LinearLayout
@@ -42,7 +52,7 @@
                     android:layout_height="wrap_content"
                     android:ellipsize="end"
                     android:maxLines="2"
-                    android:textColor="#B71C1C"
+                    android:textColor="#212121"
                     android:textSize="15sp"
                     android:textStyle="bold" />
 

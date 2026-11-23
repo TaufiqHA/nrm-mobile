@@ -10,6 +10,8 @@ import 'package:karaoke_app/screens/user/user_main_layout.dart';
 import 'package:karaoke_app/widgets/ad_slot_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'helpers/ad_test_images.dart';
+
 const _homeAd = 'https://example.com/ads/home.jpg';
 const _playerAd = 'https://example.com/ads/player.jpg';
 const _lyricAd = 'https://example.com/ads/lyric.jpg';
@@ -26,7 +28,10 @@ ApplicationModel _config() => const ApplicationModel(
 void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
+    useTestAdImages();
   });
+
+  tearDown(resetTestAdImages);
 
   testWidgets('LoginScreen menampilkan popup iklan halaman utama', (
     WidgetTester tester,
@@ -40,6 +45,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    await settleAdImages(tester);
 
     final dialog = find.byKey(const ValueKey('ad_popup_dialog'));
     expect(dialog, findsOneWidget);
@@ -69,6 +75,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    await settleAdImages(tester);
 
     final dialog = find.byKey(const ValueKey('ad_popup_dialog'));
     expect(dialog, findsOneWidget);
@@ -97,6 +104,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    await settleAdImages(tester);
 
     final dialog = find.byKey(const ValueKey('ad_popup_dialog'));
     expect(dialog, findsOneWidget);

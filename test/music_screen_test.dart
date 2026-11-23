@@ -14,6 +14,8 @@ import 'package:karaoke_app/screens/user/widgets/song_catalog_playlist_section.d
 import 'package:karaoke_app/widgets/ad_slot_view.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 
+import 'helpers/ad_test_images.dart';
+
 const _topAd = 'https://example.com/ads/top.jpg';
 const _bottomAd = 'https://example.com/ads/bottom.jpg';
 
@@ -31,6 +33,9 @@ class _CountingMusicService implements MusicService {
 }
 
 void main() {
+  setUp(useTestAdImages);
+  tearDown(resetTestAdImages);
+
   Future<void> pumpMusicScreen(
     WidgetTester tester, {
     List<MusicModel>? music,
