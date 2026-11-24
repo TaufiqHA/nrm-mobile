@@ -13,15 +13,15 @@
         android:orientation="vertical"
         android:paddingLeft="14dp"
         android:paddingRight="14dp"
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp">
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
 
         <!-- Label penanda iklan: wajib agar tidak disamarkan sebagai konten. -->
         <TextView
             android:id="@+id/ad_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="6dp"
+            android:layout_marginBottom="4dp"
             android:text="Iklan · Bersponsor"
             android:textColor="#757575"
             android:textSize="10sp" />
@@ -34,8 +34,8 @@
 
             <ImageView
                 android:id="@+id/ad_app_icon"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:layout_marginEnd="10dp"
                 android:layout_marginRight="10dp"
                 android:adjustViewBounds="true"
@@ -51,9 +51,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ellipsize="end"
-                    android:maxLines="2"
+                    android:maxLines="1"
                     android:textColor="#212121"
-                    android:textSize="15sp"
+                    android:textSize="13sp"
                     android:textStyle="bold" />
 
                 <LinearLayout
@@ -67,7 +67,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textColor="#616161"
-                        android:textSize="12sp" />
+                        android:textSize="11sp" />
 
                     <RatingBar
                         android:id="@+id/ad_stars"
@@ -88,24 +88,24 @@
             android:id="@+id/ad_body"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="4dp"
             android:ellipsize="end"
-            android:maxLines="3"
+            android:maxLines="1"
             android:textColor="#424242"
-            android:textSize="13sp" />
+            android:textSize="12sp" />
 
         <com.google.android.gms.ads.nativead.MediaView
             android:id="@+id/ad_media"
             android:layout_width="match_parent"
-            android:layout_height="180dp"
-            android:layout_marginTop="8dp" />
+            android:layout_height="70dp"
+            android:layout_marginTop="4dp" />
 
         <!-- Harga/store + tombol aksi -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="4dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
@@ -132,6 +132,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"
                 android:textSize="12sp" />
         </LinearLayout>
     </LinearLayout>

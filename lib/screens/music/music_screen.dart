@@ -215,7 +215,7 @@ class _MusicScreenState extends State<MusicScreen> {
     }
   }
 
-  /// Menampilkan pop-up iklan khusus halaman musik satu kali per layar.
+  /// Menampilkan pop-up iklan gambar khusus halaman musik satu kali per layar.
   void _maybeShowPageAd() {
     if (_pageAdShown || !mounted) return;
     final config = _appConfig;
@@ -485,7 +485,11 @@ class _MusicScreenState extends State<MusicScreen> {
                   ad: _appConfig!.adsMusikTopConfig,
                   active: _appConfig!.isAdsMusikTopActive,
                   padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
-                  maxHeight: 120,
+                  // Batas ruang untuk iklan; bila iklan lebih tinggi, slot
+                  // tidak ditampilkan agar tidak ada bagian iklan terpotong.
+                  maxHeight: (MediaQuery.sizeOf(context).height * 0.33)
+                      .clamp(180.0, 320.0)
+                      .toDouble(),
                   onClose: () => setState(() => _topAdClosed = true),
                 ),
               Expanded(child: _buildBody()),
@@ -495,7 +499,9 @@ class _MusicScreenState extends State<MusicScreen> {
                   ad: _appConfig!.adsMusikBottomConfig,
                   active: _appConfig!.isAdsMusikBottomActive,
                   padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
-                  maxHeight: 120,
+                  maxHeight: (MediaQuery.sizeOf(context).height * 0.33)
+                      .clamp(180.0, 320.0)
+                      .toDouble(),
                   onClose: () => setState(() => _bottomAdClosed = true),
                 ),
             ],

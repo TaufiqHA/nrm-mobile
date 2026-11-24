@@ -4,33 +4,37 @@ import '../core/theme/app_colors.dart';
 import '../models/application_model.dart';
 import 'ad_slot_view.dart';
 
-/// True bila slot berisi iklan inline yang bisa dirender di dalam pop-up.
-bool hasAdPopupContent(AdSlotConfig ad) {
-  final hasContent =
-      (ad.isImage && (ad.image ?? '').trim().isNotEmpty) ||
-      ((ad.isNative || ad.isBanner) && ad.hasUnit);
-  return ad.isInline && hasContent;
-}
-
-/// Menampilkan iklan inline (gambar/native/banner) sebagai dialog pop-up.
+/// True bila slot berisi iklan gambar yang bisa dirender di dalam pop-up.
 ///
-/// Iklan dimuat lebih dulu; dialog baru dibuka setelah iklan siap. Bila gagal
+/// Pop-up hanya dipakai untuk banner gambar hasil unggahan admin
+/// (jenis `image`). Format AdMob layar penuh dikelola `AdManager`, sedangkan
+/// native/banner AdMob tetap dirender inline di slot halaman.
+bool hasAdPopupContent(AdSlotConfig ad) =>
+    ad.isImage && (ad.image ?? '').trim().isNotEmpty;
+
+/// Menampilkan iklan gambar sebagai dialog pop-up.
+///
+/// Gambar dimuat lebih dulu; dialog baru dibuka setelah gambar siap. Bila gagal
 /// dimuat (atau melewati batas tunggu), pop-up tidak ditampilkan.
-/// Slot kosong atau berjenis full-screen tidak ditampilkan karena format
-/// layar penuh dikelola oleh `AdManager`.
 Future<void> showAdPopup(BuildContext context, AdSlotConfig ad) async {
   if (!hasAdPopupContent(ad)) return;
 
-  bool ready;
+  final String url = resolveAdImageUrl(ad.image ?? '');
+  if (url.isEmpty) return;
+
+  final ImageProvider provider = buildAdImageProvider(ad.image ?? '');
+
+  bool failed = false;
   try {
-    ready = await preloadAdSlotContent(context, ad).timeout(
-      const Duration(seconds: 10),
-      onTimeout: () => false,
-    );
+    await precacheImage(
+      provider,
+      context,
+      onError: (_, _) => failed = true,
+    ).timeout(const Duration(seconds: 10), onTimeout: () => failed = true);
   } catch (_) {
-    ready = false;
+    failed = true;
   }
-  if (!ready || !context.mounted) return;
+  if (failed || !context.mounted) return;
 
   return showDialog<void>(
     context: context,
@@ -90,7 +94,6 @@ Future<void> showAdPopup(BuildContext context, AdSlotConfig ad) async {
               ad: ad,
               padding: EdgeInsets.zero,
               showLabel: false,
-              startReady: true,
             ),
           ),
         ],

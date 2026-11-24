@@ -585,9 +585,8 @@ class _UserMainLayoutState extends State<UserMainLayout>
     }
   }
 
-  /// Menampilkan pop-up iklan satu kali per layar: slot halaman lirik untuk
-  /// mode teks-only, atau slot konten untuk halaman player biasa. Format
-  /// full-screen ditangani AdManager.
+  /// Menampilkan pop-up iklan gambar satu kali per layar: slot halaman lirik
+  /// untuk mode teks-only, atau slot konten untuk halaman player biasa.
   void _maybeShowPageAd() {
     if (_pageAdShown || !mounted) return;
     final config = _appConfig;
@@ -1314,7 +1313,11 @@ class _UserMainLayoutState extends State<UserMainLayout>
                   ad: _topAdConfig!,
                   active: _topAdActive,
                   padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
-                  maxHeight: 120,
+                  // Batas ruang untuk iklan; bila iklan lebih tinggi, slot
+                  // tidak ditampilkan agar tidak ada bagian iklan terpotong.
+                  maxHeight: (MediaQuery.sizeOf(context).height * 0.33)
+                      .clamp(180.0, 320.0)
+                      .toDouble(),
                   onClose: () => setState(() => _topAdClosed = true),
                 ),
 
@@ -1520,7 +1523,9 @@ class _UserMainLayoutState extends State<UserMainLayout>
                   ad: _bottomAdConfig!,
                   active: _bottomAdActive,
                   padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
-                  maxHeight: 120,
+                  maxHeight: (MediaQuery.sizeOf(context).height * 0.33)
+                      .clamp(180.0, 320.0)
+                      .toDouble(),
                   onClose: () => setState(() => _bottomAdClosed = true),
                 ),
             ],

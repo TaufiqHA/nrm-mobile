@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -64,6 +63,10 @@ class AdMobNativeView extends StatefulWidget {
   final String adUnitId;
   final EdgeInsets padding;
 
+  /// Batas tinggi yang tersedia. Bila lebih kecil dari tinggi iklan native,
+  /// iklan tidak dimuat sama sekali (agar tidak tampil terpotong).
+  final double? maxHeight;
+
   /// Dipanggil saat status kesiapan iklan berubah: `true` bila iklan sudah
   /// tampil, `false` bila gagal/dilewati.
   final ValueChanged<bool>? onReadyChanged;
@@ -72,6 +75,7 @@ class AdMobNativeView extends StatefulWidget {
     super.key,
     required this.adUnitId,
     this.padding = const EdgeInsets.symmetric(horizontal: 12),
+    this.maxHeight,
     this.onReadyChanged,
   });
 
@@ -94,9 +98,18 @@ class _AdMobNativeViewState extends State<AdMobNativeView>
     });
   }
 
+  /// True bila ruang yang tersedia cukup untuk menampilkan seluruh iklan.
+  bool get _fitsBudget =>
+      widget.maxHeight == null || widget.maxHeight! >= _nativeAdHeight;
+
   @override
   void initState() {
     super.initState();
+    if (!_fitsBudget) {
+      _skipped = true;
+      return;
+    }
+
     final Ad? cached = AdMobAdCache.take(widget.adUnitId);
     if (cached is NativeAd) {
       _ad = cached;
@@ -139,7 +152,9 @@ class _AdMobNativeViewState extends State<AdMobNativeView>
             _notifyReady(true);
           },
           onAdFailedToLoad: (ad, error) {
-            debugPrint('AdMob: gagal memuat native ad. code=${error.code} message=${error.message}');
+            debugPrint(
+              'AdMob: gagal memuat native ad. code=${error.code} message=${error.message}',
+            );
             ad.dispose();
             if (mounted) {
               setState(() {
@@ -163,12 +178,17 @@ class _AdMobNativeViewState extends State<AdMobNativeView>
   @override
   void didUpdateWidget(covariant AdMobNativeView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.adUnitId == widget.adUnitId) return;
+    final bool unitChanged = oldWidget.adUnitId != widget.adUnitId;
+    final bool budgetChanged = oldWidget.maxHeight != widget.maxHeight;
+    if (!unitChanged && !budgetChanged) return;
+
     _ad?.dispose();
     _ad = null;
     _loaded = false;
-    _skipped = false;
+    _skipped = !_fitsBudget;
     _error = null;
+    if (_skipped) return;
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _load();
     });
@@ -185,8 +205,10 @@ class _AdMobNativeViewState extends State<AdMobNativeView>
   }
 
   /// Tinggi tetap slot iklan native (logical px) agar geometri tidak berubah
-  /// saat platform view AdWidget dipasang. Termasuk label "Iklan" di layout.
-  static const double _nativeAdHeight = 400;
+  /// saat platform view AdWidget dipasang. Harus cukup untuk seluruh isi
+  /// layout `admob_native_ad.xml` (label, headline, body, media, CTA) supaya
+  /// tidak ada bagian iklan yang terpotong.
+  static const double _nativeAdHeight = 200;
 
   @override
   bool get wantKeepAlive => true;
@@ -225,12 +247,7 @@ class _AdMobNativeViewState extends State<AdMobNativeView>
       padding: widget.padding,
       child: SizedBox(
         height: _nativeAdHeight,
-        child: ready
-            ? ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: AdWidget(ad: _ad!),
-              )
-            : const SizedBox.shrink(),
+        child: ready ? AdWidget(ad: _ad!) : const SizedBox.shrink(),
       ),
     );
   }
@@ -241,6 +258,10 @@ class AdMobBannerView extends StatefulWidget {
   final String adUnitId;
   final EdgeInsets padding;
 
+  /// Batas tinggi yang tersedia. Bila lebih kecil dari tinggi banner yang
+  /// dimuat, banner tidak ditampilkan (agar tidak terpotong).
+  final double? maxHeight;
+
   /// Dipanggil saat status kesiapan iklan berubah: `true` bila iklan sudah
   /// tampil, `false` bila gagal/dilewati.
   final ValueChanged<bool>? onReadyChanged;
@@ -249,6 +270,7 @@ class AdMobBannerView extends StatefulWidget {
     super.key,
     required this.adUnitId,
     this.padding = const EdgeInsets.symmetric(horizontal: 12),
+    this.maxHeight,
     this.onReadyChanged,
   });
 
@@ -260,10 +282,17 @@ class _AdMobBannerViewState extends State<AdMobBannerView>
     with AutomaticKeepAliveClientMixin {
   BannerAd? _ad;
   bool _loaded = false;
-  bool _started = false;
   bool _skipped = false;
   String? _error;
   AdSize? _size;
+
+  /// Lebar yang sudah dipakai untuk memulai permintaan iklan. `null` berarti
+  /// belum dimulai; diisi dari constraint layout agar lebar banner tidak
+  /// melebihi ruang slot (yang bisa memotong iklan secara horizontal).
+  int? _requestedWidth;
+
+  /// Mencegah permintaan ganda sebelum frame pertama selesai.
+  bool _startScheduled = false;
 
   void _notifyReady(bool value) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -271,14 +300,22 @@ class _AdMobBannerViewState extends State<AdMobBannerView>
     });
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_started) return;
-    _started = true;
+  /// True bila tinggi banner masih muat di ruang yang tersedia.
+  bool _fits(AdSize size) =>
+      widget.maxHeight == null || size.height <= widget.maxHeight!;
+
+  void _start(int width) {
+    if (!mounted || _requestedWidth != null) return;
 
     final Ad? cached = AdMobAdCache.take(widget.adUnitId);
     if (cached is BannerAd) {
+      if (!_fits(cached.size)) {
+        cached.dispose();
+        _skipped = true;
+        _notifyReady(false);
+        return;
+      }
+      _requestedWidth = width;
       _ad = cached;
       _size = cached.size;
       _loaded = true;
@@ -287,16 +324,14 @@ class _AdMobBannerViewState extends State<AdMobBannerView>
     }
     if (cached != null) cached.dispose();
 
-    if (!AdMobRequestThrottle.allow(widget.adUnitId)) {
-      _skipped = true;
-      debugPrint('AdMob: banner unit ${widget.adUnitId} DILEWATI (cooldown).');
+    if (AdMobRequestThrottle.allow(widget.adUnitId)) {
+      _requestedWidth = width;
+      _load(width);
       return;
     }
-    final double width =
-        MediaQuery.sizeOf(context).width - widget.padding.horizontal;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _load(width.truncate());
-    });
+
+    _skipped = true;
+    debugPrint('AdMob: banner unit ${widget.adUnitId} DILEWATI (cooldown).');
   }
 
   Future<void> _load(int width) async {
@@ -305,11 +340,21 @@ class _AdMobBannerViewState extends State<AdMobBannerView>
 
     AdSize size = AdSize.banner;
     try {
-      size = await AdSize.getLargeAnchoredAdaptiveBannerAdSize(width) ?? AdSize.banner;
+      size =
+          await AdSize.getLargeAnchoredAdaptiveBannerAdSize(width) ??
+          AdSize.banner;
     } catch (_) {
       size = AdSize.banner;
     }
     if (!mounted) return;
+
+    // Ruang tidak cukup untuk menampilkan banner secara utuh: lewati.
+    if (!_fits(size) || size.width > width) {
+      _skipped = true;
+      _notifyReady(false);
+      return;
+    }
+
     setState(() => _size = size);
 
     try {
@@ -331,7 +376,9 @@ class _AdMobBannerViewState extends State<AdMobBannerView>
             _notifyReady(true);
           },
           onAdFailedToLoad: (ad, error) {
-            debugPrint('AdMob: gagal memuat banner. code=${error.code} message=${error.message}');
+            debugPrint(
+              'AdMob: gagal memuat banner. code=${error.code} message=${error.message}',
+            );
             ad.dispose();
             if (mounted) {
               setState(() {
@@ -355,19 +402,17 @@ class _AdMobBannerViewState extends State<AdMobBannerView>
   @override
   void didUpdateWidget(covariant AdMobBannerView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.adUnitId == widget.adUnitId) return;
+    final bool unitChanged = oldWidget.adUnitId != widget.adUnitId;
+    final bool budgetChanged = oldWidget.maxHeight != widget.maxHeight;
+    if (!unitChanged && !budgetChanged) return;
     _ad?.dispose();
     _ad = null;
     _loaded = false;
     _skipped = false;
-    _started = false;
+    _requestedWidth = null;
+    _startScheduled = false;
     _error = null;
     _size = null;
-    final double width =
-        MediaQuery.sizeOf(context).width - widget.padding.horizontal;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _load(width.truncate());
-    });
   }
 
   @override
@@ -389,152 +434,70 @@ class _AdMobBannerViewState extends State<AdMobBannerView>
     if (kIsWeb || !(Platform.isAndroid || Platform.isIOS)) {
       return const SizedBox.shrink();
     }
-    if (_skipped) return const SizedBox.shrink();
+    if (widget.adUnitId.isEmpty) return const SizedBox.shrink();
 
-    final int? knownHeight = _size?.height ?? _ad?.size.height;
-    final int? knownWidth = _size?.width ?? _ad?.size.width;
-    final double reservedHeight =
-        (knownHeight != null && knownHeight > 0) ? knownHeight.toDouble() : 100.0;
-    final double adWidth = (knownWidth != null && knownWidth > 0)
-        ? knownWidth.toDouble()
-        : double.infinity;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Mulai permintaan memakai lebar slot yang sebenarnya (bukan lebar
+        // layar), supaya banner tidak lebih lebar dari ruang yang tersedia.
+        if (_requestedWidth == null && !_startScheduled && !_skipped) {
+          _startScheduled = true;
+          final double available = constraints.hasBoundedWidth
+              ? constraints.maxWidth
+              : MediaQuery.sizeOf(context).width;
+          final int width = (available - widget.padding.horizontal)
+              .truncate()
+              .clamp(1, 10000);
+          WidgetsBinding.instance.addPostFrameCallback((_) => _start(width));
+        }
 
-    if (!_loaded || _ad == null) {
-      if (_error != null) {
-        if (!kShowAdErrors && !kDebugMode) return const SizedBox.shrink();
+        if (_skipped) return const SizedBox.shrink();
+
+        final int? knownHeight = _size?.height ?? _ad?.size.height;
+        final int? knownWidth = _size?.width ?? _ad?.size.width;
+        final double reservedHeight = (knownHeight != null && knownHeight > 0)
+            ? knownHeight.toDouble()
+            : 100.0;
+        final double adWidth = (knownWidth != null && knownWidth > 0)
+            ? knownWidth.toDouble()
+            : double.infinity;
+
+        if (!_loaded || _ad == null) {
+          if (_error != null) {
+            if (!kShowAdErrors && !kDebugMode) return const SizedBox.shrink();
+            return Padding(
+              padding: widget.padding,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.error.withValues(alpha: 0.15),
+                  border: Border.all(
+                    color: AppColors.error.withValues(alpha: 0.5),
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  'AdMob banner gagal memuat: $_error',
+                  style: const TextStyle(color: AppColors.error, fontSize: 11),
+                ),
+              ),
+            );
+          }
+          return const SizedBox.shrink();
+        }
         return Padding(
           padding: widget.padding,
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppColors.error.withValues(alpha: 0.15),
-              border: Border.all(color: AppColors.error.withValues(alpha: 0.5)),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Text(
-              'AdMob banner gagal memuat: $_error',
-              style: const TextStyle(color: AppColors.error, fontSize: 11),
+          child: Align(
+            alignment: Alignment.center,
+            child: SizedBox(
+              width: adWidth,
+              height: reservedHeight,
+              child: AdWidget(ad: _ad!),
             ),
           ),
         );
-      }
-      return const SizedBox.shrink();
-    }
-    return Padding(
-      padding: widget.padding,
-      child: Center(
-        child: SizedBox(
-          width: adWidth,
-          height: reservedHeight,
-          child: AdWidget(ad: _ad!),
-        ),
-      ),
+      },
     );
   }
-}
-
-/// Muat iklan AdMob (native/banner) lebih dulu ke [AdMobAdCache].
-///
-/// Dipakai pop-up agar dialog hanya dibuka setelah iklan benar-benar siap.
-/// Mengembalikan `true` bila iklan siap (termasuk yang sudah ada di cache).
-Future<bool> preloadAdMobSlot({
-  required String adUnitId,
-  required bool native,
-  int width = 320,
-  Duration timeout = const Duration(seconds: 8),
-}) async {
-  if (kIsWeb || !(Platform.isAndroid || Platform.isIOS)) return false;
-  if (adUnitId.isEmpty) return false;
-
-  final Ad? cached = AdMobAdCache.take(adUnitId);
-  if (cached != null) {
-    final bool matches = native ? cached is NativeAd : cached is BannerAd;
-    if (matches) {
-      AdMobAdCache.store(adUnitId, cached);
-      return true;
-    }
-    cached.dispose();
-  }
-
-  if (!AdMobRequestThrottle.allow(adUnitId)) return false;
-
-  final Completer<bool> completer = Completer<bool>();
-  Ad? pending;
-  bool disposed = false;
-
-  void disposePending() {
-    if (disposed) return;
-    disposed = true;
-    pending?.dispose();
-  }
-
-  void finish(bool value) {
-    if (!completer.isCompleted) completer.complete(value);
-  }
-
-  if (native) {
-    final NativeAd ad = NativeAd(
-      adUnitId: adUnitId,
-      factoryId: kAdMobNativeFactoryId,
-      request: const AdRequest(),
-      listener: NativeAdListener(
-        onAdLoaded: (ad) {
-          AdMobAdCache.store(adUnitId, ad);
-          disposed = true;
-          finish(true);
-        },
-        onAdFailedToLoad: (ad, error) {
-          debugPrint(
-            'AdMob: gagal memuat native ad (preload). '
-            'code=${error.code} message=${error.message}',
-          );
-          disposePending();
-          finish(false);
-        },
-      ),
-    );
-    pending = ad;
-    ad.load();
-  } else {
-    AdSize size = AdSize.banner;
-    try {
-      size =
-          await AdSize.getLargeAnchoredAdaptiveBannerAdSize(width) ??
-          AdSize.banner;
-    } catch (_) {
-      size = AdSize.banner;
-    }
-    final BannerAd ad = BannerAd(
-      adUnitId: adUnitId,
-      size: size,
-      request: const AdRequest(),
-      listener: BannerAdListener(
-        onAdLoaded: (ad) {
-          AdMobAdCache.store(adUnitId, ad);
-          disposed = true;
-          finish(true);
-        },
-        onAdFailedToLoad: (ad, error) {
-          debugPrint(
-            'AdMob: gagal memuat banner (preload). '
-            'code=${error.code} message=${error.message}',
-          );
-          disposePending();
-          finish(false);
-        },
-      ),
-    );
-    pending = ad;
-    ad.load();
-  }
-
-  final Timer timer = Timer(timeout, () {
-    disposePending();
-    finish(false);
-  });
-  final bool ready = await completer.future;
-  timer.cancel();
-  if (!ready) disposePending();
-  return ready;
 }

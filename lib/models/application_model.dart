@@ -84,6 +84,11 @@ class ApplicationModel {
   final int applicationid;
   final String applicationcompany;
   final String applicationname;
+
+  // Visibilitas menu Musik & Lirik di aplikasi ('Y' tampil, 'N' disembunyikan).
+  final String applicationmusikactive;
+  final String applicationlyricactive;
+
   final String? applicationads1;
   final String? applicationads2;
   final String applicationadsactive; // 'Y' or 'N' (agregat kompatibilitas)
@@ -151,6 +156,8 @@ class ApplicationModel {
     required this.applicationid,
     required this.applicationcompany,
     required this.applicationname,
+    this.applicationmusikactive = 'Y',
+    this.applicationlyricactive = 'Y',
     this.applicationads1,
     this.applicationads2,
     this.applicationadsactive = 'Y',
@@ -201,6 +208,9 @@ class ApplicationModel {
     this.applicationadsbottomtype = 'image',
     this.applicationadsbottomunit,
   });
+
+  bool get isMusikMenuActive => applicationmusikactive.toUpperCase() == 'Y';
+  bool get isLyricMenuActive => applicationlyricactive.toUpperCase() == 'Y';
 
   bool get isAdsActive => applicationadsactive.toUpperCase() == 'Y';
   bool get isAds1Active => applicationads1active.toUpperCase() == 'Y';
@@ -310,6 +320,8 @@ class ApplicationModel {
     int? applicationid,
     String? applicationcompany,
     String? applicationname,
+    String? applicationmusikactive,
+    String? applicationlyricactive,
     String? applicationads1,
     String? applicationads2,
     String? applicationadsactive,
@@ -364,6 +376,10 @@ class ApplicationModel {
       applicationid: applicationid ?? this.applicationid,
       applicationcompany: applicationcompany ?? this.applicationcompany,
       applicationname: applicationname ?? this.applicationname,
+      applicationmusikactive:
+          applicationmusikactive ?? this.applicationmusikactive,
+      applicationlyricactive:
+          applicationlyricactive ?? this.applicationlyricactive,
       applicationads1: applicationads1 ?? this.applicationads1,
       applicationads2: applicationads2 ?? this.applicationads2,
       applicationadsactive: applicationadsactive ?? this.applicationadsactive,
@@ -463,6 +479,10 @@ class ApplicationModel {
           : int.tryParse(json['applicationid']?.toString() ?? '1') ?? 1,
       applicationcompany: json['applicationcompany'] as String? ?? '',
       applicationname: json['applicationname'] as String? ?? '',
+      applicationmusikactive:
+          json['applicationmusikactive'] as String? ?? 'Y',
+      applicationlyricactive:
+          json['applicationlyricactive'] as String? ?? 'Y',
       applicationads1: json['applicationads1'] as String?,
       applicationads2: json['applicationads2'] as String?,
       applicationadsactive: json['applicationadsactive'] as String? ?? 'Y',
@@ -551,6 +571,8 @@ class ApplicationModel {
       'applicationid': applicationid,
       'applicationcompany': applicationcompany,
       'applicationname': applicationname,
+      'applicationmusikactive': applicationmusikactive,
+      'applicationlyricactive': applicationlyricactive,
       'applicationads1': applicationads1,
       'applicationads2': applicationads2,
       'applicationadsactive': applicationadsactive,

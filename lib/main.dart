@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:media_kit/media_kit.dart';
+
 import 'core/theme/app_colors.dart';
 import 'screens/login_screen.dart';
-import 'services/ad_manager.dart';
 import 'services/cast/smart_tv_cast_service.dart';
 
 void main() async {
@@ -36,10 +36,14 @@ void main() async {
       try {
         MobileAds.instance
             .initialize()
-            .then((status) => debugPrint('Inisialisasi AdMob selesai: ${status.adapterStatuses}'))
+            .then(
+              (status) => debugPrint(
+                'Inisialisasi AdMob selesai: ${status.adapterStatuses}',
+              ),
+            )
             .catchError((Object e, StackTrace s) {
-          debugPrint('Inisialisasi AdMob gagal: $e\n$s');
-        });
+              debugPrint('Inisialisasi AdMob gagal: $e\n$s');
+            });
       } catch (e, s) {
         debugPrint('Inisialisasi AdMob gagal: $e\n$s');
       }
@@ -49,33 +53,13 @@ void main() async {
   runApp(const KaraokeApp());
 }
 
-class KaraokeApp extends StatefulWidget {
+/// Catatan kebijakan AdMob: iklan app open hanya ditampilkan sekali saat
+/// aplikasi dibuka (cold start) lewat `AdManager.configure`. Iklan ini sengaja
+/// **tidak** dipicu dari lifecycle `resumed`, karena menampilkannya setiap
+/// pengguna kembali ke aplikasi (termasuk setelah menutup iklan/browser)
+/// melanggar kebijakan navigasi AdMob.
+class KaraokeApp extends StatelessWidget {
   const KaraokeApp({super.key});
-
-  @override
-  State<KaraokeApp> createState() => _KaraokeAppState();
-}
-
-class _KaraokeAppState extends State<KaraokeApp> with WidgetsBindingObserver {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Iklan app open ditampilkan saat aplikasi kembali aktif.
-    if (state == AppLifecycleState.resumed) {
-      AdManager.instance.maybeShowAppOpen();
-    }
-  }
 
   @override
   Widget build(BuildContext context) {

@@ -40,6 +40,17 @@ class AdManager {
   bool _configuredOnce = false;
   bool _showAppOpenWhenReady = false;
 
+  // ---- Status iklan layar penuh ----
+  /// True selama salah satu iklan layar penuh sedang tampil. Dipakai agar dua
+  /// iklan layar penuh tidak pernah tampil bertumpuk.
+  bool _fullScreenShowing = false;
+
+  /// Waktu iklan layar penuh terakhir tampil (untuk memberi jeda).
+  DateTime? _lastFullScreen;
+
+  /// App open hanya sekali per proses aplikasi (cold start).
+  bool _appOpenShownThisSession = false;
+
   // ---- Pengaturan frekuensi ----
   int _songOpens = 0;
   DateTime? _lastInterstitial;
@@ -49,10 +60,13 @@ class AdManager {
   static const int _interstitialEvery = 3;
 
   /// Jeda minimum antar interstitial.
-  static const Duration _interstitialCooldown = Duration(minutes: 2);
+  static const Duration _interstitialCooldown = Duration(minutes: 3);
 
-  /// Jeda minimum antar app open.
-  static const Duration _appOpenCooldown = Duration(minutes: 4);
+  /// Jeda minimum antar app open (lintas sesi).
+  static const Duration _appOpenCooldown = Duration(hours: 4);
+
+  /// Jeda minimum sebelum iklan layar penuh berikutnya boleh tampil.
+  static const Duration _fullScreenGap = Duration(seconds: 45);
 
   static const String _prefLastAppOpen = 'admob_last_app_open_ms';
 
@@ -147,6 +161,8 @@ class AdManager {
   void maybeShowInterstitial() {
     if (!_supported) return;
     if (_interstitialUnit == null || _interstitialUnit!.isEmpty) return;
+    if (_fullScreenShowing) return;
+
     _songOpens++;
 
     final ad = _interstitial;
@@ -155,20 +171,31 @@ class AdManager {
       return;
     }
     if (_songOpens < _interstitialEvery) return;
+    final DateTime now = DateTime.now();
     if (_lastInterstitial != null &&
-        DateTime.now().difference(_lastInterstitial!) < _interstitialCooldown) {
+        now.difference(_lastInterstitial!) < _interstitialCooldown) {
+      return;
+    }
+    // Jangan menumpuk dengan iklan layar penuh lain (mis. app open) yang baru
+    // saja tampil.
+    if (_lastFullScreen != null &&
+        now.difference(_lastFullScreen!) < _fullScreenGap) {
       return;
     }
 
     _songOpens = 0;
-    _lastInterstitial = DateTime.now();
+    _lastInterstitial = now;
+    _lastFullScreen = now;
+    _fullScreenShowing = true;
     _interstitial = null;
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
+        _fullScreenShowing = false;
         ad.dispose();
         _loadInterstitial();
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
+        _fullScreenShowing = false;
         debugPrint(
           'AdMob: gagal menampilkan interstitial. ${error.code}: ${error.message}',
         );
@@ -210,29 +237,43 @@ class AdManager {
     );
   }
 
-  /// Tampilkan app open bila tersedia dan jeda sudah lewat.
+  /// Tampilkan app open **hanya saat cold start**, dengan jeda minimal
+  /// [_appOpenCooldown] lintas sesi.
+  ///
+  /// Iklan ini tidak dipanggil dari lifecycle `resumed` agar tidak muncul
+  /// setiap pengguna kembali ke aplikasi (melanggar kebijakan navigasi AdMob).
   Future<void> maybeShowAppOpen() async {
     if (!_supported) return;
     if (_appOpenUnit == null || _appOpenUnit!.isEmpty) return;
+    if (_appOpenShownThisSession || _fullScreenShowing) return;
+
     final ad = _appOpen;
     if (ad == null) {
       _loadAppOpen();
       return;
     }
 
+    final DateTime now = DateTime.now();
     final last = _lastAppOpen ?? await _readLastAppOpen();
-    if (last != null && DateTime.now().difference(last) < _appOpenCooldown) {
+    if (last != null && now.difference(last) < _appOpenCooldown) return;
+    if (_lastFullScreen != null &&
+        now.difference(_lastFullScreen!) < _fullScreenGap) {
       return;
     }
 
-    _lastAppOpen = DateTime.now();
+    _appOpenShownThisSession = true;
+    _lastAppOpen = now;
+    _lastFullScreen = now;
+    _fullScreenShowing = true;
     _appOpen = null;
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
+        _fullScreenShowing = false;
         ad.dispose();
         _loadAppOpen();
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
+        _fullScreenShowing = false;
         debugPrint(
           'AdMob: gagal menampilkan app open. ${error.code}: ${error.message}',
         );
@@ -273,6 +314,7 @@ class AdManager {
     if (!_supported) return;
     final unit = _rewardUnit;
     if (unit == null || unit.isEmpty) return;
+    if (_fullScreenShowing) return;
 
     final loaded = _reward;
     if (loaded != null) {
@@ -303,12 +345,16 @@ class AdManager {
   void _presentReward(RewardedAd ad, VoidCallback? onReward) {
     _reward = null;
     var earned = false;
+    _fullScreenShowing = true;
+    _lastFullScreen = DateTime.now();
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
+        _fullScreenShowing = false;
         ad.dispose();
         if (earned) onReward?.call();
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
+        _fullScreenShowing = false;
         debugPrint(
           'AdMob: gagal menampilkan reward. ${error.code}: ${error.message}',
         );

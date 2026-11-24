@@ -247,7 +247,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               ad: _appConfig!.adsHomeTopConfig,
                               active: _appConfig!.isAdsHomeTopActive,
                               padding: EdgeInsets.zero,
-                              maxHeight: 120,
+                              // Berada di dalam area scroll: iklan boleh
+                              // memakai tinggi aslinya agar tampil utuh.
                               onClose: () =>
                                   setState(() => _homeTopAdClosed = true),
                             ),
@@ -265,9 +266,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       ad: _appConfig!.adsHomeBottomConfig,
                       active: _appConfig!.isAdsHomeBottomActive,
                       padding: const EdgeInsets.fromLTRB(24, 4, 24, 4),
-                      maxHeight: 120,
-                      onClose: () =>
-                          setState(() => _homeBottomAdClosed = true),
+                      // Slot bawah berada di luar area scroll; beri ruang
+                      // maksimum agar iklan utuh, dan bila tidak muat slot
+                      // tidak ditampilkan (bukan dipotong).
+                      maxHeight: (constraints.maxHeight * 0.33)
+                          .clamp(160.0, 320.0)
+                          .toDouble(),
+                      onClose: () => setState(() => _homeBottomAdClosed = true),
                     ),
 
                   // Footer terpusat dan diangkat dari dasar layar, berada di
@@ -333,38 +338,45 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     }
 
+    // Menu Musik & Lirik dapat disembunyikan lewat Pengaturan di web admin.
+    // Selama konfigurasi belum termuat, menu tetap ditampilkan.
+    final showMusikMenu = _appConfig?.isMusikMenuActive ?? true;
+    final showLyricMenu = _appConfig?.isLyricMenuActive ?? true;
+
     final tiles = <Widget>[
       for (var index = 0; index < _categories.length; index++)
         Padding(
           padding: const EdgeInsets.only(right: 8),
           child: SizedBox(width: 92, child: _buildCategoryTile(context, index)),
         ),
-      SizedBox(
-        width: 92,
-        child: _IconOptionTile(
-          key: const ValueKey('landing_menu_music'),
-          icon: Icons.library_music_rounded,
-          color: const Color(0xFF7C4DFF),
-          label: 'BUKU MERAH (Musik Lirik)',
-          selected: false,
-          labelMaxLines: 2,
-          onTap: () => _openMusic(context),
+      if (showMusikMenu)
+        SizedBox(
+          width: 92,
+          child: _IconOptionTile(
+            key: const ValueKey('landing_menu_music'),
+            icon: Icons.library_music_rounded,
+            color: const Color(0xFF7C4DFF),
+            label: 'BUKU MERAH (Musik Lirik)',
+            selected: false,
+            labelMaxLines: 2,
+            onTap: () => _openMusic(context),
+          ),
         ),
-      ),
-      SizedBox(
-        width: 92,
-        child: _IconOptionTile(
-          key: const ValueKey('landing_mode_text_only'),
-          icon: Icons.text_snippet_rounded,
-          color: const Color(0xFFFB8C00),
-          label: 'BUKU MERAH (Lirik)',
-          selected: false,
-          labelMaxLines: 2,
-          onTap: () {
-            _navigateToMain(context, displayMode: DisplayMode.textOnly);
-          },
+      if (showLyricMenu)
+        SizedBox(
+          width: 92,
+          child: _IconOptionTile(
+            key: const ValueKey('landing_mode_text_only'),
+            icon: Icons.text_snippet_rounded,
+            color: const Color(0xFFFB8C00),
+            label: 'BUKU MERAH (Lirik)',
+            selected: false,
+            labelMaxLines: 2,
+            onTap: () {
+              _navigateToMain(context, displayMode: DisplayMode.textOnly);
+            },
+          ),
         ),
-      ),
     ];
 
     return LayoutBuilder(
