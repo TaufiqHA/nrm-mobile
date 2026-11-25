@@ -155,8 +155,32 @@ class _LoginScreenState extends State<LoginScreen> {
               final isCompactHeight = constraints.maxHeight < 760;
               final logoHeight = isCompactHeight ? 126.0 : 186.0;
 
+              // Batas tinggi slot iklan halaman utama. Kedua slot berada di
+              // luar area scroll agar tidak pernah menimpa konten satu sama
+              // lain (platform view AdMob tidak selalu ter-clip oleh scroll).
+              final double homeAdMaxHeight = (constraints.maxHeight * 0.33)
+                  .clamp(160.0, 320.0)
+                  .toDouble();
+
+              // Slot iklan bawah hanya dirender bila aktif dan belum ditutup.
+              final bool homeBottomAdVisible =
+                  _appConfig != null &&
+                  _appConfig!.isAdsHomeBottomActive &&
+                  !_homeBottomAdClosed;
+
               return Column(
                 children: [
+                  // Banner iklan atas halaman utama (layar landing).
+                  if (_appConfig != null && !_homeTopAdClosed)
+                    AdSlotView(
+                      key: const ValueKey('ad_slot_home_top'),
+                      ad: _appConfig!.adsHomeTopConfig,
+                      active: _appConfig!.isAdsHomeTopActive,
+                      padding: const EdgeInsets.fromLTRB(24, 4, 24, 4),
+                      maxHeight: homeAdMaxHeight,
+                      onClose: () => setState(() => _homeTopAdClosed = true),
+                    ),
+
                   Expanded(
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -248,51 +272,22 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
 
-                          SizedBox(height: isCompactHeight ? 18 : 24),
-
-                          // Banner iklan atas halaman utama (layar landing).
-                          if (_appConfig != null && !_homeTopAdClosed)
-                            AdSlotView(
-                              key: const ValueKey('ad_slot_home_top'),
-                              ad: _appConfig!.adsHomeTopConfig,
-                              active: _appConfig!.isAdsHomeTopActive,
-                              padding: EdgeInsets.zero,
-                              // Berada di dalam area scroll: iklan boleh
-                              // memakai tinggi aslinya agar tampil utuh.
-                              onClose: () =>
-                                  setState(() => _homeTopAdClosed = true),
-                            ),
-
-                          SizedBox(height: isCompactHeight ? 10 : 14),
+                          SizedBox(height: isCompactHeight ? 8 : 14),
                         ],
                       ),
                     ),
                   ),
 
-                  // Banner iklan bawah halaman utama (layar landing).
-                  if (_appConfig != null && !_homeBottomAdClosed)
-                    AdSlotView(
-                      key: const ValueKey('ad_slot_home_bottom'),
-                      ad: _appConfig!.adsHomeBottomConfig,
-                      active: _appConfig!.isAdsHomeBottomActive,
-                      padding: const EdgeInsets.fromLTRB(24, 4, 24, 4),
-                      // Slot bawah berada di luar area scroll; beri ruang
-                      // maksimum agar iklan utuh, dan bila tidak muat slot
-                      // tidak ditampilkan (bukan dipotong).
-                      maxHeight: (constraints.maxHeight * 0.33)
-                          .clamp(160.0, 320.0)
-                          .toDouble(),
-                      onClose: () => setState(() => _homeBottomAdClosed = true),
-                    ),
-
-                  // Footer terpusat dan diangkat dari dasar layar, berada di
-                  // bawah baris tombol kategori dan mode lirik only.
+                  // Footer terpusat. Saat slot iklan bawah aktif, footer berada
+                  // tepat di atas iklan dan iklan menempel di dasar layar.
                   Padding(
                     padding: EdgeInsets.fromLTRB(
                       24,
                       4,
                       24,
-                      (constraints.maxHeight * 0.12).clamp(56.0, 150.0),
+                      homeBottomAdVisible
+                          ? 8
+                          : (constraints.maxHeight * 0.12).clamp(56.0, 150.0),
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -322,6 +317,21 @@ class _LoginScreenState extends State<LoginScreen> {
                       ],
                     ),
                   ),
+
+                  // Banner iklan bawah halaman utama (layar landing),
+                  // ditempel paling bawah layar.
+                  if (homeBottomAdVisible)
+                    AdSlotView(
+                      key: const ValueKey('ad_slot_home_bottom'),
+                      ad: _appConfig!.adsHomeBottomConfig,
+                      active: _appConfig!.isAdsHomeBottomActive,
+                      padding: const EdgeInsets.fromLTRB(24, 4, 24, 8),
+                      // Slot bawah berada di luar area scroll; beri ruang
+                      // maksimum agar iklan utuh, dan bila tidak muat slot
+                      // tidak ditampilkan (bukan dipotong).
+                      maxHeight: homeAdMaxHeight,
+                      onClose: () => setState(() => _homeBottomAdClosed = true),
+                    ),
                 ],
               );
             },

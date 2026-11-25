@@ -268,8 +268,13 @@ class _AdSlotViewState extends State<AdSlotView> {
             child: slot,
           );
 
-    // Selama iklan belum siap, slot tetap dibangun (agar proses muat berjalan)
-    // tetapi disembunyikan dan tidak memakan ruang.
+    // Iklan gambar perlu tetap dibangun agar proses muat berjalan, lalu
+    // disembunyikan sampai siap. Iklan AdMob tidak boleh disimpan di dalam
+    // `Offstage`: platform view-nya bisa tetap tergambar meski slot
+    // disembunyikan, sehingga iklan tampak menumpuk elemen lain. Komponen
+    // AdMob sudah mengembalikan ukuran nol sampai iklannya benar-benar siap.
+    if (!ad.isImage) return bounded;
+
     return Visibility(
       visible: _ready,
       maintainState: true,
