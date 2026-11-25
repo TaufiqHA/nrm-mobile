@@ -1,3 +1,5 @@
+import 'category_ad_model.dart';
+
 class CategoryModel {
   final int songcategoryid;
   final String songcategoryname;
@@ -13,6 +15,9 @@ class CategoryModel {
 
   /// Status kategori di backend. Kategori nonaktif tidak ditampilkan ke user.
   final bool isActive;
+
+  /// Slot iklan kategori (atas, pop-up, bawah) dari panel admin website.
+  final List<CategoryAdSlot> adSlots;
 
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -30,6 +35,7 @@ class CategoryModel {
     String? iconImage,
     String? iconUrl,
     this.isActive = true,
+    this.adSlots = const <CategoryAdSlot>[],
     this.createdAt,
     this.updatedAt,
   }) : songcategoryid =
@@ -69,6 +75,7 @@ class CategoryModel {
     String? iconImage,
     String? iconUrl,
     bool? isActive,
+    List<CategoryAdSlot>? adSlots,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -86,6 +93,7 @@ class CategoryModel {
       iconImage: iconImage ?? this.iconImage,
       iconUrl: iconUrl ?? this.iconUrl,
       isActive: isActive ?? this.isActive,
+      adSlots: adSlots ?? this.adSlots,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -120,6 +128,18 @@ class CategoryModel {
       parsedUpdatedAt = DateTime.tryParse(json['updatedAt'].toString());
     }
 
+    final parsedAdSlots = <CategoryAdSlot>[];
+    final rawAdSlots = json['ad_slots'] ?? json['adSlots'];
+    if (rawAdSlots is List) {
+      for (final item in rawAdSlots) {
+        if (item is Map) {
+          parsedAdSlots.add(
+            CategoryAdSlot.fromJson(Map<String, dynamic>.from(item)),
+          );
+        }
+      }
+    }
+
     return CategoryModel(
       songcategoryid: parsedId,
       songcategoryname: parsedName,
@@ -127,9 +147,18 @@ class CategoryModel {
       iconImage: (json['icon_image'] ?? json['iconImage'])?.toString(),
       iconUrl: (json['icon_url'] ?? json['iconUrl'])?.toString(),
       isActive: _parseIsActive(json['is_active'] ?? json['isActive']),
+      adSlots: parsedAdSlots,
       createdAt: parsedCreatedAt ?? DateTime.now(),
       updatedAt: parsedUpdatedAt,
     );
+  }
+
+  /// Slot iklan kategori berdasarkan namanya (`top`, `popup`, `bottom`).
+  CategoryAdSlot? adSlot(String slot) {
+    for (final ad in adSlots) {
+      if (ad.slot == slot) return ad;
+    }
+    return null;
   }
 
   Map<String, dynamic> toJson() {
@@ -140,6 +169,18 @@ class CategoryModel {
       'icon_image': iconImage,
       'icon_url': iconUrl,
       'is_active': isActive,
+      'ad_slots': adSlots
+          .map(
+            (ad) => {
+              'slot': ad.slot,
+              'image': ad.image,
+              'type': ad.format.raw,
+              'unit': ad.unit,
+              'active': ad.active ? 'Y' : 'N',
+              'clickurl': ad.clickUrl,
+            },
+          )
+          .toList(),
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
       // Backward-compatible properties

@@ -21,6 +21,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/utils/lyric_parser.dart';
 import '../../core/utils/media_url_helper.dart';
 import '../../core/utils/youtube_helper.dart';
+import '../../models/category_ad_model.dart';
 import '../../models/category_model.dart';
 import '../../models/display_mode.dart';
 import '../../models/song_model.dart';
@@ -87,29 +88,62 @@ class _UserMainLayoutState extends State<UserMainLayout>
 
   bool get _isTextOnly => widget.initialDisplayMode == DisplayMode.textOnly;
 
-  /// Slot iklan atas: halaman musik memakai slot 1, halaman lirik memakai slot
-  /// khusus lirik agar pengaturannya terpisah di panel admin website.
+  /// Slot iklan kategori yang dipilih dari landing, bila aktif dan berisi.
+  ///
+  /// Null berarti aplikasi memakai slot global (musik/lirik) seperti biasa.
+  CategoryAdSlot? _activeCategoryAdSlot(String slot) {
+    final categoryId = _initialCategoryFilter;
+    if (categoryId == null) return null;
+
+    for (final category in _categories) {
+      if (category.songcategoryid != categoryId) continue;
+
+      final ad = category.adSlot(slot);
+      if (ad == null || !ad.active) return null;
+
+      final config = ad.config;
+      final hasContent =
+          (config.isImage && (config.image ?? '').trim().isNotEmpty) ||
+          ((config.isNative || config.isBanner) && config.hasUnit);
+      return hasContent ? ad : null;
+    }
+
+    return null;
+  }
+
+  /// Slot iklan atas: memakai slot kategori bila kategori aktif dipilih,
+  /// selain itu slot 1 halaman musik atau slot khusus lirik.
   AdSlotConfig? get _topAdConfig {
+    final categoryAd = _activeCategoryAdSlot('top');
+    if (categoryAd != null) return categoryAd.config;
+
     final config = _appConfig;
     if (config == null) return null;
     return _isTextOnly ? config.adsLyricTopConfig : config.ads1Config;
   }
 
   bool get _topAdActive {
+    if (_activeCategoryAdSlot('top') != null) return true;
+
     final config = _appConfig;
     if (config == null) return false;
     return _isTextOnly ? config.isAdsLyricTopActive : config.isAds1Active;
   }
 
-  /// Slot iklan bawah: halaman musik memakai footer biasa, halaman lirik
-  /// memakai slot khusus lirik.
+  /// Slot iklan bawah: memakai slot kategori bila tersedia, selain itu footer
+  /// biasa atau slot khusus lirik.
   AdSlotConfig? get _bottomAdConfig {
+    final categoryAd = _activeCategoryAdSlot('bottom');
+    if (categoryAd != null) return categoryAd.config;
+
     final config = _appConfig;
     if (config == null) return null;
     return _isTextOnly ? config.adsLyricBottomConfig : config.adsBottomConfig;
   }
 
   bool get _bottomAdActive {
+    if (_activeCategoryAdSlot('bottom') != null) return true;
+
     final config = _appConfig;
     if (config == null) return false;
     return _isTextOnly
@@ -585,15 +619,21 @@ class _UserMainLayoutState extends State<UserMainLayout>
     }
   }
 
-  /// Menampilkan pop-up iklan gambar satu kali per layar: slot halaman lirik
-  /// untuk mode teks-only, atau slot konten untuk halaman player biasa.
+  /// Menampilkan pop-up iklan gambar satu kali per layar: slot pop-up kategori
+  /// bila kategori dipilih dari landing, selain itu slot konten halaman musik
+  /// atau slot khusus halaman lirik.
   void _maybeShowPageAd() {
     if (_pageAdShown || !mounted) return;
     final config = _appConfig;
     if (config == null) return;
 
-    final ad = _isTextOnly ? config.adsLyricConfig : config.ads2Config;
-    final active = _isTextOnly ? config.isAdsLyricActive : config.isAds2Active;
+    final categoryAd = _activeCategoryAdSlot('popup');
+    final ad =
+        categoryAd?.config ??
+        (_isTextOnly ? config.adsLyricConfig : config.ads2Config);
+    final active = categoryAd != null
+        ? true
+        : (_isTextOnly ? config.isAdsLyricActive : config.isAds2Active);
     if (!active || !hasAdPopupContent(ad)) return;
 
     _pageAdShown = true;

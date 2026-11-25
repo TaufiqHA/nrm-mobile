@@ -206,9 +206,9 @@ class _AdMobNativeViewState extends State<AdMobNativeView>
 
   /// Tinggi tetap slot iklan native (logical px) agar geometri tidak berubah
   /// saat platform view AdWidget dipasang. Harus cukup untuk seluruh isi
-  /// layout `admob_native_ad.xml` (label, headline, body, media, CTA) supaya
-  /// tidak ada bagian iklan yang terpotong.
-  static const double _nativeAdHeight = 200;
+  /// layout `admob_native_ad.xml` (label, headline, body, CTA, dan MediaView
+  /// 120x120dp di samping teks) supaya tidak ada bagian iklan yang terpotong.
+  static const double _nativeAdHeight = 160;
 
   @override
   bool get wantKeepAlive => true;
