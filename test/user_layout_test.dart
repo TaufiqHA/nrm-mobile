@@ -475,14 +475,14 @@ void main() {
     expect(find.byType(UserMainLayout), findsOneWidget);
   });
 
-  testWidgets('Kategori landing tampil sejajar dalam satu baris ikon', (
+  testWidgets('Kategori mengisi slot kosong pada baris menu', (
     WidgetTester tester,
   ) async {
     final categories = [
-      CategoryModel(songcategoryid: 1, songcategoryname: 'Pop Indonesia'),
-      CategoryModel(songcategoryid: 2, songcategoryname: 'Piano + Lirik'),
-      CategoryModel(songcategoryid: 3, songcategoryname: 'Natal'),
-      CategoryModel(songcategoryid: 4, songcategoryname: 'Anak Sekolah Minggu'),
+      CategoryModel(songcategoryid: 2, songcategoryname: 'Pop Indonesia'),
+      CategoryModel(songcategoryid: 3, songcategoryname: 'Piano + Lirik'),
+      CategoryModel(songcategoryid: 4, songcategoryname: 'Natal'),
+      CategoryModel(songcategoryid: 5, songcategoryname: 'Anak Sekolah Minggu'),
     ];
 
     await tester.pumpWidget(
@@ -501,21 +501,42 @@ void main() {
       expect(find.text(category.name), findsOneWidget);
     }
 
-    // Semua ikon, termasuk Teks Only, berada pada posisi vertikal yang sama.
-    final topPositions = [
-      for (final category in categories)
-        tester
-            .getTopLeft(
-              find.byKey(
-                ValueKey('landing_category_${category.songcategoryid}'),
-              ),
-            )
-            .dy,
-      tester
-          .getTopLeft(find.byKey(const ValueKey('landing_mode_text_only')))
-          .dy,
+    double topOf(String key) => tester
+        .getTopLeft(find.byKey(ValueKey(key)))
+        .dy;
+
+    // Dua menu + kategori pertama mengisi baris pertama (3 item per baris).
+    expect(topOf('landing_menu_music'), topOf('landing_mode_text_only'));
+    expect(topOf('landing_category_2'), topOf('landing_menu_music'));
+
+    // Sisa kategori melanjutkan di baris berikutnya, tetap 3 per baris.
+    expect(topOf('landing_category_3'), topOf('landing_category_4'));
+    expect(topOf('landing_category_4'), topOf('landing_category_5'));
+    expect(topOf('landing_category_3'), greaterThan(topOf('landing_category_2')));
+  });
+
+  testWidgets('Kategori menu id 1 tetap di barisan menu walau namanya berbeda', (
+    WidgetTester tester,
+  ) async {
+    final categories = [
+      CategoryModel(songcategoryid: 1, songcategoryname: 'Nama Bebas'),
+      CategoryModel(songcategoryid: 2, songcategoryname: 'Natal'),
     ];
-    expect(topPositions.toSet().length, 1);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LoginScreen(categoryService: DummyCategoryService(categories)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    double topOf(String key) => tester
+        .getTopLeft(find.byKey(ValueKey(key)))
+        .dy;
+
+    expect(topOf('landing_category_1'), topOf('landing_menu_music'));
+    expect(topOf('landing_mode_text_only'), topOf('landing_menu_music'));
+    expect(topOf('landing_category_2'), greaterThan(topOf('landing_category_1')));
   });
 
   testWidgets('Baris ikon kategori aman di layar ponsel kecil', (
@@ -554,12 +575,9 @@ void main() {
       );
     }
 
-    // Teks credit tampil di bawah baris ikon, ter-center, dan tetap terlihat.
-    final selectorRect = tester.getRect(
-      find.byKey(const ValueKey('landing_category_selector')),
-    );
+    // Footer credit tetap terlihat dan ter-center di layar kecil. Kategori
+    // boleh berada di area scroll karena kini tersusun beberapa baris.
     final creditRect = tester.getRect(find.text('Jemaat GMI Jakarta Pusat'));
-    expect(creditRect.top, greaterThan(selectorRect.bottom));
     expect(creditRect.bottom, lessThanOrEqualTo(640));
     expect(creditRect.center.dx, closeTo(180, 1));
   });
@@ -791,7 +809,7 @@ void main() {
 
     // Opsi Hanya Lirik digabung dalam grid yang sama dengan kategori.
     expect(find.text('Pilih Jenis Musik'), findsNothing);
-    expect(find.text('BUKU MERAH (Lirik)'), findsOneWidget);
+    expect(find.text('Menu Lirik'), findsOneWidget);
 
     await tester.ensureVisible(
       find.byKey(const ValueKey('landing_mode_text_only')),

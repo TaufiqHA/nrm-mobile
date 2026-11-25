@@ -100,6 +100,16 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  /// Menu Indonesia dapat disembunyikan lewat Pengaturan di web admin.
+  /// Kategori lain tetap mengikuti status aktifnya masing-masing.
+  bool _isCategoryMenuVisible(CategoryModel category) {
+    if (!category.isMenuCategory) {
+      return true;
+    }
+
+    return _appConfig?.isIndonesiaMenuActive ?? true;
+  }
+
   void _navigateToMain(
     BuildContext context, {
     int? categoryId,
@@ -343,55 +353,79 @@ class _LoginScreenState extends State<LoginScreen> {
     final showMusikMenu = _appConfig?.isMusikMenuActive ?? true;
     final showLyricMenu = _appConfig?.isLyricMenuActive ?? true;
 
-    final tiles = <Widget>[
-      for (var index = 0; index < _categories.length; index++)
-        Padding(
-          padding: const EdgeInsets.only(right: 8),
-          child: SizedBox(width: 92, child: _buildCategoryTile(context, index)),
-        ),
+    final indonesiaIndex = _categories.indexWhere(
+      (category) => category.isMenuCategory,
+    );
+    final showIndonesiaMenu = indonesiaIndex >= 0 &&
+        _isCategoryMenuVisible(_categories[indonesiaIndex]);
+
+    final menuTiles = <Widget>[
+      if (showIndonesiaMenu) _buildCategoryTile(context, indonesiaIndex),
       if (showMusikMenu)
-        SizedBox(
-          width: 92,
-          child: _IconOptionTile(
-            key: const ValueKey('landing_menu_music'),
-            icon: Icons.library_music_rounded,
-            color: const Color(0xFF7C4DFF),
-            label: 'BUKU MERAH (Musik Lirik)',
-            selected: false,
-            labelMaxLines: 2,
-            onTap: () => _openMusic(context),
-          ),
+        _IconOptionTile(
+          key: const ValueKey('landing_menu_music'),
+          icon: Icons.library_music_rounded,
+          color: const Color(0xFF7C4DFF),
+          label: _appConfig?.musikMenuLabel ?? 'Menu Musik',
+          selected: false,
+          labelMaxLines: 2,
+          onTap: () => _openMusic(context),
         ),
       if (showLyricMenu)
-        SizedBox(
-          width: 92,
-          child: _IconOptionTile(
-            key: const ValueKey('landing_mode_text_only'),
-            icon: Icons.text_snippet_rounded,
-            color: const Color(0xFFFB8C00),
-            label: 'BUKU MERAH (Lirik)',
-            selected: false,
-            labelMaxLines: 2,
-            onTap: () {
-              _navigateToMain(context, displayMode: DisplayMode.textOnly);
-            },
-          ),
+        _IconOptionTile(
+          key: const ValueKey('landing_mode_text_only'),
+          icon: Icons.text_snippet_rounded,
+          color: const Color(0xFFFB8C00),
+          label: _appConfig?.lyricMenuLabel ?? 'Menu Lirik',
+          selected: false,
+          labelMaxLines: 2,
+          onTap: () {
+            _navigateToMain(context, displayMode: DisplayMode.textOnly);
+          },
         ),
     ];
 
+    final categoryTiles = <Widget>[
+      for (var index = 0; index < _categories.length; index++)
+        if (index != indonesiaIndex && _isCategoryMenuVisible(_categories[index]))
+          _buildCategoryTile(context, index),
+    ];
+
+    // Menu mengisi baris lebih dulu, lalu kategori melanjutkan di baris yang
+    // sama bila masih ada slot kosong. Semuanya dalam satu grid 3 kolom.
+    final allTiles = <Widget>[
+      ...menuTiles,
+      ...categoryTiles,
+    ];
+
+    if (allTiles.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return _buildThreeColumnGrid(allTiles);
+  }
+
+  /// Grid 3 kolom tetap, rata kiri. Item yang tidak dirender tidak menggeser
+  /// posisi kolom item lain.
+  Widget _buildThreeColumnGrid(List<Widget> tiles) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minWidth: constraints.maxWidth),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: tiles,
-            ),
-          ),
+        const spacing = 12.0;
+        const columns = 3;
+        final itemWidth = ((constraints.maxWidth - spacing * (columns - 1)) /
+                columns)
+            .floorToDouble();
+
+        return Wrap(
+          spacing: spacing,
+          runSpacing: 14,
+          children: [
+            for (final tile in tiles)
+              SizedBox(
+                width: itemWidth,
+                child: Center(child: tile),
+              ),
+          ],
         );
       },
     );
@@ -400,13 +434,16 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildCategoryTile(BuildContext context, int index) {
     final category = _categories[index];
     final spec = categoryIconSpec(category, index);
+    final label = category.isMenuCategory
+        ? (_appConfig?.indonesiaMenuLabel ?? category.name)
+        : category.name;
 
     return _IconOptionTile(
       key: ValueKey('landing_category_${category.songcategoryid}'),
       icon: spec.icon,
       color: spec.color,
       imageUrl: spec.imageUrl,
-      label: category.name,
+      label: label,
       selected: false,
       labelMaxLines: 4,
       onTap: () {

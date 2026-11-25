@@ -1,6 +1,10 @@
 import 'category_ad_model.dart';
 
 class CategoryModel {
+  /// Kategori yang tampil sebagai menu (Indonesia) ditentukan oleh id, bukan
+  /// nama, agar konsisten walau nama kategorinya diubah dari admin.
+  static const int menuCategoryId = 1;
+
   final int songcategoryid;
   final String songcategoryname;
 
@@ -25,6 +29,9 @@ class CategoryModel {
   // Backward-compatible getters
   String get id => songcategoryid.toString();
   String get name => songcategoryname;
+
+  /// True bila kategori ini ditampilkan sebagai menu (Indonesia).
+  bool get isMenuCategory => songcategoryid == menuCategoryId;
 
   CategoryModel({
     dynamic id,

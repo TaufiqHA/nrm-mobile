@@ -85,9 +85,15 @@ class ApplicationModel {
   final String applicationcompany;
   final String applicationname;
 
-  // Visibilitas menu Musik & Lirik di aplikasi ('Y' tampil, 'N' disembunyikan).
+  // Visibilitas menu Musik, Lirik, dan Indonesia di aplikasi ('Y' tampil, 'N' disembunyikan).
   final String applicationmusikactive;
   final String applicationlyricactive;
+  final String applicationmenuindonesiaactive;
+
+  // Label menu yang dapat diedit dari panel admin.
+  final String applicationmusiklabel;
+  final String applicationlyriclabel;
+  final String applicationmenuindonesialabel;
 
   final String? applicationads1;
   final String? applicationads2;
@@ -158,6 +164,10 @@ class ApplicationModel {
     required this.applicationname,
     this.applicationmusikactive = 'Y',
     this.applicationlyricactive = 'Y',
+    this.applicationmenuindonesiaactive = 'Y',
+    this.applicationmusiklabel = 'Menu Musik',
+    this.applicationlyriclabel = 'Menu Lirik',
+    this.applicationmenuindonesialabel = 'Menu Indonesia',
     this.applicationads1,
     this.applicationads2,
     this.applicationadsactive = 'Y',
@@ -211,6 +221,16 @@ class ApplicationModel {
 
   bool get isMusikMenuActive => applicationmusikactive.toUpperCase() == 'Y';
   bool get isLyricMenuActive => applicationlyricactive.toUpperCase() == 'Y';
+  bool get isIndonesiaMenuActive =>
+      applicationmenuindonesiaactive.toUpperCase() == 'Y';
+
+  String get musikMenuLabel =>
+      applicationmusiklabel.trim().isEmpty ? 'Menu Musik' : applicationmusiklabel;
+  String get lyricMenuLabel =>
+      applicationlyriclabel.trim().isEmpty ? 'Menu Lirik' : applicationlyriclabel;
+  String get indonesiaMenuLabel => applicationmenuindonesialabel.trim().isEmpty
+      ? 'Menu Indonesia'
+      : applicationmenuindonesialabel;
 
   bool get isAdsActive => applicationadsactive.toUpperCase() == 'Y';
   bool get isAds1Active => applicationads1active.toUpperCase() == 'Y';
@@ -322,6 +342,10 @@ class ApplicationModel {
     String? applicationname,
     String? applicationmusikactive,
     String? applicationlyricactive,
+    String? applicationmenuindonesiaactive,
+    String? applicationmusiklabel,
+    String? applicationlyriclabel,
+    String? applicationmenuindonesialabel,
     String? applicationads1,
     String? applicationads2,
     String? applicationadsactive,
@@ -380,6 +404,12 @@ class ApplicationModel {
           applicationmusikactive ?? this.applicationmusikactive,
       applicationlyricactive:
           applicationlyricactive ?? this.applicationlyricactive,
+      applicationmenuindonesiaactive:
+          applicationmenuindonesiaactive ?? this.applicationmenuindonesiaactive,
+      applicationmusiklabel: applicationmusiklabel ?? this.applicationmusiklabel,
+      applicationlyriclabel: applicationlyriclabel ?? this.applicationlyriclabel,
+      applicationmenuindonesialabel:
+          applicationmenuindonesialabel ?? this.applicationmenuindonesialabel,
       applicationads1: applicationads1 ?? this.applicationads1,
       applicationads2: applicationads2 ?? this.applicationads2,
       applicationadsactive: applicationadsactive ?? this.applicationadsactive,
@@ -483,6 +513,12 @@ class ApplicationModel {
           json['applicationmusikactive'] as String? ?? 'Y',
       applicationlyricactive:
           json['applicationlyricactive'] as String? ?? 'Y',
+      applicationmenuindonesiaactive:
+          json['applicationmenuindonesiaactive'] as String? ?? 'Y',
+      applicationmusiklabel: json['applicationmusiklabel'] as String? ?? 'Menu Musik',
+      applicationlyriclabel: json['applicationlyriclabel'] as String? ?? 'Menu Lirik',
+      applicationmenuindonesialabel:
+          json['applicationmenuindonesialabel'] as String? ?? 'Menu Indonesia',
       applicationads1: json['applicationads1'] as String?,
       applicationads2: json['applicationads2'] as String?,
       applicationadsactive: json['applicationadsactive'] as String? ?? 'Y',
@@ -573,6 +609,10 @@ class ApplicationModel {
       'applicationname': applicationname,
       'applicationmusikactive': applicationmusikactive,
       'applicationlyricactive': applicationlyricactive,
+      'applicationmenuindonesiaactive': applicationmenuindonesiaactive,
+      'applicationmusiklabel': applicationmusiklabel,
+      'applicationlyriclabel': applicationlyriclabel,
+      'applicationmenuindonesialabel': applicationmenuindonesialabel,
       'applicationads1': applicationads1,
       'applicationads2': applicationads2,
       'applicationadsactive': applicationadsactive,

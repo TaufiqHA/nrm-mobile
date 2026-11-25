@@ -554,6 +554,7 @@ class _UserMainLayoutState extends State<UserMainLayout>
       final songs = results[1] as List<SongModel>;
       final activeCategories = allCategories
           .where((category) => category.isActive)
+          .where(_isCategoryMenuVisible)
           .toList();
       final activeCategoryIds = activeCategories
           .map((category) => category.songcategoryid)
@@ -617,6 +618,16 @@ class _UserMainLayoutState extends State<UserMainLayout>
     } catch (e) {
       debugPrint('User layout app config load error: $e');
     }
+  }
+
+  /// Menu Indonesia dapat disembunyikan lewat Pengaturan di web admin.
+  /// Kategori lain tetap mengikuti status aktifnya masing-masing.
+  bool _isCategoryMenuVisible(CategoryModel category) {
+    if (!category.isMenuCategory) {
+      return true;
+    }
+
+    return _appConfig?.isIndonesiaMenuActive ?? true;
   }
 
   /// Menampilkan pop-up iklan gambar satu kali per layar: slot pop-up kategori

@@ -52,7 +52,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('landing_menu_music')), findsOneWidget);
-    expect(find.text('BUKU MERAH (Musik Lirik)'), findsOneWidget);
+    expect(find.text('Menu Musik'), findsOneWidget);
   });
 
   testWidgets(
